@@ -16,7 +16,6 @@ are managed records, not tenants.
 
 ```bash
 npm install
-cp .env.example .env
 ```
 
 Edit `.env`. At minimum, set `DATABASE_URL` and generate two **different** JWT

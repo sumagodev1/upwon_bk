@@ -38,6 +38,15 @@ export type ApiKeyStatus = (typeof API_KEY_STATUSES)[number];
 export const STORAGE_PROVIDERS = ['LOCAL', 'S3', 'GCS', 'AZURE'] as const;
 export type StorageProviderName = (typeof STORAGE_PROVIDERS)[number];
 
+/**
+ * Publish state for CMS content rows - the home page sections, and anything else
+ * the marketing site reads. An INACTIVE row stays editable in the admin panel
+ * but is invisible to the public read endpoints; the alternative, deleting it,
+ * throws away copy that is usually being rotated back in later.
+ */
+export const CONTENT_STATUSES = ['ACTIVE', 'INACTIVE'] as const;
+export type ContentStatus = (typeof CONTENT_STATUSES)[number];
+
 // ── Roles ────────────────────────────────────────────────────────────────
 
 /**
@@ -104,6 +113,13 @@ export const PERMISSIONS = {
   FILES_READ: 'files.read',
   FILES_UPLOAD: 'files.upload',
   FILES_DELETE: 'files.delete',
+
+  // Module-wide rather than per-section: a new home page section reuses these
+  // four keys instead of needing its own permissions added here and seeded.
+  HOME_PAGE_READ: 'home_page.read',
+  HOME_PAGE_CREATE: 'home_page.create',
+  HOME_PAGE_UPDATE: 'home_page.update',
+  HOME_PAGE_DELETE: 'home_page.delete',
 } as const;
 
 export type PermissionKey = (typeof PERMISSIONS)[keyof typeof PERMISSIONS];
@@ -153,6 +169,11 @@ export const PERMISSION_DESCRIPTIONS: Record<PermissionKey, string> = {
   'files.read': 'View and download files',
   'files.upload': 'Upload files',
   'files.delete': 'Delete files',
+
+  'home_page.read': 'View home page section content',
+  'home_page.create': 'Create home page section content',
+  'home_page.update': 'Update, reorder, and publish home page section content',
+  'home_page.delete': 'Delete home page section content',
 };
 
 /**
@@ -216,6 +237,13 @@ export const AUDIT_ACTIONS = {
   FILE_UPLOADED: 'FILE_UPLOADED',
   FILE_DELETED: 'FILE_DELETED',
   NOTIFICATION_CREATED: 'NOTIFICATION_CREATED',
+
+  HOME_HERO_SLIDE_CREATED: 'HOME_HERO_SLIDE_CREATED',
+  HOME_HERO_SLIDE_UPDATED: 'HOME_HERO_SLIDE_UPDATED',
+  HOME_HERO_SLIDE_STATUS_CHANGED: 'HOME_HERO_SLIDE_STATUS_CHANGED',
+  HOME_HERO_SLIDES_REORDERED: 'HOME_HERO_SLIDES_REORDERED',
+  HOME_HERO_SLIDE_DELETED: 'HOME_HERO_SLIDE_DELETED',
+
   UNAUTHORIZED_ACCESS_ATTEMPT: 'UNAUTHORIZED_ACCESS_ATTEMPT',
 } as const;
 
@@ -241,4 +269,31 @@ export const LIMITS = {
   SUBSCRIPTION_EXPIRY_HORIZON_DAYS: 30,
   ANALYTICS_MAX_DAYS: 365,
   ANALYTICS_DEFAULT_DAYS: 30,
+  // The hero is an auto-rotating carousel - past a dozen slides the later ones
+  // are never seen by a real visitor.
+  MAX_HERO_SLIDES: 12,
 } as const;
+
+// ── Publicly served uploads ──────────────────────────────────────────────
+
+/**
+ * The entity types whose uploaded images are served to anonymous visitors.
+ *
+ * Uploads are private by default: the files module requires FILES_READ and
+ * hands everything back as an attachment. But an image authored for the
+ * marketing home page has to load in an <img> on a site that holds no
+ * credentials, so those files opt in - at upload time, by entity type.
+ *
+ * This is an allowlist rather than "any image by id". An unguessable UUID is
+ * not authorisation, and the files table also holds uploads that were never
+ * meant to leave the panel.
+ */
+export const PUBLIC_FILE_ENTITY_TYPES = ['home_hero_slide'] as const;
+
+export type PublicFileEntityType = (typeof PUBLIC_FILE_ENTITY_TYPES)[number];
+
+export const isPubliclyServableEntityType = (
+  entityType: string | null,
+): entityType is PublicFileEntityType =>
+  entityType !== null &&
+  (PUBLIC_FILE_ENTITY_TYPES as readonly string[]).includes(entityType);

@@ -154,6 +154,7 @@ export const create = async (
       client,
     );
 
+    
     await adminRepository.assignRoles(admin.id, input.roleIds, context.adminId, client);
     const roleNames = await permissionRepository.findRoleNamesForAdmin(admin.id, client);
 

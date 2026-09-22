@@ -1,7 +1,7 @@
 // src/modules/files/services/file.service.ts
 
 import { withTransaction } from '../../../config/database';
-import { AUDIT_ACTIONS } from '../../../config/constants';
+import { AUDIT_ACTIONS, isPubliclyServableEntityType } from '../../../config/constants';
 import { env } from '../../../config/env';
 import { AppError } from '../../../core/errors/AppError';
 import { NotFoundError } from '../../../core/errors/NotFoundError';
@@ -66,6 +66,29 @@ export const download = async (
 ): Promise<{ file: FileRecord; buffer: Buffer }> => {
   const file = await fileRepository.findById(id);
   if (!file) throw new NotFoundError('File');
+  const buffer = await storage.getFile(file.storageKey);
+  return { file, buffer };
+};
+
+/**
+ * The anonymous read path, for images authored as public website content.
+ *
+ * Two conditions, both required, and a failure of either is reported as a
+ * plain 404: a caller with no credentials must not be able to tell "this id is
+ * a private upload" from "this id does not exist".
+ *
+ *   1. The file opted in at upload time, via a publicly servable entity type.
+ *   2. It is actually an image. This endpoint renders inline, so it must never
+ *      be reachable for a PDF, a CSV, or anything else that was uploaded.
+ */
+export const getPublicImage = async (
+  id: string,
+): Promise<{ file: FileRecord; buffer: Buffer }> => {
+  const file = await fileRepository.findById(id);
+  if (!file) throw new NotFoundError('File');
+  if (!isPubliclyServableEntityType(file.entityType)) throw new NotFoundError('File');
+  if (!file.mimeType.startsWith('image/')) throw new NotFoundError('File');
+
   const buffer = await storage.getFile(file.storageKey);
   return { file, buffer };
 };

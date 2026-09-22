@@ -49,10 +49,37 @@ for (const route of routes) {
   );
 }
 
-// /auth routes are intentionally public or self-guarded; everything else must
-// have a guard middleware ahead of its controller.
+/**
+ * Prefixes that are unauthenticated by design:
+ *
+ *   /auth    - login and password reset, self-guarded per route.
+ *   /public  - read-only published CMS content for the marketing site, which is
+ *              an anonymous browser client and so can hold neither an admin
+ *              token nor an API key. Exempted explicitly rather than left to
+ *              pass on a rate limiter being counted as a "guard", which is what
+ *              the handlerCount heuristic would otherwise do.
+ *
+ * Note: mountPathOf only recovers the first segment of a nested mount, so a
+ * route mounted at /public/home-page reports as /public/... here. That is a
+ * display limitation; the prefix match below is unaffected.
+ */
+const PUBLIC_BY_DESIGN = ['/auth', '/public'];
+
+const isPublicByDesign = (path) =>
+  PUBLIC_BY_DESIGN.some((prefix) => path === prefix || path.startsWith(prefix + '/'));
+
+// Every route that is not public by design must have a guard ahead of its
+// controller.
 const unguarded = routes.filter(
-  (route) => route.handlerCount < 2 && !route.path.startsWith('/auth'),
+  (route) => route.handlerCount < 2 && !isPublicByDesign(route.path),
+);
+
+// The /public surface is read-only. A write there would be an unauthenticated
+// mutation, which no amount of rate limiting makes acceptable.
+const publicWrites = routes.filter(
+  (route) =>
+    route.path.startsWith('/public') &&
+    route.methods.some((method) => method !== 'GET' && method !== 'HEAD'),
 );
 
 console.log('');
@@ -64,4 +91,13 @@ if (unguarded.length > 0) {
   process.exit(1);
 }
 
-console.log('PASS: every non-auth route has a guard ahead of its handler.\n');
+if (publicWrites.length > 0) {
+  console.error(`FAIL: ${publicWrites.length} unauthenticated write route(s) under /public:`);
+  for (const route of publicWrites) {
+    console.error(`   ${route.methods.join(',')} ${route.path}`);
+  }
+  process.exit(1);
+}
+
+console.log('PASS: every non-public route has a guard ahead of its handler.');
+console.log('PASS: the /public surface is read-only.\n');

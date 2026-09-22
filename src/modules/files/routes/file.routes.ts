@@ -7,12 +7,16 @@ import {
   downloadFileController,
   getAllFilesController,
   getFileByIdController,
+  getPublicImageController,
   uploadFileController,
 } from '../controllers/file.controller';
 import { PERMISSIONS } from '../../../config/constants';
 import { env } from '../../../config/env';
 import { requirePermission } from '../../../core/middleware/authorization.middleware';
-import { uploadRateLimit } from '../../../core/middleware/rate-limit.middleware';
+import {
+  standardRateLimit,
+  uploadRateLimit,
+} from '../../../core/middleware/rate-limit.middleware';
 import { asyncHandler } from '../../../core/utils/async-handler';
 
 const router = Router();
@@ -57,3 +61,18 @@ router.delete(
 );
 
 export default router;
+
+/**
+ * Public router, mounted outside the authentication middleware.
+ *
+ * Serves only uploads that opted in by entity type and are actually images -
+ * see fileService.getPublicImage. This exists because the marketing site is an
+ * anonymous browser client: an <img> it renders carries no token, so the
+ * authenticated download route above can never satisfy it.
+ *
+ * Rate limited on top of the global limiter, since it reads from disk and is
+ * reachable without credentials.
+ */
+export const publicFileRouter = Router();
+
+publicFileRouter.get('/:id', standardRateLimit, asyncHandler(getPublicImageController));

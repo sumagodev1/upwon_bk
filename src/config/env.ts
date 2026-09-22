@@ -64,7 +64,7 @@ class EnvValidator {
       // Deliberately console.error, not the logger: the logger depends on env.
       console.error('\n[FATAL] Environment validation failed:\n');
       for (const error of this.errors) console.error(`  - ${error}`);
-      console.error('\nRefer to .env.example for the full list.\n');
+      console.error('\nRefer to .env for the full list.\n');
       process.exit(1);
     }
   }
@@ -113,6 +113,16 @@ export const env = {
   storageLocalPath: v.optional('STORAGE_LOCAL_PATH', './storage/uploads'),
   storagePublicBaseUrl: v.optional('STORAGE_PUBLIC_BASE_URL', 'http://localhost:4000/files'),
   maxUploadBytes: v.int('MAX_UPLOAD_BYTES', 10 * 1024 * 1024, 1024),
+
+  /**
+   * The origin + API prefix this server is reachable at from a browser.
+   *
+   * Used to build absolute URLs for publicly served uploads, which are
+   * embedded in the marketing site's HTML and therefore have to resolve from
+   * a different origin than the API's own. Set this to the public API URL in
+   * any deployed environment.
+   */
+  publicApiBaseUrl: v.optional('PUBLIC_API_BASE_URL', 'http://localhost:4000/api'),
 
   shutdownGraceMs: v.int('SHUTDOWN_GRACE_MS', 15_000, 1_000),
   trustProxy: v.bool('TRUST_PROXY', isProduction),
