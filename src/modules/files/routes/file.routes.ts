@@ -7,7 +7,7 @@ import {
   downloadFileController,
   getAllFilesController,
   getFileByIdController,
-  getPublicImageController,
+  getPublicMediaController,
   uploadFileController,
 } from '../controllers/file.controller';
 import { PERMISSIONS } from '../../../config/constants';
@@ -65,8 +65,8 @@ export default router;
 /**
  * Public router, mounted outside the authentication middleware.
  *
- * Serves only uploads that opted in by entity type and are actually images -
- * see fileService.getPublicImage. This exists because the marketing site is an
+ * Serves only uploads that opted in by entity type and are renderable media -
+ * see fileService.getPublicMedia. This exists because the marketing site is an
  * anonymous browser client: an <img> it renders carries no token, so the
  * authenticated download route above can never satisfy it.
  *
@@ -75,4 +75,4 @@ export default router;
  */
 export const publicFileRouter = Router();
 
-publicFileRouter.get('/:id', standardRateLimit, asyncHandler(getPublicImageController));
+publicFileRouter.get('/:id', standardRateLimit, asyncHandler(getPublicMediaController));

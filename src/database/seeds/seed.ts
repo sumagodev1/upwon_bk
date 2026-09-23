@@ -295,6 +295,181 @@ async function seedHomeHeroSlides(client: PoolClient): Promise<number> {
   return result.rowCount ?? 0;
 }
 
+
+/**
+ * Trust section - the six brand logos and four scale stats the site ships.
+ *
+ * Zipped into rows the same way 014 folded the old JSONB lists: entry N carries
+ * logo N and stat N, and the run continues to the longer of the two, so the
+ * last two entries are logo-only. The section copy repeats on every row and the
+ * public read takes it from the first active one.
+ */
+const TRUST_LOGOS: Array<{ imageUrl: string; alt: string }> = [
+  { imageUrl: '/images/testimonial/gokul.webp', alt: 'Gokul' },
+  { imageUrl: '/images/testimonial/kaka%20halwai.webp', alt: 'Kaka Halwai' },
+  { imageUrl: '/images/testimonial/mongignis.webp', alt: 'Monginis' },
+  { imageUrl: '/images/testimonial/ofc.webp', alt: 'OFC' },
+  { imageUrl: '/images/testimonial/u2cake.webp', alt: 'U2 Cake' },
+  { imageUrl: '/images/testimonial/winni.webp', alt: 'Winni' },
+];
+
+const TRUST_STATS: Array<{ value: string; label: string }> = [
+  { value: '10,000+', label: 'Invoices daily' },
+  { value: '8000+', label: 'Orders every day' },
+  { value: '50+', label: 'Brands live' },
+  { value: '4,200+', label: 'Outlets connected' },
+];
+
+const TRUST_COPY = {
+  eyebrow: "Trusted across India's food belt",
+  heading: 'The brands that feed India **run on UPWON.**',
+  subtext: "50+ of India's food and FMCG businesses run their daily operations on UPWON.",
+};
+
+async function seedHomeTrustEntries(client: PoolClient): Promise<number> {
+  // Seeded only into an empty table, for the same reason as the hero slides:
+  // there is no natural key to upsert on, so a re-run would either duplicate
+  // the set or clobber copy an administrator has since edited.
+  const existing = await client.query<{ count: number }>(
+    'SELECT COUNT(*) AS count FROM home_trust_entries',
+  );
+  if (Number(existing.rows[0].count) > 0) return 0;
+
+  const rows = Math.max(TRUST_LOGOS.length, TRUST_STATS.length);
+  const result = await client.query(
+    `
+    INSERT INTO home_trust_entries
+      (eyebrow, heading, subtext, image_url, image_alt,
+       stat_value, stat_label, display_order, status)
+    SELECT $1, $2, $3, u.image_url, u.image_alt, u.stat_value, u.stat_label, u.position, 'ACTIVE'
+      FROM unnest($4::text[], $5::text[], $6::text[], $7::text[], $8::int[])
+        AS u(image_url, image_alt, stat_value, stat_label, position)
+    `,
+    [
+      TRUST_COPY.eyebrow,
+      TRUST_COPY.heading,
+      TRUST_COPY.subtext,
+      Array.from({ length: rows }, (_, i) => TRUST_LOGOS[i]?.imageUrl ?? null),
+      Array.from({ length: rows }, (_, i) => TRUST_LOGOS[i]?.alt ?? null),
+      Array.from({ length: rows }, (_, i) => TRUST_STATS[i]?.value ?? null),
+      Array.from({ length: rows }, (_, i) => TRUST_STATS[i]?.label ?? null),
+      Array.from({ length: rows }, (_, i) => i),
+    ],
+  );
+
+  return result.rowCount ?? 0;
+}
+
+/**
+ * Industries video intro - the single block the site ships.
+ *
+ * Only one entry may be active at a time (see migration 016), so this inserts
+ * exactly one row.
+ */
+async function seedHomeIndustriesEntries(client: PoolClient): Promise<number> {
+  const existing = await client.query<{ count: number }>(
+    'SELECT COUNT(*) AS count FROM home_industries_entries',
+  );
+  if (Number(existing.rows[0].count) > 0) return 0;
+
+  const result = await client.query(
+    `
+    INSERT INTO home_industries_entries
+      (eyebrow, heading, subtext, video_url, display_order, status)
+    VALUES ($1, $2, $3, $4, 0, 'ACTIVE')
+    `,
+    [
+      'Industries We Serve',
+      'Built for Food. Proven for FMCG. **Ready for everything that follows.**',
+      'Every industry we serve, from food manufacturing to everyday FMCG - organised by depth.',
+      '/video/video_test.mp4',
+    ],
+  );
+
+  return result.rowCount ?? 0;
+}
+
+/**
+ * Values and work culture - the six cards the site ships.
+ *
+ * Photos are seeded as the site-relative paths the component already uses, so
+ * the live grid renders identically. Two consequences worth knowing:
+ *
+ *   - The admin panel is served from a different origin, so these thumbnails
+ *     will not load there until a card's image is replaced with an upload.
+ *   - The three fms_hero files are 1600x566 hero artwork reused as
+ *     placeholders. The card crops to 4:3, so they are visibly sliced on the
+ *     live site today, and the card image spec would reject them as uploads.
+ *     They are seeded as-is because this is the site's current content, not
+ *     because they are the right artwork.
+ */
+const VALUES_COPY = {
+  eyebrow: 'Our Customers Appreciate Us',
+  heading: 'Values & **Work Culture**',
+  subtext: 'These core values guide how we work, grow, and lead.',
+};
+
+const VALUES_CARDS: Array<{ title: string; body: string; imageUrl: string }> = [
+  {
+    title: 'Genuine Advice',
+    body: 'UPWON values honest and transparent communication to provide practical, well-researched solutions tailored to your needs. Honesty is the basis of our advice.',
+    imageUrl: '/images/fms_hero1.webp',
+  },
+  {
+    title: 'Proactive Approach',
+    body: 'We anticipate challenges and proactively address potential issues before they arise, ensuring smooth and efficient project execution.',
+    imageUrl: '/images/fms_hero2.webp',
+  },
+  {
+    title: 'Result Oriented, Time-Bound Working',
+    body: 'We focus on delivering measurable results within agreed timelines and maintaining efficiency while ensuring quality outcomes.',
+    imageUrl: '/images/fms_hero3.webp',
+  },
+  {
+    title: 'Comprehensive Product Range',
+    body: 'UPWON offers a wide range of software solutions to meet the diverse needs of the FMCG sector, giving clients integrated tools that cover every operational aspect.',
+    imageUrl: '/images/discovery1.webp',
+  },
+  {
+    title: 'Dedicated Support',
+    body: 'We offer continuous and reliable support to our customers, ensuring the system is always optimized and functioning, with a team ready to help.',
+    imageUrl: '/images/onboarding1.webp',
+  },
+  {
+    title: 'Personalized Assistance',
+    body: "We offer customized solutions and services. Every customer's requirements are different, so we provide a single point of contact after implementation and individual training.",
+    imageUrl: '/images/distrubutor_rollout1.webp',
+  },
+];
+
+async function seedHomeValuesEntries(client: PoolClient): Promise<number> {
+  const existing = await client.query<{ count: number }>(
+    'SELECT COUNT(*) AS count FROM home_values_entries',
+  );
+  if (Number(existing.rows[0].count) > 0) return 0;
+
+  const result = await client.query(
+    `
+    INSERT INTO home_values_entries
+      (eyebrow, heading, subtext, image_url, card_title, card_body, display_order, status)
+    SELECT $1, $2, $3, u.image_url, u.card_title, u.card_body, u.position, 'ACTIVE'
+      FROM unnest($4::text[], $5::text[], $6::text[], $7::int[])
+        AS u(image_url, card_title, card_body, position)
+    `,
+    [
+      VALUES_COPY.eyebrow,
+      VALUES_COPY.heading,
+      VALUES_COPY.subtext,
+      VALUES_CARDS.map((card) => card.imageUrl),
+      VALUES_CARDS.map((card) => card.title),
+      VALUES_CARDS.map((card) => card.body),
+      VALUES_CARDS.map((_card, index) => index),
+    ],
+  );
+
+  return result.rowCount ?? 0;
+}
+
 // ── runner ────────────────────────────────────────────────────────────────
 async function main(): Promise<void> {
   try {
@@ -303,14 +478,27 @@ async function main(): Promise<void> {
       await seedRoles(client);
       await seedSettings(client);
       const heroSlideCount = await seedHomeHeroSlides(client);
+      const trustEntryCount = await seedHomeTrustEntries(client);
+      const industriesEntryCount = await seedHomeIndustriesEntries(client);
+      const valuesEntryCount = await seedHomeValuesEntries(client);
       const rootAdmin = await seedRootAdmin(client);
-      return { permissionCount, heroSlideCount, rootAdmin };
+      return {
+        permissionCount,
+        heroSlideCount,
+        trustEntryCount,
+        industriesEntryCount,
+        valuesEntryCount,
+        rootAdmin,
+      };
     });
 
     logger.info('Seed complete', {
       permissions: summary.permissionCount,
       roles: Object.keys(SYSTEM_ROLES).length,
       homeHeroSlides: summary.heroSlideCount,
+      homeTrustEntries: summary.trustEntryCount,
+      homeIndustriesEntries: summary.industriesEntryCount,
+      homeValuesEntries: summary.valuesEntryCount,
       rootAdminEmail: summary.rootAdmin.email,
       rootAdminCreated: summary.rootAdmin.created,
     });

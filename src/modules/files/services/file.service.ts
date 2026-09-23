@@ -1,7 +1,11 @@
 // src/modules/files/services/file.service.ts
 
 import { withTransaction } from '../../../config/database';
-import { AUDIT_ACTIONS, isPubliclyServableEntityType } from '../../../config/constants';
+import {
+  AUDIT_ACTIONS,
+  isPubliclyServableEntityType,
+  isPubliclyServableMimeType,
+} from '../../../config/constants';
 import { env } from '../../../config/env';
 import { AppError } from '../../../core/errors/AppError';
 import { NotFoundError } from '../../../core/errors/NotFoundError';
@@ -23,6 +27,11 @@ const ALLOWED_MIME_TYPES = new Set([
   'image/jpeg',
   'image/gif',
   'image/webp',
+  // Video, for the home page's product-intro sections. Two codecs rather than
+  // every container ffmpeg knows: these are the pair every current browser
+  // plays natively, so anything else would upload fine and then not play.
+  'video/mp4',
+  'video/webm',
   'application/pdf',
   'text/csv',
   'text/plain',
@@ -71,23 +80,24 @@ export const download = async (
 };
 
 /**
- * The anonymous read path, for images authored as public website content.
+ * The anonymous read path, for media authored as public website content.
  *
  * Two conditions, both required, and a failure of either is reported as a
  * plain 404: a caller with no credentials must not be able to tell "this id is
  * a private upload" from "this id does not exist".
  *
  *   1. The file opted in at upload time, via a publicly servable entity type.
- *   2. It is actually an image. This endpoint renders inline, so it must never
- *      be reachable for a PDF, a CSV, or anything else that was uploaded.
+ *   2. It is renderable media - an image or a video. This endpoint serves
+ *      inline, so it must never be reachable for a PDF, a CSV, or anything
+ *      else that happens to share an entity type.
  */
-export const getPublicImage = async (
+export const getPublicMedia = async (
   id: string,
 ): Promise<{ file: FileRecord; buffer: Buffer }> => {
   const file = await fileRepository.findById(id);
   if (!file) throw new NotFoundError('File');
   if (!isPubliclyServableEntityType(file.entityType)) throw new NotFoundError('File');
-  if (!file.mimeType.startsWith('image/')) throw new NotFoundError('File');
+  if (!isPubliclyServableMimeType(file.mimeType)) throw new NotFoundError('File');
 
   const buffer = await storage.getFile(file.storageKey);
   return { file, buffer };

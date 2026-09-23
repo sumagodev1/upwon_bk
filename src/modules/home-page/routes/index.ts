@@ -2,6 +2,11 @@
 
 import { Router } from 'express';
 import heroSectionRoutes, { publicHeroSectionRouter } from './hero-section.routes';
+import trustSectionRoutes, { publicTrustSectionRouter } from './trust-section.routes';
+import industriesSectionRoutes, {
+  publicIndustriesSectionRouter,
+} from './industries-section.routes';
+import valuesSectionRoutes, { publicValuesSectionRouter } from './values-section.routes';
 
 /**
  * The home page is one module with one router per section, each owning its own
@@ -11,6 +16,9 @@ import heroSectionRoutes, { publicHeroSectionRouter } from './hero-section.route
 const router = Router();
 
 router.use('/hero-section', heroSectionRoutes);
+router.use('/trust-section', trustSectionRoutes);
+router.use('/industries-section', industriesSectionRoutes);
+router.use('/values-section', valuesSectionRoutes);
 
 export default router;
 
@@ -22,3 +30,6 @@ export default router;
 export const publicHomePageRouter = Router();
 
 publicHomePageRouter.use('/hero-section', publicHeroSectionRouter);
+publicHomePageRouter.use('/trust-section', publicTrustSectionRouter);
+publicHomePageRouter.use('/industries-section', publicIndustriesSectionRouter);
+publicHomePageRouter.use('/values-section', publicValuesSectionRouter);

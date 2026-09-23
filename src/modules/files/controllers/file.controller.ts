@@ -76,24 +76,30 @@ export const downloadFileController = async (
 };
 
 /**
- * The website-facing image read. Unauthenticated, and inline rather than an
- * attachment because the whole point is to render in an <img>.
+ * The website-facing media read. Unauthenticated, and inline rather than an
+ * attachment because the whole point is to render in an <img> or a <video>.
  *
  * Content-Type is echoed from the stored record, but nosniff still applies:
- * the service has already established this is an image, and nosniff stops a
- * browser second-guessing that from the bytes.
+ * the service has already established this is renderable media, and nosniff
+ * stops a browser second-guessing that from the bytes.
+ *
+ * Accept-Ranges is advertised so a <video> can seek. The body is still sent
+ * whole - range requests are not honoured here - which is fine for the short
+ * product clips this serves, but is the thing to revisit if long video is ever
+ * put behind it.
  */
-export const getPublicImageController = async (
+export const getPublicMediaController = async (
   req: Request,
   res: Response,
 ): Promise<void> => {
   const id = validateUuidParam(req.params.id);
-  const { file, buffer } = await fileService.getPublicImage(id);
+  const { file, buffer } = await fileService.getPublicMedia(id);
 
   res.setHeader('Content-Type', file.mimeType);
   res.setHeader('Content-Length', buffer.length);
   res.setHeader('X-Content-Type-Options', 'nosniff');
   res.setHeader('Content-Disposition', 'inline');
+  res.setHeader('Accept-Ranges', 'none');
   // The bytes at a given id never change - a replaced image gets a new id -
   // so this is safe to cache hard, and the marketing site benefits most.
   res.setHeader('Cache-Control', 'public, max-age=31536000, immutable');

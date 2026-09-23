@@ -13,7 +13,7 @@ import { env } from '../../../config/env';
 import { getStorageProvider } from '../../../storage/storage.factory';
 import * as heroRepository from '../repositories/hero-section.repository';
 import { parseHeading, plainHeading } from '../utils/heading-markup';
-import { checkHeroImageDimensions, HeroImageVariant } from '../utils/hero-image-spec';
+import { checkImageDimensions, ImageSlot } from '../utils/image-spec';
 import { readImageDimensions } from '../utils/image-dimensions';
 import {
   CreateHeroSlideInput,
@@ -99,7 +99,7 @@ const toPublic = (slide: ResolvedHeroSlide): PublicHeroSlide => ({
  */
 const assertUsableImageFile = async (
   fileId: string,
-  variant: HeroImageVariant,
+  slot: ImageSlot,
   field: string,
 ): Promise<void> => {
   const file = await fileRepository.findById(fileId);
@@ -138,7 +138,7 @@ const assertUsableImageFile = async (
     ]);
   }
 
-  const problem = checkHeroImageDimensions(variant, dimensions);
+  const problem = checkImageDimensions(slot, dimensions);
   if (problem) {
     throw new ValidationError('Image is the wrong size', [
       { field, message: problem, code: 'INVALID_IMAGE_DIMENSIONS' },
@@ -178,9 +178,9 @@ export const create = async (
   input: CreateHeroSlideInput,
   context: RequestContext,
 ): Promise<ResolvedHeroSlide> => {
-  if (input.imageFileId) await assertUsableImageFile(input.imageFileId, 'desktop', 'imageFileId');
+  if (input.imageFileId) await assertUsableImageFile(input.imageFileId, 'heroDesktop', 'imageFileId');
   if (input.mobileImageFileId) {
-    await assertUsableImageFile(input.mobileImageFileId, 'mobile', 'mobileImageFileId');
+    await assertUsableImageFile(input.mobileImageFileId, 'heroMobile', 'mobileImageFileId');
   }
 
   const slide = await withTransaction(async (client) => {
@@ -233,9 +233,9 @@ export const update = async (
   patch: UpdateHeroSlideInput,
   context: RequestContext,
 ): Promise<ResolvedHeroSlide> => {
-  if (patch.imageFileId) await assertUsableImageFile(patch.imageFileId, 'desktop', 'imageFileId');
+  if (patch.imageFileId) await assertUsableImageFile(patch.imageFileId, 'heroDesktop', 'imageFileId');
   if (patch.mobileImageFileId) {
-    await assertUsableImageFile(patch.mobileImageFileId, 'mobile', 'mobileImageFileId');
+    await assertUsableImageFile(patch.mobileImageFileId, 'heroMobile', 'mobileImageFileId');
   }
 
   const slide = await withTransaction(async (client) => {

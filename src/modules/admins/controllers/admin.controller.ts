@@ -33,14 +33,6 @@ export const getAllAdminsController = async (
 
 // Get admin by id
 export const getAdminByIdController = async (
-
-
-
-
-
-
-
-  
   req: Request,
   res: Response,
 ): Promise<Response> => {

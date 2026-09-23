@@ -244,6 +244,21 @@ export const AUDIT_ACTIONS = {
   HOME_HERO_SLIDES_REORDERED: 'HOME_HERO_SLIDES_REORDERED',
   HOME_HERO_SLIDE_DELETED: 'HOME_HERO_SLIDE_DELETED',
 
+  HOME_TRUST_ENTRY_CREATED: 'HOME_TRUST_ENTRY_CREATED',
+  HOME_TRUST_ENTRY_UPDATED: 'HOME_TRUST_ENTRY_UPDATED',
+  HOME_TRUST_ENTRY_DELETED: 'HOME_TRUST_ENTRY_DELETED',
+  HOME_TRUST_ENTRIES_REORDERED: 'HOME_TRUST_ENTRIES_REORDERED',
+
+  HOME_INDUSTRIES_ENTRY_CREATED: 'HOME_INDUSTRIES_ENTRY_CREATED',
+  HOME_INDUSTRIES_ENTRY_UPDATED: 'HOME_INDUSTRIES_ENTRY_UPDATED',
+  HOME_INDUSTRIES_ENTRY_DELETED: 'HOME_INDUSTRIES_ENTRY_DELETED',
+  HOME_INDUSTRIES_ENTRIES_REORDERED: 'HOME_INDUSTRIES_ENTRIES_REORDERED',
+
+  HOME_VALUES_ENTRY_CREATED: 'HOME_VALUES_ENTRY_CREATED',
+  HOME_VALUES_ENTRY_UPDATED: 'HOME_VALUES_ENTRY_UPDATED',
+  HOME_VALUES_ENTRY_DELETED: 'HOME_VALUES_ENTRY_DELETED',
+  HOME_VALUES_ENTRIES_REORDERED: 'HOME_VALUES_ENTRIES_REORDERED',
+
   UNAUTHORIZED_ACCESS_ATTEMPT: 'UNAUTHORIZED_ACCESS_ATTEMPT',
 } as const;
 
@@ -272,6 +287,16 @@ export const LIMITS = {
   // The hero is an auto-rotating carousel - past a dozen slides the later ones
   // are never seen by a real visitor.
   MAX_HERO_SLIDES: 12,
+  // One entry contributes at most one logo and one counter, so this caps both
+  // lists at once: the marquee loops its set three times and past ~24 a visitor
+  // never sees the end of a cycle, which is the tighter of the two limits.
+  MAX_TRUST_ENTRIES: 24,
+  // The section renders one block at a time, so this caps how many alternates
+  // can sit beside the live one rather than how many are shown.
+  MAX_INDUSTRIES_ENTRIES: 12,
+  // A 3-up grid; past two dozen the section stops reading as a summary of how
+  // the company works and starts reading as a directory.
+  MAX_VALUES_ENTRIES: 24,
 } as const;
 
 // ── Publicly served uploads ──────────────────────────────────────────────
@@ -288,9 +313,27 @@ export const LIMITS = {
  * not authorisation, and the files table also holds uploads that were never
  * meant to leave the panel.
  */
-export const PUBLIC_FILE_ENTITY_TYPES = ['home_hero_slide'] as const;
+export const PUBLIC_FILE_ENTITY_TYPES = [
+  'home_hero_slide',
+  'home_trust_logo',
+  'home_industries_video',
+  'home_values_card',
+] as const;
 
 export type PublicFileEntityType = (typeof PUBLIC_FILE_ENTITY_TYPES)[number];
+
+/**
+ * The media types the public route will serve inline.
+ *
+ * Prefixes rather than exact types, so adding a codec to the upload allowlist
+ * does not also mean remembering to add it here. Everything else an admin can
+ * upload - PDFs, spreadsheets, CSVs - stays behind authentication even when it
+ * carries a public entity type.
+ */
+export const PUBLIC_FILE_MIME_PREFIXES = ['image/', 'video/'] as const;
+
+export const isPubliclyServableMimeType = (mimeType: string): boolean =>
+  PUBLIC_FILE_MIME_PREFIXES.some((prefix) => mimeType.startsWith(prefix));
 
 export const isPubliclyServableEntityType = (
   entityType: string | null,

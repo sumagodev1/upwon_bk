@@ -297,6 +297,26 @@ export const refresh = async (
 
     await authRepository.revokeSession(session.id, newSession.id, client);
 
+    /*
+     * Recorded so a silent refresh is visible in the audit trail.
+     *
+     * Without this, the log shows a run of ADMIN_LOGIN rows and nothing else,
+     * which reads identically whether refresh is working perfectly or failing
+     * every time and forcing the admin to sign in again - the two cases are
+     * impossible to tell apart, which is exactly when you most need the log.
+     */
+    await auditLogService.record(
+      {
+        action: AUDIT_ACTIONS.ADMIN_TOKEN_REFRESHED,
+        module: 'auth',
+        entityType: 'admin_session',
+        entityId: newSession.id,
+        newValues: { replacedSessionId: session.id, ipAddress: device.ipAddress },
+      },
+      { ...context, adminId: admin.id },
+      client,
+    );
+
     const roles = await permissionRepository.findRoleNamesForAdmin(admin.id, client);
     const { token: accessToken, expiresIn } = signAccessToken({
       adminId: admin.id,
