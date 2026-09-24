@@ -42,6 +42,10 @@ export type ImageSlot =
   | 'fmsHeroMobile'
   | 'fmsCtaDesktop'
   | 'fmsCtaMobile'
+  | 'fmsFranchiseIcon'
+  | 'fmsFranchisePhoto'
+  | 'fmsOutcomeLogo'
+  | 'fmsOutcomePhoto'
   | 'erpCtaDesktop'
   | 'erpCtaMobile'
   | 'erpIndustry'
@@ -200,6 +204,40 @@ export const IMAGE_SPECS: Readonly<Record<ImageSlot, ImageSpec>> = {
    */
   fmsCtaDesktop: { label: 'Desktop artwork', width: 2116, height: 743, ratioTolerance: 0.2 },
   fmsCtaMobile: { label: 'Mobile artwork', width: 853, height: 1844, ratioTolerance: 0.2 },
+  /*
+   * A franchise category's tab pictogram.
+   *
+   * No ratio rule: it is drawn object-contain into a 32px square, so a tall
+   * or wide mark simply letterboxes inside the tile rather than distorting.
+   * The four shipped pictograms bear that out - they range from 701x1024 to
+   * 1006x949 and all sit correctly. The floor is four times the drawn size,
+   * which is what a high-density screen needs; the admin hint carries the
+   * 512x512 square the shipped set uses.
+   */
+  fmsFranchiseIcon: { label: 'Tab icon', width: 128, height: 128, ratioTolerance: null },
+  /*
+   * The photograph behind the selected-category panel - the four shipped are
+   * all exactly 1504x873. Drawn bg-cover with a tint wash fading out across
+   * the left two-thirds, so a differently shaped upload crops; hence the ratio
+   * rule, and hence a floor at the shipped size rather than below it.
+   */
+  fmsFranchisePhoto: { label: 'Panel photo', width: 1504, height: 873, ratioTolerance: 0.2 },
+  /*
+   * A network's brand mark on the outcome card.
+   *
+   * No ratio rule: it is drawn object-contain at a fixed height with a width
+   * cap, so a wordmark and a round badge both sit correctly - which the two
+   * shipped marks bear out, at 500x110 and 500x492. The floor is generous
+   * against the 32px draw height; the admin hint carries the recommendation.
+   */
+  fmsOutcomeLogo: { label: 'Brand mark', width: 200, height: 32, ratioTolerance: null },
+  /*
+   * The photograph behind the card - public/images/fms_hero1 and _hero2 are
+   * both 1600x566. Drawn object-cover across the full width with the card
+   * floating over its right-hand side, so a differently shaped upload crops;
+   * hence the ratio rule, and hence keeping the subject left of centre.
+   */
+  fmsOutcomePhoto: { label: 'Background photo', width: 1600, height: 566, ratioTolerance: 0.2 },
 
   /*
    * The portrait on an outcome card.

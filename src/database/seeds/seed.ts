@@ -1066,11 +1066,66 @@ const FMS_SECTION_COPY: Array<{
   subtext: string | null;
 }> = [
   {
+    key: 'proof',
+    eyebrow: 'Proof Strip',
+    heading: "Not a Pitch. **Just What's Already Running.**",
+    subtext:
+      'Franchise-network-specific proof, shown honestly — not inflated to compete on headline-grabbing restaurant counts.',
+  },
+  {
     key: 'faq',
     eyebrow: 'FAQ',
     heading: 'Questions Franchisors **Ask Before They Commit.**',
     subtext:
       'Pulled straight from the objections franchisors raise — price-as-add-on, rollout disruption, franchisee resistance — not generic FAQ boilerplate.',
+  },
+  {
+    key: 'outcomes',
+    eyebrow: 'Customer Outcomes',
+    heading:
+      "35 Outlets Became 200. **The Back-Office Team Didn't Grow at All.**",
+    subtext:
+      'Named proof from the networks running on UpWon \u2014 the challenge, what changed, and the numbers.',
+  },
+  {
+    key: 'alternatives',
+    eyebrow: 'UpWon vs the Alternatives',
+    heading:
+      'A POS With a Royalty Feature Is\n**Not the Same as a Franchise Operating System.**',
+    subtext:
+      'No star ratings. The rows below match what franchisors rank highest — domain expertise and native ERP / central-kitchen integration, not feature count or AI depth.',
+  },
+  {
+    key: 'packages',
+    eyebrow: 'Module Versions & Growth Path',
+    heading:
+      'Start With Your Counter. **Grow Into Full Franchise Control.**',
+    subtext:
+      'A three-tier structure built from our FMS & POS sub-systems \u2014 start with outlet billing and expand into royalty and compliance as the network grows.',
+  },
+  {
+    key: 'integrations',
+    eyebrow: 'Platform Integrations',
+    heading:
+      'One System \u2014 **with Pre-Built Integrations.**',
+    subtext:
+      'UpWon FMS connects out of the box to the payments, delivery, accounting and enterprise systems your network already runs on \u2014 so franchise operations, royalty and reporting all draw from one connected source of truth.',
+  },
+  {
+    key: 'video',
+    eyebrow: 'See It in Action',
+    heading:
+      "It's Not Just Software \u2014 **It's Your Franchise Operating System.**",
+    subtext:
+      'See how one system runs ordering, royalty, replenishment and brand standards across every outlet \u2014 with head office in full control.',
+  },
+  {
+    key: 'recognition',
+    eyebrow: 'Recognition',
+    heading:
+      'Special Extensions for **Bakery, Sweets, Ice Cream and QSR Franchises…**',
+    subtext:
+      'Domain-specific models built for how your franchise really works. Choose a category to see how UpWon adapts to your operations.',
   },
   {
     key: 'cta',
@@ -1371,6 +1426,20 @@ async function main(): Promise<void> {
       fmsHeroSlides: summary.fmsPage.heroSlides,
       fmsFaqEntries: summary.fmsPage.faqEntries,
       fmsCtaSection: summary.fmsPage.ctaSection,
+      fmsProofLogos: summary.fmsPage.proofLogos,
+      fmsProofStats: summary.fmsPage.proofStats,
+      fmsFranchiseCategories: summary.fmsPage.franchiseCategories,
+      fmsFranchiseSteps: summary.fmsPage.franchiseSteps,
+      fmsFranchiseBenefits: summary.fmsPage.franchiseBenefits,
+      fmsVideoEntries: summary.fmsPage.videoEntries,
+      fmsIntegrationLogos: summary.fmsPage.integrationLogos,
+      fmsGrowthTiers: summary.fmsPage.growthTiers,
+      fmsGrowthFeatures: summary.fmsPage.growthFeatures,
+      fmsAlternativesColumns: summary.fmsPage.alternativesColumns,
+      fmsAlternativesRows: summary.fmsPage.alternativesRows,
+      fmsAlternativesCells: summary.fmsPage.alternativesCells,
+      fmsOutcomeStories: summary.fmsPage.outcomeStories,
+      fmsOutcomeStats: summary.fmsPage.outcomeStats,
       rootAdminEmail: summary.rootAdmin.email,
       rootAdminCreated: summary.rootAdmin.created,
     });

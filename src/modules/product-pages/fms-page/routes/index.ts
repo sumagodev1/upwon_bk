@@ -4,6 +4,19 @@ import { Router } from 'express';
 import heroSectionRoutes, { publicFmsHeroSectionRouter } from './hero-section.routes';
 import faqSectionRoutes, { publicFmsFaqSectionRouter } from './faq-section.routes';
 import ctaSectionRoutes, { publicFmsCtaSectionRouter } from './cta-section.routes';
+import proofSectionRoutes, { publicFmsProofSectionRouter } from './proof-section.routes';
+import outcomesSectionRoutes, { publicFmsOutcomesSectionRouter } from './outcomes-section.routes';
+import alternativesSectionRoutes, {
+  publicFmsAlternativesSectionRouter,
+} from './alternatives-section.routes';
+import growthSectionRoutes, { publicFmsGrowthSectionRouter } from './growth-section.routes';
+import integrationsSectionRoutes, {
+  publicFmsIntegrationsSectionRouter,
+} from './integrations-section.routes';
+import videoSectionRoutes, { publicFmsVideoSectionRouter } from './video-section.routes';
+import franchiseSectionRoutes, {
+  publicFmsFranchiseSectionRouter,
+} from './franchise-section.routes';
 
 /**
  * The FMS product page, one router per section - the same arrangement as the
@@ -16,6 +29,13 @@ import ctaSectionRoutes, { publicFmsCtaSectionRouter } from './cta-section.route
 const router = Router();
 
 router.use('/hero-section', heroSectionRoutes);
+router.use('/proof-section', proofSectionRoutes);
+router.use('/franchise-section', franchiseSectionRoutes);
+router.use('/video-section', videoSectionRoutes);
+router.use('/integrations-section', integrationsSectionRoutes);
+router.use('/growth-section', growthSectionRoutes);
+router.use('/alternatives-section', alternativesSectionRoutes);
+router.use('/outcomes-section', outcomesSectionRoutes);
 router.use('/faq-section', faqSectionRoutes);
 router.use('/cta-section', ctaSectionRoutes);
 
@@ -28,5 +48,12 @@ export default router;
 export const publicFmsPageRouter = Router();
 
 publicFmsPageRouter.use('/hero-section', publicFmsHeroSectionRouter);
+publicFmsPageRouter.use('/proof-section', publicFmsProofSectionRouter);
+publicFmsPageRouter.use('/franchise-section', publicFmsFranchiseSectionRouter);
+publicFmsPageRouter.use('/video-section', publicFmsVideoSectionRouter);
+publicFmsPageRouter.use('/integrations-section', publicFmsIntegrationsSectionRouter);
+publicFmsPageRouter.use('/growth-section', publicFmsGrowthSectionRouter);
+publicFmsPageRouter.use('/alternatives-section', publicFmsAlternativesSectionRouter);
+publicFmsPageRouter.use('/outcomes-section', publicFmsOutcomesSectionRouter);
 publicFmsPageRouter.use('/faq-section', publicFmsFaqSectionRouter);
 publicFmsPageRouter.use('/cta-section', publicFmsCtaSectionRouter);

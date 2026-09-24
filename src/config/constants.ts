@@ -432,6 +432,71 @@ export const AUDIT_ACTIONS = {
 
   FMS_CTA_SECTION_UPDATED: 'FMS_CTA_SECTION_UPDATED',
 
+  FMS_PROOF_LOGO_CREATED: 'FMS_PROOF_LOGO_CREATED',
+  FMS_PROOF_LOGO_UPDATED: 'FMS_PROOF_LOGO_UPDATED',
+  FMS_PROOF_LOGO_DELETED: 'FMS_PROOF_LOGO_DELETED',
+  FMS_PROOF_LOGOS_REORDERED: 'FMS_PROOF_LOGOS_REORDERED',
+
+  FMS_PROOF_STAT_CREATED: 'FMS_PROOF_STAT_CREATED',
+  FMS_PROOF_STAT_UPDATED: 'FMS_PROOF_STAT_UPDATED',
+  FMS_PROOF_STAT_DELETED: 'FMS_PROOF_STAT_DELETED',
+  FMS_PROOF_STATS_REORDERED: 'FMS_PROOF_STATS_REORDERED',
+
+  FMS_FRANCHISE_CATEGORY_CREATED: 'FMS_FRANCHISE_CATEGORY_CREATED',
+  FMS_FRANCHISE_CATEGORY_UPDATED: 'FMS_FRANCHISE_CATEGORY_UPDATED',
+  FMS_FRANCHISE_CATEGORY_DELETED: 'FMS_FRANCHISE_CATEGORY_DELETED',
+  FMS_FRANCHISE_CATEGORIES_REORDERED: 'FMS_FRANCHISE_CATEGORIES_REORDERED',
+
+  FMS_FRANCHISE_STEP_CREATED: 'FMS_FRANCHISE_STEP_CREATED',
+  FMS_FRANCHISE_STEP_UPDATED: 'FMS_FRANCHISE_STEP_UPDATED',
+  FMS_FRANCHISE_STEP_DELETED: 'FMS_FRANCHISE_STEP_DELETED',
+  FMS_FRANCHISE_STEPS_REORDERED: 'FMS_FRANCHISE_STEPS_REORDERED',
+
+  FMS_FRANCHISE_BENEFIT_CREATED: 'FMS_FRANCHISE_BENEFIT_CREATED',
+  FMS_FRANCHISE_BENEFIT_UPDATED: 'FMS_FRANCHISE_BENEFIT_UPDATED',
+  FMS_FRANCHISE_BENEFIT_DELETED: 'FMS_FRANCHISE_BENEFIT_DELETED',
+  FMS_FRANCHISE_BENEFITS_REORDERED: 'FMS_FRANCHISE_BENEFITS_REORDERED',
+
+  FMS_VIDEO_ENTRY_CREATED: 'FMS_VIDEO_ENTRY_CREATED',
+  FMS_VIDEO_ENTRY_UPDATED: 'FMS_VIDEO_ENTRY_UPDATED',
+  FMS_VIDEO_ENTRY_DELETED: 'FMS_VIDEO_ENTRY_DELETED',
+  FMS_VIDEO_ENTRIES_REORDERED: 'FMS_VIDEO_ENTRIES_REORDERED',
+
+  FMS_INTEGRATION_SECTION_UPDATED: 'FMS_INTEGRATION_SECTION_UPDATED',
+  FMS_INTEGRATION_LOGO_CREATED: 'FMS_INTEGRATION_LOGO_CREATED',
+  FMS_INTEGRATION_LOGO_UPDATED: 'FMS_INTEGRATION_LOGO_UPDATED',
+  FMS_INTEGRATION_LOGO_DELETED: 'FMS_INTEGRATION_LOGO_DELETED',
+  FMS_INTEGRATION_LOGOS_REORDERED: 'FMS_INTEGRATION_LOGOS_REORDERED',
+
+  FMS_GROWTH_SECTION_UPDATED: 'FMS_GROWTH_SECTION_UPDATED',
+  FMS_GROWTH_TIER_CREATED: 'FMS_GROWTH_TIER_CREATED',
+  FMS_GROWTH_TIER_UPDATED: 'FMS_GROWTH_TIER_UPDATED',
+  FMS_GROWTH_TIER_DELETED: 'FMS_GROWTH_TIER_DELETED',
+  FMS_GROWTH_TIERS_REORDERED: 'FMS_GROWTH_TIERS_REORDERED',
+  FMS_GROWTH_FEATURE_CREATED: 'FMS_GROWTH_FEATURE_CREATED',
+  FMS_GROWTH_FEATURE_UPDATED: 'FMS_GROWTH_FEATURE_UPDATED',
+  FMS_GROWTH_FEATURE_DELETED: 'FMS_GROWTH_FEATURE_DELETED',
+  FMS_GROWTH_FEATURES_REORDERED: 'FMS_GROWTH_FEATURES_REORDERED',
+
+  FMS_ALTERNATIVES_SECTION_UPDATED: 'FMS_ALTERNATIVES_SECTION_UPDATED',
+  FMS_ALTERNATIVES_COLUMN_CREATED: 'FMS_ALTERNATIVES_COLUMN_CREATED',
+  FMS_ALTERNATIVES_COLUMN_UPDATED: 'FMS_ALTERNATIVES_COLUMN_UPDATED',
+  FMS_ALTERNATIVES_COLUMN_DELETED: 'FMS_ALTERNATIVES_COLUMN_DELETED',
+  FMS_ALTERNATIVES_COLUMNS_REORDERED: 'FMS_ALTERNATIVES_COLUMNS_REORDERED',
+  FMS_ALTERNATIVES_ROW_CREATED: 'FMS_ALTERNATIVES_ROW_CREATED',
+  FMS_ALTERNATIVES_ROW_UPDATED: 'FMS_ALTERNATIVES_ROW_UPDATED',
+  FMS_ALTERNATIVES_ROW_DELETED: 'FMS_ALTERNATIVES_ROW_DELETED',
+  FMS_ALTERNATIVES_ROWS_REORDERED: 'FMS_ALTERNATIVES_ROWS_REORDERED',
+
+  FMS_OUTCOME_STORY_CREATED: 'FMS_OUTCOME_STORY_CREATED',
+  FMS_OUTCOME_STORY_UPDATED: 'FMS_OUTCOME_STORY_UPDATED',
+  FMS_OUTCOME_STORY_DELETED: 'FMS_OUTCOME_STORY_DELETED',
+  FMS_OUTCOME_STORIES_REORDERED: 'FMS_OUTCOME_STORIES_REORDERED',
+  FMS_OUTCOME_STAT_CREATED: 'FMS_OUTCOME_STAT_CREATED',
+  FMS_OUTCOME_STAT_UPDATED: 'FMS_OUTCOME_STAT_UPDATED',
+  FMS_OUTCOME_STAT_DELETED: 'FMS_OUTCOME_STAT_DELETED',
+  FMS_OUTCOME_STATS_REORDERED: 'FMS_OUTCOME_STATS_REORDERED',
+
   UNAUTHORIZED_ACCESS_ATTEMPT: 'UNAUTHORIZED_ACCESS_ATTEMPT',
 } as const;
 
@@ -580,6 +645,58 @@ export const LIMITS = {
   /** The FMS page, on the same caps as the SFA-DMS page's equivalents. */
   MAX_FMS_HERO_SLIDES: 12,
   MAX_FMS_FAQ_ENTRIES: 24,
+
+  /*
+   * The proof strip. The brand wall scrolls, so it takes as many marks as
+   * there are networks to show; the numbers beside it do not - that panel is
+   * a two-by-two grid, and a fifth figure would have nowhere to go.
+   */
+  MAX_FMS_PROOF_LOGOS: 24,
+  MAX_FMS_PROOF_STATS: 4,
+
+  /*
+   * The franchise category map. The tabs sit in a four-column grid that wraps
+   * to two on a phone, so eight is two full rows - past that the row of tabs
+   * stops reading as a choice and starts reading as a menu. The flow is drawn
+   * as a single horizontal run with an arrow between each pair, and the strip
+   * under it as three columns; both caps are what those layouts hold.
+   */
+  MAX_FMS_FRANCHISE_CATEGORIES: 8,
+  MAX_FMS_FRANCHISE_STEPS: 6,
+  MAX_FMS_FRANCHISE_BENEFITS: 6,
+
+  /*
+   * The video showcase, on the same cap as the SFA-DMS page's. One entry is
+   * live at a time; the rest are drafts and retired clips kept for reference,
+   * which is what the cap is really about.
+   */
+  MAX_FMS_VIDEO_ENTRIES: 10,
+
+  /*
+   * The integration sphere. The marks are pinned around a rotating globe, so
+   * the cap is about legibility rather than layout - past roughly two dozen
+   * they overlap at every rotation and none of them reads.
+   */
+  MAX_FMS_INTEGRATION_LOGOS: 24,
+
+  /*
+   * The growth path. The tiers sit in a three-column grid that the design is
+   * built around - a fourth would wrap to its own row and read as an
+   * afterthought - so the cap is a little above what ships rather than open.
+   * The ticks under each are capped at what fits before the card outgrows its
+   * neighbours and the row stops comparing like with like.
+   */
+  MAX_FMS_GROWTH_TIERS: 4,
+  MAX_FMS_GROWTH_FEATURES: 12,
+
+  /*
+   * The customer outcomes carousel. The stories rotate on a timer, so the cap
+   * is about how long a visitor will wait to come back round rather than about
+   * what fits. The figures are not: the card draws them in a three-column grid,
+   * and a fourth would wrap to a row of its own and read as an afterthought.
+   */
+  MAX_FMS_OUTCOME_STORIES: 8,
+  MAX_FMS_OUTCOME_STATS: 3,
 } as const;
 
 // ── Publicly served uploads ──────────────────────────────────────────────
@@ -621,6 +738,14 @@ export const PUBLIC_FILE_ENTITY_TYPES = [
   'sfa_outcome_photo',
   'fms_hero_slide',
   'fms_cta_image',
+  'fms_proof_logo',
+  'fms_franchise_icon',
+  'fms_franchise_photo',
+  'fms_video',
+  'fms_outcome_logo',
+  'fms_outcome_photo',
+  'fms_integration_logo',
+  'fms_integration_centre_logo',
   'sfa_video',
   'comparison_column_logo',
   'erp_outcome_image',
@@ -699,7 +824,17 @@ export const PAGE_SECTION_KEYS = {
    * The hero is absent on purpose, here as on the other pages: its slides each
    * carry their own eyebrow, headline and subhead.
    */
-  fms: ['faq', 'cta'],
+  fms: [
+    'proof',
+    'recognition',
+    'video',
+    'integrations',
+    'packages',
+    'alternatives',
+    'outcomes',
+    'faq',
+    'cta',
+  ],
 } as const;
 
 export const PAGE_KEYS = Object.keys(PAGE_SECTION_KEYS) as Array<keyof typeof PAGE_SECTION_KEYS>;
