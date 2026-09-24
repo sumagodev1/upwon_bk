@@ -18,6 +18,7 @@ import { seedErpOutcomes } from './erp-outcomes.seed';
 import { seedErpEstablishers } from './erp-establishers.seed';
 import { seedSfaDmsPage } from './sfa-dms.seed';
 import { seedFmsPage } from './fms.seed';
+import { seedPosPage } from './pos.seed';
 import { logger } from '../../core/utils/logger';
 
 /**
@@ -1136,6 +1137,53 @@ const FMS_SECTION_COPY: Array<{
   },
 ];
 
+/**
+ * The POS page's section copy: the FAQ and the closing band.
+ *
+ * The hero is absent on purpose, as on every other page - its five slides each
+ * carry their own eyebrow, headline and subhead.
+ */
+const POS_SECTION_COPY: Array<{
+  key: string;
+  eyebrow: string | null;
+  heading: string;
+  subtext: string | null;
+}> = [
+  {
+    key: 'faq',
+    eyebrow: 'FAQ',
+    heading: 'Questions Retail & F&B Owners **Ask Before They Commit.**',
+    subtext:
+      'Concrete, operational answers \u2014 hardware, offline billing, aggregator orders, GST and go-live time \u2014 not enterprise-style due diligence.',
+  },
+  {
+    key: 'cta',
+    eyebrow: 'Real Counters. Real Businesses. Real Growth.',
+    heading: 'See UpWon POS at Your Counter \u2014 **Live, in 30 Minutes.**',
+    subtext:
+      'A quick, focused conversation about your business, your counter, and how UpWon can help you grow.',
+  },
+];
+
+async function seedPosSectionCopy(client: PoolClient): Promise<number> {
+  const result = await client.query(
+    `
+    INSERT INTO page_section_copy (page_key, section_key, eyebrow, heading, subtext)
+    SELECT 'pos', u.key, u.eyebrow, u.heading, u.subtext
+      FROM unnest($1::text[], $2::text[], $3::text[], $4::text[])
+        AS u(key, eyebrow, heading, subtext)
+    ON CONFLICT (page_key, section_key) DO NOTHING
+    `,
+    [
+      POS_SECTION_COPY.map((s) => s.key),
+      POS_SECTION_COPY.map((s) => s.eyebrow),
+      POS_SECTION_COPY.map((s) => s.heading),
+      POS_SECTION_COPY.map((s) => s.subtext),
+    ],
+  );
+  return result.rowCount ?? 0;
+}
+
 async function seedFmsSectionCopy(client: PoolClient): Promise<number> {
   const result = await client.query(
     `
@@ -1345,6 +1393,8 @@ async function main(): Promise<void> {
       const sfaDmsPage = await seedSfaDmsPage(client);
       const fmsSectionCopyCount = await seedFmsSectionCopy(client);
       const fmsPage = await seedFmsPage(client);
+      const posSectionCopyCount = await seedPosSectionCopy(client);
+      const posPage = await seedPosPage(client);
       const rootAdmin = await seedRootAdmin(client);
       return {
         permissionCount,
@@ -1371,6 +1421,8 @@ async function main(): Promise<void> {
         sfaDmsPage,
         fmsSectionCopyCount,
         fmsPage,
+        posSectionCopyCount,
+        posPage,
         rootAdmin,
       };
     });
@@ -1440,6 +1492,10 @@ async function main(): Promise<void> {
       fmsAlternativesCells: summary.fmsPage.alternativesCells,
       fmsOutcomeStories: summary.fmsPage.outcomeStories,
       fmsOutcomeStats: summary.fmsPage.outcomeStats,
+      posSectionCopy: summary.posSectionCopyCount,
+      posHeroSlides: summary.posPage.heroSlides,
+      posFaqEntries: summary.posPage.faqEntries,
+      posCtaSection: summary.posPage.ctaSection,
       rootAdminEmail: summary.rootAdmin.email,
       rootAdminCreated: summary.rootAdmin.created,
     });

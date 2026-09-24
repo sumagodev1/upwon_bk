@@ -497,6 +497,18 @@ export const AUDIT_ACTIONS = {
   FMS_OUTCOME_STAT_DELETED: 'FMS_OUTCOME_STAT_DELETED',
   FMS_OUTCOME_STATS_REORDERED: 'FMS_OUTCOME_STATS_REORDERED',
 
+  POS_HERO_SLIDE_CREATED: 'POS_HERO_SLIDE_CREATED',
+  POS_HERO_SLIDE_UPDATED: 'POS_HERO_SLIDE_UPDATED',
+  POS_HERO_SLIDE_DELETED: 'POS_HERO_SLIDE_DELETED',
+  POS_HERO_SLIDES_REORDERED: 'POS_HERO_SLIDES_REORDERED',
+
+  POS_FAQ_ENTRY_CREATED: 'POS_FAQ_ENTRY_CREATED',
+  POS_FAQ_ENTRY_UPDATED: 'POS_FAQ_ENTRY_UPDATED',
+  POS_FAQ_ENTRY_DELETED: 'POS_FAQ_ENTRY_DELETED',
+  POS_FAQ_ENTRIES_REORDERED: 'POS_FAQ_ENTRIES_REORDERED',
+
+  POS_CTA_SECTION_UPDATED: 'POS_CTA_SECTION_UPDATED',
+
   UNAUTHORIZED_ACCESS_ATTEMPT: 'UNAUTHORIZED_ACCESS_ATTEMPT',
 } as const;
 
@@ -697,6 +709,10 @@ export const LIMITS = {
    */
   MAX_FMS_OUTCOME_STORIES: 8,
   MAX_FMS_OUTCOME_STATS: 3,
+
+  /** The POS page, on the same caps as the FMS page's equivalents. */
+  MAX_POS_HERO_SLIDES: 12,
+  MAX_POS_FAQ_ENTRIES: 24,
 } as const;
 
 // ── Publicly served uploads ──────────────────────────────────────────────
@@ -744,6 +760,8 @@ export const PUBLIC_FILE_ENTITY_TYPES = [
   'fms_video',
   'fms_outcome_logo',
   'fms_outcome_photo',
+  'pos_hero_slide',
+  'pos_cta_image',
   'fms_integration_logo',
   'fms_integration_centre_logo',
   'sfa_video',
@@ -835,6 +853,11 @@ export const PAGE_SECTION_KEYS = {
     'faq',
     'cta',
   ],
+  /*
+   * The hero is absent on purpose, here as on the other pages: its slides each
+   * carry their own eyebrow, headline and subhead.
+   */
+  pos: ['faq', 'cta'],
 } as const;
 
 export const PAGE_KEYS = Object.keys(PAGE_SECTION_KEYS) as Array<keyof typeof PAGE_SECTION_KEYS>;

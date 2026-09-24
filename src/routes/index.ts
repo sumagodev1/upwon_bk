@@ -21,6 +21,7 @@ import sfaDmsPageRoutes, {
   publicSfaDmsPageRouter,
 } from '../modules/product-pages/sfa-dms-page/routes';
 import fmsPageRoutes, { publicFmsPageRouter } from '../modules/product-pages/fms-page/routes';
+import posPageRoutes, { publicPosPageRouter } from '../modules/product-pages/pos-page/routes';
 
 const router = Router();
 
@@ -35,6 +36,7 @@ router.use('/public/home-page', publicHomePageRouter);
 router.use('/public/erp-page', publicErpPageRouter);
 router.use('/public/sfa-dms-page', publicSfaDmsPageRouter);
 router.use('/public/fms-page', publicFmsPageRouter);
+router.use('/public/pos-page', publicPosPageRouter);
 
 // Public: the images those sections reference. Serves only uploads that opted
 // in by entity type - see PUBLIC_FILE_ENTITY_TYPES and fileService.getPublicImage.
@@ -61,5 +63,6 @@ router.use('/home-page', homePageRoutes);
 router.use('/erp-page', erpPageRoutes);
 router.use('/sfa-dms-page', sfaDmsPageRoutes);
 router.use('/fms-page', fmsPageRoutes);
+router.use('/pos-page', posPageRoutes);
 
 export default router;

@@ -46,6 +46,10 @@ export type ImageSlot =
   | 'fmsFranchisePhoto'
   | 'fmsOutcomeLogo'
   | 'fmsOutcomePhoto'
+  | 'posHero'
+  | 'posHeroMobile'
+  | 'posCtaDesktop'
+  | 'posCtaMobile'
   | 'erpCtaDesktop'
   | 'erpCtaMobile'
   | 'erpIndustry'
@@ -238,6 +242,23 @@ export const IMAGE_SPECS: Readonly<Record<ImageSlot, ImageSpec>> = {
    * hence the ratio rule, and hence keeping the subject left of centre.
    */
   fmsOutcomePhoto: { label: 'Background photo', width: 1600, height: 566, ratioTolerance: 0.2 },
+
+  /*
+   * The POS slider banners - public/images/pos_hero1..5 are all 1600x566, the
+   * same wide band the FMS and SFA-DMS heroes use. Covered, so a differently
+   * shaped upload is cropped rather than letterboxed; hence the ratio rule.
+   */
+  posHero: { label: 'Desktop image', width: 1600, height: 566, ratioTolerance: 0.2 },
+  posHeroMobile: { label: 'Mobile image', width: 800, height: 1200, ratioTolerance: 0.2 },
+  /*
+   * The closing band's artwork - public/images/cta_pos_desktop.webp is
+   * 1600x566 and the phone crop is 828x1899. Both bg-cover, so both crop and
+   * both carry a ratio rule. The desktop art keeps its counter mockup on the
+   * left with the copy over the wash on the right, which is why a differently
+   * shaped upload would put the text over the mockup.
+   */
+  posCtaDesktop: { label: 'Desktop artwork', width: 1600, height: 566, ratioTolerance: 0.2 },
+  posCtaMobile: { label: 'Mobile artwork', width: 828, height: 1899, ratioTolerance: 0.2 },
 
   /*
    * The portrait on an outcome card.
