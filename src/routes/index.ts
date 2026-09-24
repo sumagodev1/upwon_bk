@@ -16,6 +16,11 @@ import notificationRoutes from '../modules/notifications/routes/notification.rou
 import apiKeyRoutes from '../modules/api-keys/routes/api-key.routes';
 import fileRoutes, { publicFileRouter } from '../modules/files/routes/file.routes';
 import homePageRoutes, { publicHomePageRouter } from '../modules/home-page/routes';
+import erpPageRoutes, { publicErpPageRouter } from '../modules/product-pages/erp-page/routes';
+import sfaDmsPageRoutes, {
+  publicSfaDmsPageRouter,
+} from '../modules/product-pages/sfa-dms-page/routes';
+import fmsPageRoutes, { publicFmsPageRouter } from '../modules/product-pages/fms-page/routes';
 
 const router = Router();
 
@@ -27,6 +32,9 @@ router.use('/auth', authRoutes);
 // section's public router is read-only and returns a narrowed shape - see
 // modules/home-page/routes/hero-section.routes.ts.
 router.use('/public/home-page', publicHomePageRouter);
+router.use('/public/erp-page', publicErpPageRouter);
+router.use('/public/sfa-dms-page', publicSfaDmsPageRouter);
+router.use('/public/fms-page', publicFmsPageRouter);
 
 // Public: the images those sections reference. Serves only uploads that opted
 // in by entity type - see PUBLIC_FILE_ENTITY_TYPES and fileService.getPublicImage.
@@ -50,5 +58,8 @@ router.use('/notifications', notificationRoutes);
 router.use('/api-keys', apiKeyRoutes);
 router.use('/files', fileRoutes);
 router.use('/home-page', homePageRoutes);
+router.use('/erp-page', erpPageRoutes);
+router.use('/sfa-dms-page', sfaDmsPageRoutes);
+router.use('/fms-page', fmsPageRoutes);
 
 export default router;

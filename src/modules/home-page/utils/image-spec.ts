@@ -20,7 +20,34 @@ import { ImageDimensions } from './image-dimensions';
  * would reject valid artwork for no benefit.
  */
 
-export type ImageSlot = 'heroDesktop' | 'heroMobile' | 'trustLogo' | 'valuesCard';
+export type ImageSlot =
+  | 'heroDesktop'
+  | 'heroMobile'
+  | 'trustLogo'
+  | 'valuesCard'
+  | 'integrationsLogo'
+  | 'integrationsCentreLogo'
+  | 'testimonialPoster'
+  | 'ctaDesktop'
+  | 'ctaMobile'
+  | 'erpHero'
+  | 'erpHeroMobile'
+  | 'sfaHero'
+  | 'sfaHeroMobile'
+  | 'sfaCtaBackground'
+  | 'sfaCtaDashboard'
+  | 'sfaComplianceBackground'
+  | 'sfaOutcomePortrait'
+  | 'fmsHero'
+  | 'fmsHeroMobile'
+  | 'fmsCtaDesktop'
+  | 'fmsCtaMobile'
+  | 'erpCtaDesktop'
+  | 'erpCtaMobile'
+  | 'erpIndustry'
+  | 'erpAvatar'
+  | 'erpOutcome'
+  | 'erpDashboard';
 
 export interface ImageSpec {
   /** Used in the error message, so it reads as the field the admin sees. */
@@ -53,6 +80,207 @@ export const IMAGE_SPECS: Readonly<Record<ImageSlot, ImageSpec>> = {
    * on the live cards, which is exactly what the ratio rule exists to catch.
    */
   valuesCard: { label: 'Card image', width: 800, height: 600, ratioTolerance: 0.2 },
+  /*
+   * The sixteen brand marks in public/images/platform_integration_client are
+   * all 300-303px wide, with heights from 39 (Oracle) to 148 (SAP) - a ratio
+   * spread of 2.0 to 7.7. That spread is why the ratio is not checked: the
+   * badge renders object-contain inside a fixed box, so a squat roundel and a
+   * long wordmark both come out correct, and a ratio rule would reject the
+   * section's own artwork.
+   *
+   * Width is the rule that matters. The badge is 14.8% of the sphere, which
+   * at the 640px cap is 95px, so 300px stays sharp past 2x DPR. The height
+   * floor sits just under the shortest existing mark rather than at a round
+   * number, so a re-export of the Oracle wordmark is not rejected on a
+   * technicality while a thumbnail still is.
+   */
+  integrationsLogo: { label: 'Logo', width: 300, height: 36, ratioTolerance: null },
+  /*
+   * The mark at the core of the sphere - public/upwon-logo.png is 500x237.
+   *
+   * Rendered at 80% of a circle 28% of the sphere wide, so 143px at the cap;
+   * 300px is the 2x size. object-contain again, so no ratio check: the core is
+   * a glow behind whatever shape the mark is, not a frame that crops it.
+   */
+  integrationsCentreLogo: {
+    label: 'Centre logo',
+    width: 300,
+    height: 140,
+    ratioTolerance: null,
+  },
+  /*
+   * The still behind a testimonial card, taken from the rendered box rather
+   * than the current files.
+   *
+   * The card is 280px tall and either 280 or 576 wide - which one depends on
+   * its position in the marquee's WIDE_PATTERN, not on anything the author
+   * controls. So there is no single target ratio to check against: the same
+   * photo is cropped to 1:1 in one slot and 2:1 in another, and a rule aimed
+   * at either shape would be wrong for the other. Hence a null tolerance here
+   * for a different reason than the logos have one - those are object-contain
+   * and keep their shape; this is object-cover and will be cropped whatever
+   * shape it is.
+   *
+   * The floor is the widest card at 2x DPR (1152x560) reconciled with the
+   * eight posters the section ships, which are all 900 wide with heights from
+   * 599 to 1350. 900 is what the existing content actually is; 560 is the
+   * card's own height doubled. Anything smaller is visibly soft.
+   */
+  testimonialPoster: { label: 'Poster image', width: 900, height: 560, ratioTolerance: null },
+  /*
+   * The collage behind the report-download band, desktop half.
+   *
+   * public/images/home_cta.webp is 1600x566 - the same band as the hero
+   * background, which is what it was cut from. Rendered bg-contain, so unlike
+   * the hero it is never cropped: a differently shaped image just occupies
+   * less of the left half. That is why there is no ratio rule here even though
+   * the hero's identically sized slot has one.
+   */
+  ctaDesktop: { label: 'Desktop image', width: 1600, height: 566, ratioTolerance: null },
+  /*
+   * The same collage re-cut for phones - public/images/home_cta_mb.webp, at
+   * 440x956.
+   *
+   * This one is bg-cover, so it does crop, and a landscape upload would lose
+   * its top and bottom entirely. Hence a ratio rule where the desktop slot has
+   * none. The floor is the shipped asset's own size rather than a 2x figure:
+   * it is a background behind text, not detail anyone reads.
+   */
+  ctaMobile: { label: 'Mobile image', width: 440, height: 956, ratioTolerance: 0.2 },
+
+  // ── ERP product page ────────────────────────────────────────────────────
+  /*
+   * The five slider backgrounds in public/images are all 1536x1024 - a clean
+   * 3:2 - and the slider covers its box with them, so a differently shaped
+   * upload is cropped rather than letterboxed. Ratio checked for that reason.
+   */
+  /*
+   * The SFA-DMS slider. A wide banner, unlike the ERP page's 3:2 slides -
+   * public/images/sfa_dms_hero1..6 are 1600x566, except hero4 at 1600x565,
+   * which is why the minimum is 565.
+   */
+  sfaHero: { label: 'Desktop image', width: 1600, height: 565, ratioTolerance: 0.2 },
+  sfaHeroMobile: { label: 'Mobile image', width: 800, height: 1200, ratioTolerance: 0.2 },
+  /* The closing band: sfa_dms_cta and sfa_dms_dashboard are both 1536x1024. */
+  sfaCtaBackground: {
+    label: 'Band background',
+    width: 1536,
+    height: 1024,
+    ratioTolerance: 0.2,
+  },
+  sfaCtaDashboard: {
+    label: 'Dashboard screenshot',
+    width: 1536,
+    height: 1024,
+    ratioTolerance: 0.2,
+  },
+  /*
+   * The artwork behind the compliance panel - public/images/built card
+   * image.webp is 1432x904.
+   *
+   * Drawn bg-cover and anchored bg-right, with the badge column sitting over
+   * its left two-thirds, so a differently shaped upload is cropped rather
+   * than letterboxed and the part that shows is the right-hand side. Hence a
+   * ratio rule, and a floor at the shipped asset rather than a round number.
+   */
+  // ── FMS product page ────────────────────────────────────────────────────
+  /*
+   * The slider banners - public/images/fms_hero1..4 are all 1600x566, the same
+   * wide band the SFA-DMS and home heroes use. Covered, so a differently shaped
+   * upload is cropped rather than letterboxed; hence the ratio rule.
+   */
+  fmsHero: { label: 'Desktop image', width: 1600, height: 566, ratioTolerance: 0.2 },
+  fmsHeroMobile: { label: 'Mobile image', width: 800, height: 1200, ratioTolerance: 0.2 },
+  /*
+   * The closing band's artwork - public/images/CTA FMS.webp is 2116x743, and
+   * the phone crop is 853x1844. Both bg-cover, so both crop and both carry a
+   * ratio rule. The desktop art keeps its photograph on the left third with a
+   * light panel on the right that the copy sits in, which is why a differently
+   * shaped upload would put the text over the photo.
+   */
+  fmsCtaDesktop: { label: 'Desktop artwork', width: 2116, height: 743, ratioTolerance: 0.2 },
+  fmsCtaMobile: { label: 'Mobile artwork', width: 853, height: 1844, ratioTolerance: 0.2 },
+
+  /*
+   * The portrait on an outcome card.
+   *
+   * No ratio rule, and a floor well under what the tile wants. The tile is a
+   * square drawn with object-cover at up to 256px, so it really wants a
+   * square around 512x512 - but the four portraits the section ships are
+   * 148px-tall landscape thumbnails (192x148 to 270x148), and a rule the
+   * live content cannot pass only blocks whoever replaces it. The floor is
+   * the smallest shipped asset; the admin hint carries the recommendation.
+   */
+  sfaOutcomePortrait: {
+    label: 'Portrait',
+    width: 192,
+    height: 148,
+    ratioTolerance: null,
+  },
+  sfaComplianceBackground: {
+    label: 'Panel artwork',
+    width: 1432,
+    height: 904,
+    ratioTolerance: 0.2,
+  },
+  erpHero: { label: 'Slide background', width: 1536, height: 1024, ratioTolerance: 0.2 },
+  /*
+   * The phone crop of the same slide.
+   *
+   * Portrait, because a 3:2 photograph cropped into a tall viewport keeps its
+   * middle and loses both ends. Same shape as the home page hero's mobile
+   * image, so the two heroes want the same artwork from a designer.
+   */
+  erpHeroMobile: {
+    label: 'Mobile image',
+    width: 800,
+    height: 1200,
+    ratioTolerance: 0.2,
+  },
+  /*
+   * public/images/erp_cta.webp is 1600x566, the same wide band as the home
+   * hero. bg-cover here, not the home CTA's bg-contain, so this one does crop
+   * and does carry a ratio rule.
+   */
+  erpCtaDesktop: { label: 'Desktop image', width: 1600, height: 566, ratioTolerance: 0.2 },
+  /*
+   * public/images/erp_cta_mobile.webp is 831x1891 - a tall crop of the same
+   * artwork, also bg-cover.
+   */
+  erpCtaMobile: { label: 'Mobile image', width: 831, height: 1891, ratioTolerance: 0.2 },
+  /*
+   * The industry switcher's panel artwork - bakery.webp and its siblings are
+   * 905px wide with heights from 678 to 859, a ratio spread of 1.05 to 1.33.
+   * That spread is the reason there is no ratio rule: the set the section
+   * ships is not consistent enough for one to be anything but a nuisance.
+   */
+  erpIndustry: { label: 'Industry image', width: 905, height: 600, ratioTolerance: null },
+  /*
+   * The portrait beside the benefits-journey proof.
+   *
+   * Drawn at 48x48 as a circle with object-cover, so anything far from square
+   * loses its edges. The shipped set are 200px square crops, which is the
+   * smallest that still looks clean on a high-density screen.
+   */
+  erpAvatar: { label: 'Portrait', width: 200, height: 200, ratioTolerance: 0.2 },
+  /*
+   * The photograph down the side of an outcome card.
+   *
+   * No ratio rule, unusually for a cover crop: the same file is drawn as a
+   * tall panel beside the text on desktop and as a short full-width banner on
+   * mobile, so there is no one shape that suits both and a rule tuned to
+   * either would reject images that look right on the other.
+   */
+  erpOutcome: { label: 'Card photograph', width: 900, height: 600, ratioTolerance: null },
+  /*
+   * The dashboard mockup - public/images/dashboard.webp is 1448x1086, a 4:3.
+   *
+   * Drawn as a background at 112% width and panned vertically as the visitor
+   * scrolls, so it is cropped on every axis and a very different shape would
+   * pan through empty space. Hence a ratio rule, unlike the industry photos
+   * beside it, which are shown whole.
+   */
+  erpDashboard: { label: 'Dashboard image', width: 1448, height: 1086, ratioTolerance: 0.2 },
 };
 
 export const describeImageSpec = (slot: ImageSlot): string => {

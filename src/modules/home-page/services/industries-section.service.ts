@@ -11,7 +11,7 @@ import { buildPaginationMeta, PaginationMeta } from '../../../core/utils/paginat
 import * as auditLogService from '../../audit-logs/services/audit-log.service';
 import * as fileRepository from '../../files/repositories/file.repository';
 import * as industriesRepository from '../repositories/industries-section.repository';
-import { parseHeading } from '../utils/heading-markup';
+import * as sectionCopyService from './section-copy.service';
 import {
   CreateIndustriesEntryInput,
   IndustriesEntry,
@@ -40,7 +40,6 @@ const resolveVideo = async (entry: IndustriesEntry): Promise<string | null> => {
 
 const toResolved = async (entry: IndustriesEntry): Promise<ResolvedIndustriesEntry> => ({
   ...entry,
-  headingLines: parseHeading(entry.heading),
   video: await resolveVideo(entry),
 });
 
@@ -93,7 +92,7 @@ const assertNoOtherActive = async (
   if (!active || active.id === excludeId) return;
 
   throw new ConflictError(
-    `"${active.eyebrow}" is already the live entry, and this section shows one at a time. Deactivate or delete it first.`,
+    `Another entry is already live, and this section shows one at a time. Deactivate or delete it first.`,
   );
 };
 
@@ -129,11 +128,14 @@ export const getPublished = async (): Promise<PublicIndustriesSection | null> =>
   const first = resolved.find((entry) => entry.video !== null);
   if (!first || !first.video) return null;
 
+  const copy = await sectionCopyService.get('home', 'industries');
+  if (!copy) return null;
+
   return {
-    eyebrow: first.eyebrow,
-    heading: first.heading,
-    headingLines: first.headingLines,
-    subtext: first.subtext,
+    eyebrow: copy.eyebrow,
+    heading: copy.heading,
+    headingLines: copy.headingLines,
+    subtext: copy.subtext ?? '',
     video: first.video,
   };
 };
@@ -170,7 +172,7 @@ export const create = async (
         module: MODULE,
         entityType: ENTITY,
         entityId: created.id,
-        newValues: { eyebrow: created.eyebrow, status: created.status },
+        newValues: { videoUrl: created.videoUrl, status: created.status },
       },
       context,
       client,
@@ -204,8 +206,8 @@ export const update = async (
         module: MODULE,
         entityType: ENTITY,
         entityId: id,
-        oldValues: { eyebrow: existing.eyebrow, status: existing.status },
-        newValues: { eyebrow: updated.eyebrow, status: updated.status },
+        oldValues: { videoUrl: existing.videoUrl, status: existing.status },
+        newValues: { videoUrl: updated.videoUrl, status: updated.status },
       },
       context,
       client,
@@ -327,7 +329,7 @@ export const remove = async (id: string, context: RequestContext): Promise<void>
         module: MODULE,
         entityType: ENTITY,
         entityId: id,
-        oldValues: { eyebrow: existing.eyebrow },
+        oldValues: { videoUrl: existing.videoUrl },
       },
       context,
       client,

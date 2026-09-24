@@ -4,7 +4,6 @@ import { CONTENT_STATUSES, LIMITS } from '../../../config/constants';
 import { PaginationParams } from '../../../core/types/common.types';
 import { parsePagination } from '../../../core/utils/pagination';
 import { validator, Validator } from '../../../core/utils/validation';
-import { hasBalancedAccentMarkers } from '../utils/heading-markup';
 import {
   CreateIndustriesEntryInput,
   IndustriesEntryFilters,
@@ -13,8 +12,6 @@ import {
 } from '../types/industries-section.types';
 
 /** Matched against the source text, so the limits are authoring limits. */
-const HEADING_MAX = 300;
-const SUBTEXT_MAX = 600;
 const VIDEO_URL_MAX = 1000;
 
 /**
@@ -53,16 +50,6 @@ function validateVideoUrl(v: Validator, field: string, value: string): void {
 export function validateCreateIndustriesEntry(body: unknown): CreateIndustriesEntryInput {
   const v = validator(body);
 
-  const heading = v.requiredString('heading', { min: 3, max: HEADING_MAX });
-  if (heading) {
-    v.custom(
-      hasBalancedAccentMarkers(heading),
-      'heading',
-      'heading has an unclosed ** accent marker; wrap accented words as **like this**',
-      'UNBALANCED_ACCENT_MARKER',
-    );
-  }
-
   const videoUrl = v.optionalString('videoUrl', { max: VIDEO_URL_MAX }) ?? null;
   if (videoUrl) validateVideoUrl(v, 'videoUrl', videoUrl);
 
@@ -86,9 +73,6 @@ export function validateCreateIndustriesEntry(body: unknown): CreateIndustriesEn
   );
 
   const dto: CreateIndustriesEntryInput = {
-    eyebrow: v.requiredString('eyebrow', { min: 2, max: 120 }),
-    heading,
-    subtext: v.requiredString('subtext', { min: 3, max: SUBTEXT_MAX }),
     videoUrl,
     videoFileId,
     // Left undefined on purpose when absent - the service appends to the end.
@@ -104,26 +88,11 @@ export function validateUpdateIndustriesEntry(body: unknown): UpdateIndustriesEn
   const v = validator(body);
 
   v.requireAtLeastOne([
-    'eyebrow',
-    'heading',
-    'subtext',
     'videoUrl',
     'videoFileId',
     'displayOrder',
     'status',
   ]);
-
-  const heading = v.has('heading')
-    ? v.requiredString('heading', { min: 3, max: HEADING_MAX })
-    : undefined;
-  if (heading) {
-    v.custom(
-      hasBalancedAccentMarkers(heading),
-      'heading',
-      'heading has an unclosed ** accent marker; wrap accented words as **like this**',
-      'UNBALANCED_ACCENT_MARKER',
-    );
-  }
 
   // `null` clears the field; `undefined` (absent) leaves it alone. optionalString
   // conflates the two, so the presence check has to be explicit.
@@ -154,9 +123,6 @@ export function validateUpdateIndustriesEntry(body: unknown): UpdateIndustriesEn
   );
 
   const dto: UpdateIndustriesEntryInput = {
-    eyebrow: v.optionalString('eyebrow', { min: 2, max: 120 }),
-    heading,
-    subtext: v.optionalString('subtext', { min: 3, max: SUBTEXT_MAX }),
     videoUrl,
     videoFileId,
     displayOrder: v.optionalNumber('displayOrder', { min: 0, max: 9999, integer: true }),

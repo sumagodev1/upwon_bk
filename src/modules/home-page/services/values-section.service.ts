@@ -12,7 +12,7 @@ import { getStorageProvider } from '../../../storage/storage.factory';
 import * as auditLogService from '../../audit-logs/services/audit-log.service';
 import * as fileRepository from '../../files/repositories/file.repository';
 import * as valuesRepository from '../repositories/values-section.repository';
-import { parseHeading } from '../utils/heading-markup';
+import * as sectionCopyService from './section-copy.service';
 import { checkImageDimensions } from '../utils/image-spec';
 import { readImageDimensions } from '../utils/image-dimensions';
 import {
@@ -43,7 +43,6 @@ const resolveImage = async (entry: ValuesEntry): Promise<string | null> => {
 
 const toResolved = async (entry: ValuesEntry): Promise<ResolvedValuesEntry> => ({
   ...entry,
-  headingLines: parseHeading(entry.heading),
   image: await resolveImage(entry),
 });
 
@@ -119,8 +118,15 @@ export const getPublished = async (): Promise<PublicValuesSection | null> => {
   const entries = await valuesRepository.findPublished();
   if (entries.length === 0) return null;
 
+  /*
+   * The section's copy lives in home_section_copy, not on these rows, so a
+   * section with entries but no copy authored yet has nothing to head them
+   * with - which reads as "not published" rather than as a bare list.
+   */
+  const copy = await sectionCopyService.get('home', 'values');
+  if (!copy) return null;
+
   const resolved = await toResolvedMany(entries);
-  const first = resolved[0];
 
   const cards = resolved.flatMap((entry) =>
     entry.image
@@ -132,10 +138,10 @@ export const getPublished = async (): Promise<PublicValuesSection | null> => {
   if (cards.length === 0) return null;
 
   return {
-    eyebrow: first.eyebrow,
-    heading: first.heading,
-    headingLines: first.headingLines,
-    subtext: first.subtext,
+    eyebrow: copy.eyebrow,
+    heading: copy.heading,
+    headingLines: copy.headingLines,
+    subtext: copy.subtext ?? '',
     cards,
   };
 };

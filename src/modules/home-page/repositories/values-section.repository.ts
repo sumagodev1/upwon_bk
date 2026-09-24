@@ -17,7 +17,6 @@ import {
  */
 
 const SORT_COLUMNS: Readonly<Record<string, string>> = {
-  eyebrow: 've.eyebrow',
   cardTitle: 've.card_title',
   displayOrder: 've.display_order',
   status: 've.status',
@@ -31,9 +30,6 @@ const SORT_COLUMNS: Readonly<Record<string, string>> = {
  * absent because it comes from the request context, never from the body.
  */
 const UPDATABLE_COLUMNS: Readonly<Record<string, string>> = {
-  eyebrow: 'eyebrow',
-  heading: 'heading',
-  subtext: 'subtext',
   cardTitle: 'card_title',
   cardBody: 'card_body',
   displayOrder: 'display_order',
@@ -41,22 +37,19 @@ const UPDATABLE_COLUMNS: Readonly<Record<string, string>> = {
 } as const;
 
 const QUALIFIED_COLUMNS = `
-  ve.id, ve.eyebrow, ve.heading, ve.subtext, ve.image_url, ve.image_file_id,
+  ve.id, ve.image_url, ve.image_file_id,
   ve.card_title, ve.card_body, ve.display_order, ve.status,
   ve.created_by, ve.updated_by, ve.created_at, ve.updated_at
 `;
 
 const RETURNING_COLUMNS = `
-  id, eyebrow, heading, subtext, image_url, image_file_id,
+  id, image_url, image_file_id,
   card_title, card_body, display_order, status,
   created_by, updated_by, created_at, updated_at
 `;
 
 interface EntryRow {
   id: string;
-  eyebrow: string;
-  heading: string;
-  subtext: string;
   image_url: string | null;
   image_file_id: string | null;
   card_title: string;
@@ -71,9 +64,6 @@ interface EntryRow {
 
 const toEntry = (row: EntryRow): ValuesEntry => ({
   id: row.id,
-  eyebrow: row.eyebrow,
-  heading: row.heading,
-  subtext: row.subtext,
   imageUrl: row.image_url,
   imageFileId: row.image_file_id,
   cardTitle: row.card_title,
@@ -131,9 +121,8 @@ export const findAll = async (
   });
   if (pagination.search) {
     builder.raw(
-      `(ve.eyebrow ILIKE ? OR ve.heading ILIKE ? OR ve.subtext ILIKE ?
-        OR ve.card_title ILIKE ? OR ve.card_body ILIKE ?)`,
-      ...Array.from({ length: 5 }, () => `%${pagination.search}%`),
+      '(ve.card_title ILIKE ? OR ve.card_body ILIKE ?)',
+      ...Array.from({ length: 2 }, () => `%${pagination.search}%`),
     );
   }
 
@@ -200,15 +189,12 @@ export const create = async (
 ): Promise<ValuesEntry> => {
   const sql = `
     INSERT INTO home_values_entries
-      (eyebrow, heading, subtext, image_url, image_file_id,
+      (image_url, image_file_id,
        card_title, card_body, display_order, status, created_by, updated_by)
-    VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $10)
+    VALUES ($1, $2, $3, $4, $5, $6, $7, $7)
     RETURNING ${RETURNING_COLUMNS}
   `;
   const result = await runQuery<EntryRow>(executor, sql, [
-    input.eyebrow,
-    input.heading,
-    input.subtext,
     input.imageUrl,
     input.imageFileId,
     input.cardTitle,

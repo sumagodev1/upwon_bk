@@ -17,7 +17,6 @@ import {
  */
 
 const SORT_COLUMNS: Readonly<Record<string, string>> = {
-  eyebrow: 'te.eyebrow',
   imageAlt: 'te.image_alt',
   statValue: 'te.stat_value',
   displayOrder: 'te.display_order',
@@ -32,9 +31,6 @@ const SORT_COLUMNS: Readonly<Record<string, string>> = {
  * absent because it comes from the request context, never from the body.
  */
 const UPDATABLE_COLUMNS: Readonly<Record<string, string>> = {
-  eyebrow: 'eyebrow',
-  heading: 'heading',
-  subtext: 'subtext',
   imageAlt: 'image_alt',
   statValue: 'stat_value',
   statLabel: 'stat_label',
@@ -43,22 +39,19 @@ const UPDATABLE_COLUMNS: Readonly<Record<string, string>> = {
 } as const;
 
 const QUALIFIED_COLUMNS = `
-  te.id, te.eyebrow, te.heading, te.subtext, te.image_url, te.image_file_id,
+  te.id, te.image_url, te.image_file_id,
   te.image_alt, te.stat_value, te.stat_label, te.display_order, te.status,
   te.created_by, te.updated_by, te.created_at, te.updated_at
 `;
 
 const RETURNING_COLUMNS = `
-  id, eyebrow, heading, subtext, image_url, image_file_id,
+  id, image_url, image_file_id,
   image_alt, stat_value, stat_label, display_order, status,
   created_by, updated_by, created_at, updated_at
 `;
 
 interface EntryRow {
   id: string;
-  eyebrow: string;
-  heading: string;
-  subtext: string;
   image_url: string | null;
   image_file_id: string | null;
   image_alt: string | null;
@@ -74,9 +67,6 @@ interface EntryRow {
 
 const toEntry = (row: EntryRow): TrustEntry => ({
   id: row.id,
-  eyebrow: row.eyebrow,
-  heading: row.heading,
-  subtext: row.subtext,
   imageUrl: row.image_url,
   imageFileId: row.image_file_id,
   imageAlt: row.image_alt,
@@ -131,9 +121,8 @@ export const findAll = async (
   });
   if (pagination.search) {
     builder.raw(
-      `(te.eyebrow ILIKE ? OR te.heading ILIKE ? OR te.subtext ILIKE ?
-        OR te.image_alt ILIKE ? OR te.stat_value ILIKE ? OR te.stat_label ILIKE ?)`,
-      ...Array.from({ length: 6 }, () => `%${pagination.search}%`),
+      `(te.image_alt ILIKE ? OR te.stat_value ILIKE ? OR te.stat_label ILIKE ?)`,
+      ...Array.from({ length: 3 }, () => `%${pagination.search}%`),
     );
   }
 
@@ -200,15 +189,12 @@ export const create = async (
 ): Promise<TrustEntry> => {
   const sql = `
     INSERT INTO home_trust_entries
-      (eyebrow, heading, subtext, image_url, image_file_id, image_alt,
+      (image_url, image_file_id, image_alt,
        stat_value, stat_label, display_order, status, created_by, updated_by)
-    VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $11)
+    VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $8)
     RETURNING ${RETURNING_COLUMNS}
   `;
   const result = await runQuery<EntryRow>(executor, sql, [
-    input.eyebrow,
-    input.heading,
-    input.subtext,
     input.imageUrl,
     input.imageFileId,
     input.imageAlt,

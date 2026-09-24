@@ -12,7 +12,7 @@ import { getStorageProvider } from '../../../storage/storage.factory';
 import * as auditLogService from '../../audit-logs/services/audit-log.service';
 import * as fileRepository from '../../files/repositories/file.repository';
 import * as trustRepository from '../repositories/trust-section.repository';
-import { parseHeading } from '../utils/heading-markup';
+import * as sectionCopyService from './section-copy.service';
 import { checkImageDimensions } from '../utils/image-spec';
 import { readImageDimensions } from '../utils/image-dimensions';
 import {
@@ -43,7 +43,6 @@ const resolveImage = async (entry: TrustEntry): Promise<string | null> => {
 
 const toResolved = async (entry: TrustEntry): Promise<ResolvedTrustEntry> => ({
   ...entry,
-  headingLines: parseHeading(entry.heading),
   image: await resolveImage(entry),
 });
 
@@ -120,14 +119,21 @@ export const getPublished = async (): Promise<PublicTrustSection | null> => {
   const entries = await trustRepository.findPublished();
   if (entries.length === 0) return null;
 
+  /*
+   * The section's copy lives in home_section_copy, not on these rows, so a
+   * section with entries but no copy authored yet has nothing to head them
+   * with - which reads as "not published" rather than as a bare list.
+   */
+  const copy = await sectionCopyService.get('home', 'trust');
+  if (!copy) return null;
+
   const resolved = await toResolvedMany(entries);
-  const first = resolved[0];
 
   return {
-    eyebrow: first.eyebrow,
-    heading: first.heading,
-    headingLines: first.headingLines,
-    subtext: first.subtext,
+    eyebrow: copy.eyebrow,
+    heading: copy.heading,
+    headingLines: copy.headingLines,
+    subtext: copy.subtext ?? '',
     // An entry whose asset went missing resolves to null and is dropped here,
     // rather than rendering as a broken image in the marquee.
     logos: resolved.flatMap((entry) =>
@@ -171,7 +177,6 @@ export const create = async (
         entityType: ENTITY,
         entityId: created.id,
         newValues: {
-          eyebrow: created.eyebrow,
           imageAlt: created.imageAlt,
           statValue: created.statValue,
           status: created.status,
@@ -208,13 +213,11 @@ export const update = async (
         entityType: ENTITY,
         entityId: id,
         oldValues: {
-          eyebrow: existing.eyebrow,
           imageAlt: existing.imageAlt,
           statValue: existing.statValue,
           status: existing.status,
         },
         newValues: {
-          eyebrow: updated.eyebrow,
           imageAlt: updated.imageAlt,
           statValue: updated.statValue,
           status: updated.status,
@@ -333,7 +336,7 @@ export const remove = async (id: string, context: RequestContext): Promise<void>
         module: MODULE,
         entityType: ENTITY,
         entityId: id,
-        oldValues: { eyebrow: existing.eyebrow, imageAlt: existing.imageAlt },
+        oldValues: { imageAlt: existing.imageAlt, statValue: existing.statValue },
       },
       context,
       client,

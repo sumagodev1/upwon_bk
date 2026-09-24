@@ -12,10 +12,6 @@ import { HeadingLine } from '../utils/heading-markup';
 
 export interface IndustriesEntry {
   id: string;
-  eyebrow: string;
-  /** Authored text, not HTML. Same two markers as the hero heading. */
-  heading: string;
-  subtext: string;
   /** An absolute URL or a site-relative path. Exclusive with videoFileId. */
   videoUrl: string | null;
   /** An asset uploaded through the files module. Exclusive with videoUrl. */
@@ -30,15 +26,11 @@ export interface IndustriesEntry {
 
 /** An entry with everything the renderer needs resolved. */
 export interface ResolvedIndustriesEntry extends IndustriesEntry {
-  headingLines: HeadingLine[];
   /** The two video sources collapsed into the one URL to actually play. */
   video: string | null;
 }
 
 export interface CreateIndustriesEntryInput {
-  eyebrow: string;
-  heading: string;
-  subtext: string;
   videoUrl: string | null;
   videoFileId: string | null;
   /** Omitted means "append to the end" - resolved by the service. */
@@ -51,9 +43,6 @@ export interface CreateIndustriesEntryInput {
  * clears the value, where `undefined` leaves it untouched.
  */
 export interface UpdateIndustriesEntryInput {
-  eyebrow?: string;
-  heading?: string;
-  subtext?: string;
   videoUrl?: string | null;
   videoFileId?: string | null;
   displayOrder?: number;
@@ -70,7 +59,7 @@ export interface ReorderIndustriesEntriesInput {
 
 /** The website-facing shape: the first active entry, ready to render. */
 export interface PublicIndustriesSection {
-  eyebrow: string;
+  eyebrow: string | null;
   heading: string;
   headingLines: HeadingLine[];
   subtext: string;

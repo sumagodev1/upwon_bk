@@ -259,6 +259,179 @@ export const AUDIT_ACTIONS = {
   HOME_VALUES_ENTRY_DELETED: 'HOME_VALUES_ENTRY_DELETED',
   HOME_VALUES_ENTRIES_REORDERED: 'HOME_VALUES_ENTRIES_REORDERED',
 
+  HOME_INTEGRATIONS_ENTRY_CREATED: 'HOME_INTEGRATIONS_ENTRY_CREATED',
+  HOME_INTEGRATIONS_ENTRY_UPDATED: 'HOME_INTEGRATIONS_ENTRY_UPDATED',
+  HOME_INTEGRATIONS_ENTRY_DELETED: 'HOME_INTEGRATIONS_ENTRY_DELETED',
+  HOME_INTEGRATIONS_ENTRIES_REORDERED: 'HOME_INTEGRATIONS_ENTRIES_REORDERED',
+
+  HOME_TESTIMONIAL_ENTRY_CREATED: 'HOME_TESTIMONIAL_ENTRY_CREATED',
+  HOME_TESTIMONIAL_ENTRY_UPDATED: 'HOME_TESTIMONIAL_ENTRY_UPDATED',
+  HOME_TESTIMONIAL_ENTRY_DELETED: 'HOME_TESTIMONIAL_ENTRY_DELETED',
+  HOME_TESTIMONIAL_ENTRIES_REORDERED: 'HOME_TESTIMONIAL_ENTRIES_REORDERED',
+
+  HOME_FAQ_ENTRY_CREATED: 'HOME_FAQ_ENTRY_CREATED',
+  HOME_FAQ_ENTRY_UPDATED: 'HOME_FAQ_ENTRY_UPDATED',
+  HOME_FAQ_ENTRY_DELETED: 'HOME_FAQ_ENTRY_DELETED',
+  HOME_FAQ_ENTRIES_REORDERED: 'HOME_FAQ_ENTRIES_REORDERED',
+
+  HOME_SECTION_COPY_UPDATED: 'HOME_SECTION_COPY_UPDATED',
+  HOME_CTA_SECTION_UPDATED: 'HOME_CTA_SECTION_UPDATED',
+
+  ERP_HERO_SLIDE_CREATED: 'ERP_HERO_SLIDE_CREATED',
+  ERP_HERO_SLIDE_UPDATED: 'ERP_HERO_SLIDE_UPDATED',
+  ERP_HERO_SLIDE_DELETED: 'ERP_HERO_SLIDE_DELETED',
+  ERP_HERO_SLIDES_REORDERED: 'ERP_HERO_SLIDES_REORDERED',
+
+  ERP_FAQ_ENTRY_CREATED: 'ERP_FAQ_ENTRY_CREATED',
+  ERP_FAQ_ENTRY_UPDATED: 'ERP_FAQ_ENTRY_UPDATED',
+  ERP_FAQ_ENTRY_DELETED: 'ERP_FAQ_ENTRY_DELETED',
+  ERP_FAQ_ENTRIES_REORDERED: 'ERP_FAQ_ENTRIES_REORDERED',
+
+  ERP_CTA_SECTION_UPDATED: 'ERP_CTA_SECTION_UPDATED',
+
+  ERP_TRUST_ENTRY_CREATED: 'ERP_TRUST_ENTRY_CREATED',
+  ERP_TRUST_ENTRY_UPDATED: 'ERP_TRUST_ENTRY_UPDATED',
+  ERP_TRUST_ENTRY_DELETED: 'ERP_TRUST_ENTRY_DELETED',
+  ERP_TRUST_ENTRIES_REORDERED: 'ERP_TRUST_ENTRIES_REORDERED',
+
+  ERP_INDUSTRY_CREATED: 'ERP_INDUSTRY_CREATED',
+  ERP_INDUSTRY_UPDATED: 'ERP_INDUSTRY_UPDATED',
+  ERP_INDUSTRY_DELETED: 'ERP_INDUSTRY_DELETED',
+  ERP_INDUSTRIES_REORDERED: 'ERP_INDUSTRIES_REORDERED',
+
+  ERP_INDUSTRY_FEATURE_CREATED: 'ERP_INDUSTRY_FEATURE_CREATED',
+  ERP_INDUSTRY_FEATURE_UPDATED: 'ERP_INDUSTRY_FEATURE_UPDATED',
+  ERP_INDUSTRY_FEATURE_DELETED: 'ERP_INDUSTRY_FEATURE_DELETED',
+  ERP_INDUSTRY_FEATURES_REORDERED: 'ERP_INDUSTRY_FEATURES_REORDERED',
+
+  ERP_INDUSTRY_BENEFIT_CREATED: 'ERP_INDUSTRY_BENEFIT_CREATED',
+  ERP_INDUSTRY_BENEFIT_UPDATED: 'ERP_INDUSTRY_BENEFIT_UPDATED',
+  ERP_INDUSTRY_BENEFIT_DELETED: 'ERP_INDUSTRY_BENEFIT_DELETED',
+  ERP_INDUSTRY_BENEFITS_REORDERED: 'ERP_INDUSTRY_BENEFITS_REORDERED',
+
+  ERP_JOURNEY_PERSONA_CREATED: 'ERP_JOURNEY_PERSONA_CREATED',
+  ERP_JOURNEY_PERSONA_UPDATED: 'ERP_JOURNEY_PERSONA_UPDATED',
+  ERP_JOURNEY_PERSONA_DELETED: 'ERP_JOURNEY_PERSONA_DELETED',
+  ERP_JOURNEY_PERSONAS_REORDERED: 'ERP_JOURNEY_PERSONAS_REORDERED',
+
+  ERP_JOURNEY_OUTCOME_CREATED: 'ERP_JOURNEY_OUTCOME_CREATED',
+  ERP_JOURNEY_OUTCOME_UPDATED: 'ERP_JOURNEY_OUTCOME_UPDATED',
+  ERP_JOURNEY_OUTCOME_DELETED: 'ERP_JOURNEY_OUTCOME_DELETED',
+  ERP_JOURNEY_OUTCOMES_REORDERED: 'ERP_JOURNEY_OUTCOMES_REORDERED',
+
+  ERP_JOURNEY_POINT_CREATED: 'ERP_JOURNEY_POINT_CREATED',
+  ERP_JOURNEY_POINT_UPDATED: 'ERP_JOURNEY_POINT_UPDATED',
+  ERP_JOURNEY_POINT_DELETED: 'ERP_JOURNEY_POINT_DELETED',
+  ERP_JOURNEY_POINTS_REORDERED: 'ERP_JOURNEY_POINTS_REORDERED',
+
+  ERP_JOURNEY_STAT_CREATED: 'ERP_JOURNEY_STAT_CREATED',
+  ERP_JOURNEY_STAT_UPDATED: 'ERP_JOURNEY_STAT_UPDATED',
+  ERP_JOURNEY_STAT_DELETED: 'ERP_JOURNEY_STAT_DELETED',
+  ERP_JOURNEY_STATS_REORDERED: 'ERP_JOURNEY_STATS_REORDERED',
+
+  COMPARISON_SECTION_UPDATED: 'COMPARISON_SECTION_UPDATED',
+
+  COMPARISON_COLUMN_CREATED: 'COMPARISON_COLUMN_CREATED',
+  COMPARISON_COLUMN_UPDATED: 'COMPARISON_COLUMN_UPDATED',
+  COMPARISON_COLUMN_DELETED: 'COMPARISON_COLUMN_DELETED',
+  COMPARISON_COLUMNS_REORDERED: 'COMPARISON_COLUMNS_REORDERED',
+
+  COMPARISON_CATEGORY_CREATED: 'COMPARISON_CATEGORY_CREATED',
+  COMPARISON_CATEGORY_UPDATED: 'COMPARISON_CATEGORY_UPDATED',
+  COMPARISON_CATEGORY_DELETED: 'COMPARISON_CATEGORY_DELETED',
+  COMPARISON_CATEGORIES_REORDERED: 'COMPARISON_CATEGORIES_REORDERED',
+
+  COMPARISON_ROW_CREATED: 'COMPARISON_ROW_CREATED',
+  COMPARISON_ROW_UPDATED: 'COMPARISON_ROW_UPDATED',
+  COMPARISON_ROW_DELETED: 'COMPARISON_ROW_DELETED',
+  COMPARISON_ROWS_REORDERED: 'COMPARISON_ROWS_REORDERED',
+
+  ERP_OUTCOME_CARD_CREATED: 'ERP_OUTCOME_CARD_CREATED',
+  ERP_OUTCOME_CARD_UPDATED: 'ERP_OUTCOME_CARD_UPDATED',
+  ERP_OUTCOME_CARD_DELETED: 'ERP_OUTCOME_CARD_DELETED',
+  ERP_OUTCOME_CARDS_REORDERED: 'ERP_OUTCOME_CARDS_REORDERED',
+
+  ERP_ESTABLISHER_BADGE_CREATED: 'ERP_ESTABLISHER_BADGE_CREATED',
+  ERP_ESTABLISHER_BADGE_UPDATED: 'ERP_ESTABLISHER_BADGE_UPDATED',
+  ERP_ESTABLISHER_BADGE_DELETED: 'ERP_ESTABLISHER_BADGE_DELETED',
+  ERP_ESTABLISHER_BADGES_REORDERED: 'ERP_ESTABLISHER_BADGES_REORDERED',
+
+  SFA_HERO_SLIDE_CREATED: 'SFA_HERO_SLIDE_CREATED',
+  SFA_HERO_SLIDE_UPDATED: 'SFA_HERO_SLIDE_UPDATED',
+  SFA_HERO_SLIDE_DELETED: 'SFA_HERO_SLIDE_DELETED',
+  SFA_HERO_SLIDES_REORDERED: 'SFA_HERO_SLIDES_REORDERED',
+
+  SFA_FAQ_ENTRY_CREATED: 'SFA_FAQ_ENTRY_CREATED',
+  SFA_FAQ_ENTRY_UPDATED: 'SFA_FAQ_ENTRY_UPDATED',
+  SFA_FAQ_ENTRY_DELETED: 'SFA_FAQ_ENTRY_DELETED',
+  SFA_FAQ_ENTRIES_REORDERED: 'SFA_FAQ_ENTRIES_REORDERED',
+
+  SFA_CTA_SECTION_UPDATED: 'SFA_CTA_SECTION_UPDATED',
+
+  SFA_PROOF_PANEL_UPDATED: 'SFA_PROOF_PANEL_UPDATED',
+
+  SFA_PROOF_LOGO_CREATED: 'SFA_PROOF_LOGO_CREATED',
+  SFA_PROOF_LOGO_UPDATED: 'SFA_PROOF_LOGO_UPDATED',
+  SFA_PROOF_LOGO_DELETED: 'SFA_PROOF_LOGO_DELETED',
+  SFA_PROOF_LOGOS_REORDERED: 'SFA_PROOF_LOGOS_REORDERED',
+
+  SFA_PROOF_STAT_CREATED: 'SFA_PROOF_STAT_CREATED',
+  SFA_PROOF_STAT_UPDATED: 'SFA_PROOF_STAT_UPDATED',
+  SFA_PROOF_STAT_DELETED: 'SFA_PROOF_STAT_DELETED',
+  SFA_PROOF_STATS_REORDERED: 'SFA_PROOF_STATS_REORDERED',
+
+  SFA_VIDEO_ENTRY_CREATED: 'SFA_VIDEO_ENTRY_CREATED',
+  SFA_VIDEO_ENTRY_UPDATED: 'SFA_VIDEO_ENTRY_UPDATED',
+  SFA_VIDEO_ENTRY_DELETED: 'SFA_VIDEO_ENTRY_DELETED',
+  SFA_VIDEO_ENTRIES_REORDERED: 'SFA_VIDEO_ENTRIES_REORDERED',
+
+  SFA_PACKAGE_CARD_CREATED: 'SFA_PACKAGE_CARD_CREATED',
+  SFA_PACKAGE_CARD_UPDATED: 'SFA_PACKAGE_CARD_UPDATED',
+  SFA_PACKAGE_CARD_DELETED: 'SFA_PACKAGE_CARD_DELETED',
+  SFA_PACKAGE_CARDS_REORDERED: 'SFA_PACKAGE_CARDS_REORDERED',
+
+  SFA_PACKAGE_FEATURE_CREATED: 'SFA_PACKAGE_FEATURE_CREATED',
+  SFA_PACKAGE_FEATURE_UPDATED: 'SFA_PACKAGE_FEATURE_UPDATED',
+  SFA_PACKAGE_FEATURE_DELETED: 'SFA_PACKAGE_FEATURE_DELETED',
+  SFA_PACKAGE_FEATURES_REORDERED: 'SFA_PACKAGE_FEATURES_REORDERED',
+
+  SFA_COMPLIANCE_SECTION_UPDATED: 'SFA_COMPLIANCE_SECTION_UPDATED',
+
+  SFA_COMPLIANCE_BADGE_CREATED: 'SFA_COMPLIANCE_BADGE_CREATED',
+  SFA_COMPLIANCE_BADGE_UPDATED: 'SFA_COMPLIANCE_BADGE_UPDATED',
+  SFA_COMPLIANCE_BADGE_DELETED: 'SFA_COMPLIANCE_BADGE_DELETED',
+  SFA_COMPLIANCE_BADGES_REORDERED: 'SFA_COMPLIANCE_BADGES_REORDERED',
+
+  SFA_ALTERNATIVES_SECTION_UPDATED: 'SFA_ALTERNATIVES_SECTION_UPDATED',
+  SFA_ALTERNATIVES_COLUMN_CREATED: 'SFA_ALTERNATIVES_COLUMN_CREATED',
+  SFA_ALTERNATIVES_COLUMN_UPDATED: 'SFA_ALTERNATIVES_COLUMN_UPDATED',
+  SFA_ALTERNATIVES_COLUMN_DELETED: 'SFA_ALTERNATIVES_COLUMN_DELETED',
+  SFA_ALTERNATIVES_COLUMNS_REORDERED: 'SFA_ALTERNATIVES_COLUMNS_REORDERED',
+  SFA_ALTERNATIVES_ROW_CREATED: 'SFA_ALTERNATIVES_ROW_CREATED',
+  SFA_ALTERNATIVES_ROW_UPDATED: 'SFA_ALTERNATIVES_ROW_UPDATED',
+  SFA_ALTERNATIVES_ROW_DELETED: 'SFA_ALTERNATIVES_ROW_DELETED',
+  SFA_ALTERNATIVES_ROWS_REORDERED: 'SFA_ALTERNATIVES_ROWS_REORDERED',
+  SFA_ALTERNATIVES_SUMMARY_UPDATED: 'SFA_ALTERNATIVES_SUMMARY_UPDATED',
+  SFA_ALTERNATIVES_SUMMARY_DELETED: 'SFA_ALTERNATIVES_SUMMARY_DELETED',
+
+  SFA_OUTCOME_SECTION_UPDATED: 'SFA_OUTCOME_SECTION_UPDATED',
+  SFA_OUTCOME_CARD_CREATED: 'SFA_OUTCOME_CARD_CREATED',
+  SFA_OUTCOME_CARD_UPDATED: 'SFA_OUTCOME_CARD_UPDATED',
+  SFA_OUTCOME_CARD_DELETED: 'SFA_OUTCOME_CARD_DELETED',
+  SFA_OUTCOME_CARDS_REORDERED: 'SFA_OUTCOME_CARDS_REORDERED',
+
+  FMS_HERO_SLIDE_CREATED: 'FMS_HERO_SLIDE_CREATED',
+  FMS_HERO_SLIDE_UPDATED: 'FMS_HERO_SLIDE_UPDATED',
+  FMS_HERO_SLIDE_DELETED: 'FMS_HERO_SLIDE_DELETED',
+  FMS_HERO_SLIDES_REORDERED: 'FMS_HERO_SLIDES_REORDERED',
+
+  FMS_FAQ_ENTRY_CREATED: 'FMS_FAQ_ENTRY_CREATED',
+  FMS_FAQ_ENTRY_UPDATED: 'FMS_FAQ_ENTRY_UPDATED',
+  FMS_FAQ_ENTRY_DELETED: 'FMS_FAQ_ENTRY_DELETED',
+  FMS_FAQ_ENTRIES_REORDERED: 'FMS_FAQ_ENTRIES_REORDERED',
+
+  FMS_CTA_SECTION_UPDATED: 'FMS_CTA_SECTION_UPDATED',
+
   UNAUTHORIZED_ACCESS_ATTEMPT: 'UNAUTHORIZED_ACCESS_ATTEMPT',
 } as const;
 
@@ -297,6 +470,116 @@ export const LIMITS = {
   // A 3-up grid; past two dozen the section stops reading as a summary of how
   // the company works and starts reading as a directory.
   MAX_VALUES_ENTRIES: 24,
+  // Every entry is one logo pinned to the rotating sphere. Past about two
+  // dozen the badges overlap at any size the section is actually rendered at,
+  // and the farthest-point sampling that spreads them has nowhere left to go.
+  MAX_INTEGRATIONS_ENTRIES: 24,
+  // The marquee loops its set twice and scrolls for 70 seconds. Past about
+  // two dozen a visitor never reaches the end of a cycle, which is the same
+  // ceiling the trust marquee runs into.
+  MAX_TESTIMONIAL_ENTRIES: 24,
+  // An accordion a visitor is expected to scan before buying. Past about two
+  // dozen it stops being a list of objections and becomes a manual, which is
+  // what the dedicated FAQ page is for.
+  MAX_FAQ_ENTRIES: 24,
+  // The ERP slider auto-advances every five seconds; past a dozen slides the
+  // later ones are never seen by a real visitor, same as the home hero.
+  MAX_ERP_HERO_SLIDES: 12,
+  MAX_ERP_FAQ_ENTRIES: 24,
+  // One entry contributes at most one logo and one counter, so this caps both
+  // lists at once - the same ceiling the home page's marquee runs into.
+  MAX_ERP_TRUST_ENTRIES: 24,
+  // The counter row is a four-up grid. A fifth would wrap onto its own line
+  // under three, which reads as a mistake rather than as more proof.
+  MAX_ERP_TRUST_STATS: 4,
+  // The selector is a single scrolling column beside the panel. Past a dozen
+  // it stops being a chooser and starts being a list to read.
+  MAX_ERP_INDUSTRIES: 12,
+  // The panel lays features out two-up; the shipped set is six.
+  MAX_ERP_INDUSTRY_FEATURES: 12,
+  // The strip is a four-up grid on desktop, two-up on mobile.
+  MAX_ERP_INDUSTRY_BENEFITS: 8,
+
+  /** The left-hand audience list. Five today; past a dozen it stops scanning. */
+  MAX_ERP_JOURNEY_PERSONAS: 12,
+
+  /** Per persona, for each of the two lists in its proof panel. */
+  MAX_ERP_JOURNEY_OUTCOMES: 10,
+  MAX_ERP_JOURNEY_POINTS: 10,
+
+  /**
+   * The company-wide figures. Three today, and the row is a four-up grid whose
+   * first cell is the persona's own headline metric - so three is what fits.
+   */
+  MAX_ERP_JOURNEY_STATS: 3,
+
+  /**
+   * The comparison grid.
+   *
+   * Columns are capped low because every one of them narrows the rest: the
+   * leader column is 1.5fr and the others share what is left, so past six the
+   * cells stop being readable on a laptop.
+   */
+  MAX_COMPARISON_COLUMNS: 6,
+  MAX_COMPARISON_CATEGORIES: 12,
+  MAX_COMPARISON_ROWS: 12,
+
+  /**
+   * The outcomes carousel. It scrolls, so the cap is about how much proof a
+   * visitor will read rather than about what fits on screen.
+   */
+  MAX_ERP_OUTCOME_CARDS: 12,
+
+  /**
+   * The compliance badges beside the sphere.
+   *
+   * Four, because the panel is a two-by-two grid that has to stay the same
+   * height as the sphere next to it - a fifth would push the two columns out
+   * of step.
+   */
+  MAX_ERP_ESTABLISHER_BADGES: 4,
+
+  /** The SFA-DMS page, on the same caps as the ERP page's equivalents. */
+  MAX_SFA_HERO_SLIDES: 12,
+  MAX_SFA_FAQ_ENTRIES: 24,
+
+  /*
+   * The proof section. The marquee scrolls, so it takes as many logos as there
+   * are customers to show; the numbers beside it do not - that panel is a
+   * two-by-two grid, and a fifth figure would have nowhere to go.
+   */
+  MAX_SFA_PROOF_LOGOS: 24,
+  MAX_SFA_PROOF_STATS: 4,
+
+  /*
+   * The video section. One entry is live at a time; the rest are drafts and
+   * retired clips kept for reference, which is what the cap is really about.
+   */
+  MAX_SFA_VIDEO_ENTRIES: 10,
+
+  /*
+   * The adoption path. The grid is three across, so three and six are the
+   * counts that fill their rows; the cap allows two full rows.
+   */
+  MAX_SFA_PACKAGE_CARDS: 6,
+  MAX_SFA_PACKAGE_FEATURES: 20,
+
+  /*
+   * The compliance panel. The badges run down a single column beside the
+   * sphere, so the cap is about how tall that column can get before it
+   * outruns the panel next to it rather than about a grid.
+   */
+  MAX_SFA_COMPLIANCE_BADGES: 6,
+
+  /*
+   * The outcome stories. A carousel, so the cap is about how far a visitor
+   * will reasonably page rather than about what fits on screen.
+   */
+  MAX_SFA_OUTCOME_CARDS: 12,
+
+  /** The FMS page, on the same caps as the SFA-DMS page's equivalents. */
+  MAX_FMS_HERO_SLIDES: 12,
+  MAX_FMS_FAQ_ENTRIES: 24,
 } as const;
 
 // ── Publicly served uploads ──────────────────────────────────────────────
@@ -318,19 +601,46 @@ export const PUBLIC_FILE_ENTITY_TYPES = [
   'home_trust_logo',
   'home_industries_video',
   'home_values_card',
+  'home_integrations_logo',
+  'home_integrations_centre_logo',
+  'home_testimonial_poster',
+  'home_testimonial_video',
+  'home_cta_image',
+  'home_cta_report',
+  'erp_hero_slide',
+  'erp_cta_image',
+  'erp_trust_logo',
+  'erp_industry_image',
+  'erp_industry_dashboard',
+  'erp_journey_avatar',
+  'sfa_hero_slide',
+  'sfa_cta_image',
+  'sfa_cta_dashboard',
+  'sfa_proof_logo',
+  'sfa_compliance_background',
+  'sfa_outcome_photo',
+  'fms_hero_slide',
+  'fms_cta_image',
+  'sfa_video',
+  'comparison_column_logo',
+  'erp_outcome_image',
 ] as const;
 
 export type PublicFileEntityType = (typeof PUBLIC_FILE_ENTITY_TYPES)[number];
 
 /**
- * The media types the public route will serve inline.
+ * The media types the public route will serve to anonymous visitors.
  *
  * Prefixes rather than exact types, so adding a codec to the upload allowlist
  * does not also mean remembering to add it here. Everything else an admin can
- * upload - PDFs, spreadsheets, CSVs - stays behind authentication even when it
- * carries a public entity type.
+ * upload - spreadsheets, CSVs, documents - stays behind authentication even
+ * when it carries a public entity type.
+ *
+ * PDF is the one exact type on the list rather than a prefix: the home page's
+ * report download hands a visitor a PDF, and no other application/* type
+ * should come with it.
  */
-export const PUBLIC_FILE_MIME_PREFIXES = ['image/', 'video/'] as const;
+export const PUBLIC_FILE_MIME_PREFIXES = ['image/', 'video/', 'application/pdf'] as const;
 
 export const isPubliclyServableMimeType = (mimeType: string): boolean =>
   PUBLIC_FILE_MIME_PREFIXES.some((prefix) => mimeType.startsWith(prefix));
@@ -340,3 +650,66 @@ export const isPubliclyServableEntityType = (
 ): entityType is PublicFileEntityType =>
   entityType !== null &&
   (PUBLIC_FILE_ENTITY_TYPES as readonly string[]).includes(entityType);
+
+// ── Page section copy ────────────────────────────────────────────────────
+
+/**
+ * The pages the CMS authors, and the sections each one shares copy across.
+ *
+ * Copy - an eyebrow, a heading and a subtext - is stored once per section
+ * rather than repeated on every entry, keyed by the page and section together.
+ * The pair is what is unique: the ERP page has a 'faq' and so does the home
+ * page, and they are different content.
+ *
+ * Mirrored by CHECK constraints on page_section_copy, so a key here always
+ * exists in the database and a key checked in code always exists here.
+ *
+ * The home page's hero is deliberately absent: its slides each carry their own
+ * eyebrow, heading and subtext, because the carousel shows four different
+ * pitches. The ERP page's hero is listed because its slider shares one.
+ */
+export const PAGE_SECTION_KEYS = {
+  home: ['trust', 'industries', 'values', 'integrations', 'testimonials', 'faq', 'cta'],
+  erp: [
+    'trust',
+    'recognition',
+    'benefits',
+    'alternatives',
+    'outcomes',
+    'establishers',
+    'faq',
+    'cta',
+  ],
+  /*
+   * The hero is absent on purpose, here as on the other pages: its slides each
+   * carry their own eyebrow, headline and subhead, because the slider shows
+   * five different pitches rather than one.
+   */
+  'sfa-dms': [
+    'proof',
+    'video',
+    'packages',
+    'alternatives',
+    'outcomes',
+    'establishers',
+    'faq',
+    'cta',
+  ],
+  /*
+   * The hero is absent on purpose, here as on the other pages: its slides each
+   * carry their own eyebrow, headline and subhead.
+   */
+  fms: ['faq', 'cta'],
+} as const;
+
+export const PAGE_KEYS = Object.keys(PAGE_SECTION_KEYS) as Array<keyof typeof PAGE_SECTION_KEYS>;
+
+export type PageKey = (typeof PAGE_KEYS)[number];
+
+/** Every section key any page uses, for the one CHECK the table carries. */
+export type SectionKey = (typeof PAGE_SECTION_KEYS)[PageKey][number];
+
+export const isSectionOfPage = (pageKey: string, sectionKey: string): boolean =>
+  (PAGE_KEYS as readonly string[]).includes(pageKey) &&
+  (PAGE_SECTION_KEYS[pageKey as PageKey] as readonly string[]).includes(sectionKey);
+

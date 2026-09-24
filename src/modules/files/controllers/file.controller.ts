@@ -76,8 +76,10 @@ export const downloadFileController = async (
 };
 
 /**
- * The website-facing media read. Unauthenticated, and inline rather than an
- * attachment because the whole point is to render in an <img> or a <video>.
+ * The website-facing media read. Unauthenticated, and inline by default
+ * because the whole point is to render in an <img> or a <video>. Pass
+ * ?download to get it as an attachment instead - the report PDF behind the
+ * home page's call to action is the one caller that wants that.
  *
  * Content-Type is echoed from the stored record, but nosniff still applies:
  * the service has already established this is renderable media, and nosniff
@@ -95,10 +97,29 @@ export const getPublicMediaController = async (
   const id = validateUuidParam(req.params.id);
   const { file, buffer } = await fileService.getPublicMedia(id);
 
+  /*
+   * ?download switches the browser from viewing to saving.
+   *
+   * It has to be the server that says so: the marketing site is a different
+   * origin from this API, and a cross-origin <a download> is ignored, so a
+   * PDF linked from the site would open in the viewer rather than download.
+   *
+   * The filename is sent twice on purpose - the RFC 5987 form carries the
+   * real name, and the quoted ASCII fallback is there for clients that do not
+   * read it. Quotes, backslashes and control characters are stripped from
+   * that fallback so an uploaded name cannot break out of the header.
+   */
+  const asAttachment = req.query.download !== undefined;
+  const safeName =
+    file.originalName.replace(/[\u0000-\u001f"\\]/g, '').slice(0, 200) || 'download';
+  const disposition = asAttachment
+    ? `attachment; filename="${safeName}"; filename*=UTF-8''${encodeURIComponent(file.originalName)}`
+    : 'inline';
+
   res.setHeader('Content-Type', file.mimeType);
   res.setHeader('Content-Length', buffer.length);
   res.setHeader('X-Content-Type-Options', 'nosniff');
-  res.setHeader('Content-Disposition', 'inline');
+  res.setHeader('Content-Disposition', disposition);
   res.setHeader('Accept-Ranges', 'none');
   // The bytes at a given id never change - a replaced image gets a new id -
   // so this is safe to cache hard, and the marketing site benefits most.

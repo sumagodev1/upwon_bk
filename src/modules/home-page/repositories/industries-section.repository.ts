@@ -17,7 +17,6 @@ import {
  */
 
 const SORT_COLUMNS: Readonly<Record<string, string>> = {
-  eyebrow: 'ie.eyebrow',
   displayOrder: 'ie.display_order',
   status: 'ie.status',
   createdAt: 'ie.created_at',
@@ -30,30 +29,24 @@ const SORT_COLUMNS: Readonly<Record<string, string>> = {
  * absent because it comes from the request context, never from the body.
  */
 const UPDATABLE_COLUMNS: Readonly<Record<string, string>> = {
-  eyebrow: 'eyebrow',
-  heading: 'heading',
-  subtext: 'subtext',
   displayOrder: 'display_order',
   status: 'status',
 } as const;
 
 const QUALIFIED_COLUMNS = `
-  ie.id, ie.eyebrow, ie.heading, ie.subtext, ie.video_url, ie.video_file_id,
+  ie.id, ie.video_url, ie.video_file_id,
   ie.display_order, ie.status,
   ie.created_by, ie.updated_by, ie.created_at, ie.updated_at
 `;
 
 const RETURNING_COLUMNS = `
-  id, eyebrow, heading, subtext, video_url, video_file_id,
+  id, video_url, video_file_id,
   display_order, status,
   created_by, updated_by, created_at, updated_at
 `;
 
 interface EntryRow {
   id: string;
-  eyebrow: string;
-  heading: string;
-  subtext: string;
   video_url: string | null;
   video_file_id: string | null;
   display_order: number;
@@ -66,9 +59,6 @@ interface EntryRow {
 
 const toEntry = (row: EntryRow): IndustriesEntry => ({
   id: row.id,
-  eyebrow: row.eyebrow,
-  heading: row.heading,
-  subtext: row.subtext,
   videoUrl: row.video_url,
   videoFileId: row.video_file_id,
   displayOrder: row.display_order,
@@ -122,12 +112,11 @@ export const findAll = async (
     operator: '=',
     value: filters.status,
   });
-  if (pagination.search) {
-    builder.raw(
-      '(ie.eyebrow ILIKE ? OR ie.heading ILIKE ? OR ie.subtext ILIKE ?)',
-      ...Array.from({ length: 3 }, () => `%${pagination.search}%`),
-    );
-  }
+  /*
+   * No search clause: with the shared copy moved to home_section_copy an
+   * entry carries only its video and status, so there is no text left for a
+   * term to match. The admin list drops its search box to suit.
+   */
 
   // Display order is the default: the admin list should read like the section.
   const sort = resolveSort(pagination.sortBy, pagination.sortOrder, SORT_COLUMNS, {
@@ -209,15 +198,11 @@ export const create = async (
 ): Promise<IndustriesEntry> => {
   const sql = `
     INSERT INTO home_industries_entries
-      (eyebrow, heading, subtext, video_url, video_file_id,
-       display_order, status, created_by, updated_by)
-    VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $8)
+      (video_url, video_file_id, display_order, status, created_by, updated_by)
+    VALUES ($1, $2, $3, $4, $5, $5)
     RETURNING ${RETURNING_COLUMNS}
   `;
   const result = await runQuery<EntryRow>(executor, sql, [
-    input.eyebrow,
-    input.heading,
-    input.subtext,
     input.videoUrl,
     input.videoFileId,
     input.displayOrder,

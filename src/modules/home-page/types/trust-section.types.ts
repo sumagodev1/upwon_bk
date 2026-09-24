@@ -13,10 +13,6 @@ import { HeadingLine } from '../utils/heading-markup';
 
 export interface TrustEntry {
   id: string;
-  eyebrow: string;
-  /** Authored text, not HTML. Same two markers as the hero heading. */
-  heading: string;
-  subtext: string;
   /** An absolute URL or a site-relative path. Exclusive with imageFileId. */
   imageUrl: string | null;
   /** An asset uploaded through the files module. Exclusive with imageUrl. */
@@ -36,15 +32,11 @@ export interface TrustEntry {
 
 /** An entry with everything the renderer needs resolved. */
 export interface ResolvedTrustEntry extends TrustEntry {
-  headingLines: HeadingLine[];
   /** The two image sources collapsed into the one URL to actually render. */
   image: string | null;
 }
 
 export interface CreateTrustEntryInput {
-  eyebrow: string;
-  heading: string;
-  subtext: string;
   imageUrl: string | null;
   imageFileId: string | null;
   imageAlt: string | null;
@@ -60,9 +52,6 @@ export interface CreateTrustEntryInput {
  * clears the value, where `undefined` leaves it untouched.
  */
 export interface UpdateTrustEntryInput {
-  eyebrow?: string;
-  heading?: string;
-  subtext?: string;
   imageUrl?: string | null;
   imageFileId?: string | null;
   imageAlt?: string | null;
@@ -88,7 +77,7 @@ export interface ReorderTrustEntriesInput {
  * are folded back into that shape here rather than in the browser.
  */
 export interface PublicTrustSection {
-  eyebrow: string;
+  eyebrow: string | null;
   heading: string;
   headingLines: HeadingLine[];
   subtext: string;

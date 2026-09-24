@@ -12,10 +12,6 @@ import { HeadingLine } from '../utils/heading-markup';
 
 export interface ValuesEntry {
   id: string;
-  eyebrow: string;
-  /** Authored text, not HTML. Same two markers as the hero heading. */
-  heading: string;
-  subtext: string;
   /** An absolute URL or a site-relative path. Exclusive with imageFileId. */
   imageUrl: string | null;
   /** An asset uploaded through the files module. Exclusive with imageUrl. */
@@ -33,15 +29,11 @@ export interface ValuesEntry {
 
 /** An entry with everything the renderer needs resolved. */
 export interface ResolvedValuesEntry extends ValuesEntry {
-  headingLines: HeadingLine[];
   /** The two image sources collapsed into the one URL to actually render. */
   image: string | null;
 }
 
 export interface CreateValuesEntryInput {
-  eyebrow: string;
-  heading: string;
-  subtext: string;
   imageUrl: string | null;
   imageFileId: string | null;
   cardTitle: string;
@@ -56,9 +48,6 @@ export interface CreateValuesEntryInput {
  * clears the value, where `undefined` leaves it untouched.
  */
 export interface UpdateValuesEntryInput {
-  eyebrow?: string;
-  heading?: string;
-  subtext?: string;
   imageUrl?: string | null;
   imageFileId?: string | null;
   cardTitle?: string;
@@ -83,7 +72,7 @@ export interface ReorderValuesEntriesInput {
  * here rather than in the browser.
  */
 export interface PublicValuesSection {
-  eyebrow: string;
+  eyebrow: string | null;
   heading: string;
   headingLines: HeadingLine[];
   subtext: string;
