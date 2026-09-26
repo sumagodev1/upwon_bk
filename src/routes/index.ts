@@ -33,6 +33,8 @@ import socialMediaLinksRoutes, {
   publicSocialMediaLinksRouter,
 } from '../modules/social-media-links/routes';
 import blogRoutes, { publicBlogRouter } from '../modules/blog/routes';
+import freeAuditRoutes, { publicFreeAuditRouter } from '../modules/free-audit/routes';
+import knowledgebaseRoutes, { publicKnowledgebaseRouter } from '../modules/knowledgebase/routes';
 
 const router = Router();
 
@@ -59,6 +61,12 @@ router.use('/public/social-media-links', publicSocialMediaLinksRouter);
 // The /blog page: its hero, its topics intro, and the chips and posts - plus
 // one article per slug. See modules/blog/routes/index.ts.
 router.use('/public/blog', publicBlogRouter);
+// The /free-audit page: its hero, and the audit request form's submit. See
+// modules/free-audit/routes/index.ts.
+router.use('/public/free-audit', publicFreeAuditRouter);
+// The /knowledgebase pages: the hub's hero and category cards, each category's
+// page and each article. See modules/knowledgebase/routes/index.ts.
+router.use('/public/knowledgebase', publicKnowledgebaseRouter);
 
 // Public: the images those sections reference. Serves only uploads that opted
 // in by entity type - see PUBLIC_FILE_ENTITY_TYPES and fileService.getPublicImage.
@@ -93,5 +101,7 @@ router.use('/partner-program', partnerProgramRoutes);
 router.use('/about-page', aboutPageRoutes);
 router.use('/social-media-links', socialMediaLinksRoutes);
 router.use('/blog', blogRoutes);
+router.use('/free-audit', freeAuditRoutes);
+router.use('/knowledgebase', knowledgebaseRoutes);
 
 export default router;

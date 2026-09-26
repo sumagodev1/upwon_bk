@@ -16,14 +16,14 @@ import { BLOG_CATEGORY_ICON_NAMES, isBlogCategoryIconName } from '../utils/icons
  * the admin panel's forms. Changing one means changing all three.
  */
 
-// ── the two copy blocks ───────────────────────────────────────────────────
+// ── the topics intro ──────────────────────────────────────────────────────
 
 /*
  * Tighter than the About page's section limits (120 / 300 / 600), because
- * these are sized to the blocks they fill: the eyebrow is one small-caps line,
- * the hero headline has to sit inside a 440px-tall slide on a phone, and the
- * subtext is a single sentence under it. Today's copy uses about a third of
- * each.
+ * these are sized to the block they fill: the eyebrow is one small-caps line
+ * and the subtext a single sentence under the headline. Today's copy uses
+ * about a third of each. The hero slides are not held to these - they take
+ * the Insider hero's limits (hero-section.validator).
  */
 export const EYEBROW_MIN = 2;
 export const EYEBROW_MAX = 60;
@@ -31,13 +31,6 @@ export const HEADING_MIN = 3;
 export const HEADING_MAX = 160;
 export const SUBTEXT_MIN = 3;
 export const SUBTEXT_MAX = 300;
-
-/**
- * A button's text: 'Request a Demo', 'Browse the Knowledgebase'. Only the text
- * - the hero's buttons link where the site's code sends them.
- */
-export const CTA_LABEL_MIN = 2;
-export const CTA_LABEL_MAX = 40;
 
 /**
  * The same markup check, and the same message, as the home hero heading - plus

@@ -7,8 +7,8 @@
  * website:
  *
  *   hero        HERO_SLIDES in src/pages/Blog/BlogPage.jsx - the one slide's
- *               eyebrow, headline, subhead and its two CTA labels (their
- *               targets, /demo and /knowledgebase, stay in the page's code)
+ *               eyebrow, headline, subhead and backdrop (its two buttons, and
+ *               where they go, stay in the page's code)
  *   topics      the "Insights by Topic" <SectionIntro> in the same file; its
  *               orange <span> becomes the **accent** markup
  *   categories  CATEGORIES in src/data/blog.js - `id` becomes the slug, and
@@ -21,27 +21,28 @@
  * retyped. The keys are renamed to the columns they fill (image -> imageUrl,
  * date -> publishedOn, category -> categorySlug), and nothing else changes.
  *
- * imageUrl fills blog_posts.image_url, which is legacy / seed-only: the admin
- * API takes a post's picture as an upload and never writes that column, and
- * these Unsplash photographs have no uploaded file behind them - so the seed
- * is the only place they come from. A post's first upload replaces its seeded
- * picture.
+ * imageUrl fills blog_hero_slides.image_url and blog_posts.image_url, both
+ * legacy / seed-only: the admin API takes a picture as an upload and never
+ * writes a URL into either column, and these pictures - the site's shared hero
+ * artwork and the posts' Unsplash photographs - have no uploaded file behind
+ * them, so the seed is the only place they come from. A slide's or a post's
+ * first upload replaces its seeded picture.
  *
- * Not seeded: the hero's backdrop and accent colour, which stay in the page's
- * code (the page has never had hero photography of its own), and any phone
- * crop (mobile_image_file_id) - data/blog.js has none, so every seeded
- * post serves its one picture at every width until somebody uploads one.
+ * Not seeded: the hero's accent colour, which stays in the page's code, and
+ * any phone crop (mobile_image_file_id) - neither the page nor data/blog.js
+ * has one, so every seeded row serves its one picture at every width until
+ * somebody uploads one.
  *
  * Kept apart from seed.ts because the post bodies alone run to hundreds of
  * lines, which would bury the seed logic they feed.
  */
 
-export interface SeedBlogHeroSection {
+export interface SeedBlogHeroSlide {
   eyebrow: string;
   heading: string;
   subtext: string;
-  primaryCtaLabel: string;
-  secondaryCtaLabel: string;
+  /** The seeded backdrop (image_url - legacy / seed-only, see above). */
+  imageUrl: string;
 }
 
 export interface SeedBlogTopicsSection {
@@ -81,18 +82,20 @@ export interface SeedBlogPost {
 }
 
 /**
- * The page's one hero slide. The headline is plain text - HeroSlider draws it
- * as written - so there is no accent markup to add. Only the buttons' labels
- * are seeded; where they link is fixed in BlogPage.jsx.
+ * The page's one hero slide. The headline is plain text - HeroSlider splits it
+ * on an em-dash, and this one has none - so there is no markup to add. The
+ * backdrop is HERO_BG_A, the site-relative path the page has always used; its
+ * two buttons are not seeded, because they are fixed in BlogPage.jsx.
  */
-export const BLOG_HERO_SECTION: SeedBlogHeroSection = {
-  eyebrow: 'THE UPWON BLOG',
-  heading: 'Operator Playbooks for Food & FMCG.',
-  subtext:
-    'Two deep-reads a month across six lanes — the operational fixes that move real numbers. No vendor fluff.',
-  primaryCtaLabel: 'Request a Demo',
-  secondaryCtaLabel: 'Browse the Knowledgebase',
-};
+export const BLOG_HERO_SLIDES: SeedBlogHeroSlide[] = [
+  {
+    eyebrow: 'THE UPWON BLOG',
+    heading: 'Operator Playbooks for Food & FMCG.',
+    subtext:
+      'Two deep-reads a month across six lanes — the operational fixes that move real numbers. No vendor fluff.',
+    imageUrl: '/images/hero%20bg.webp',
+  },
+];
 
 /**
  * The intro above the chips. The page wrapped "You Operate In." in the orange

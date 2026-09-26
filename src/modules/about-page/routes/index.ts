@@ -60,9 +60,9 @@ export default router;
  * children inside their own response, so there is no /team-members or
  * /number-stats here.
  *
- * Read-only apart from POST /discovery-calls, which is one of the four writes
+ * Read-only apart from POST /discovery-calls, which is one of the five writes
  * anywhere under /public - see discovery-calls.routes.ts for why, and
- * scripts/route-audit.js for the allowlist that keeps them the only four.
+ * scripts/route-audit.js for the allowlist that keeps them the only five.
  */
 export const publicAboutPageRouter = Router();
 

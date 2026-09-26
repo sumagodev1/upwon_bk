@@ -213,12 +213,34 @@ const isPublicByDesign = (path) =>
  *     receipt, never the stored row, and no public GET exists beside it - the
  *     list is readable only with discovery_calls.read.
  *     See src/modules/about-page/routes/discovery-calls.routes.ts.
+ *
+ *   POST /public/free-audit/applications
+ *     The "Request my free audit" form on the marketing site's /free-audit
+ *     page. Same reasoning as the other four: an anonymous visitor in a browser
+ *     has no credential to present, and with no mail transport in this project
+ *     the row it writes IS the delivery. Before it existed the form's submit
+ *     handler only showed its thank-you panel, so every request was discarded
+ *     while the visitor was told it had been received.
+ *
+ *     It is shaped exactly like the discovery call form: a JSON body of seven
+ *     short fields, no file, nothing written to storage, and nothing read from
+ *     the CMS. In place of a guard it carries freeAuditApplicationRateLimit (5
+ *     per 15 minutes per IP, under a fixed name of its own),
+ *     freeAuditApplicationGlobalRateLimit (100 per 10 minutes keyed on the TCP
+ *     peer, the only bound that survives a spoofed X-Forwarded-For), the 1mb
+ *     express.json body cap, and a validator that bounds every field, checks
+ *     the number with the shared visitor-phone rule, the address as an address
+ *     and the revenue range against the four chips the page renders. It
+ *     returns a receipt, never the stored row, and no public GET exists beside
+ *     it - the list is readable only with free_audit_applications.read.
+ *     See src/modules/free-audit/routes/applications.routes.ts.
  */
 const PUBLIC_WRITE_ALLOWLIST = [
   'POST /public/contact-page/enquiries',
   'POST /public/careers/applications',
   'POST /public/partner-program/applications',
   'POST /public/about-page/discovery-calls',
+  'POST /public/free-audit/applications',
 ];
 
 const isWriteMethod = (method) => method !== 'GET' && method !== 'HEAD';

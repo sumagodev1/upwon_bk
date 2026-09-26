@@ -1,12 +1,19 @@
 // src/modules/blog/utils/blog-image-spec.ts
 
 import { ImageSpec } from '../../home-page/utils/image-spec';
+import { INSIDER_IMAGE_SPECS } from '../../insider-page/utils/insider-image-spec';
 
 /**
- * What a blog post's image has to be. Checked by the same checkImageDimensions
+ * What each Blog image slot has to be. Checked by the same checkImageDimensions
  * as every other CMS image slot, so the rules and the error wording are
- * identical - only the numbers differ, and they are derived from the boxes the
- * one image is rendered into:
+ * identical - only the numbers differ, and they are derived from the boxes each
+ * image is rendered into:
+ *
+ *   heroDesktop / heroMobile  The hero slides render in the same HeroSlider as
+ *         the Insider hero, into the same boxes, so they take its two specs
+ *         unchanged (insider-image-spec.ts). The seeded slide's backdrop is the
+ *         site's shared hero artwork (the legacy, seed-only image_url), which
+ *         is never checked.
  *
  *   post  The same picture is the grid card (aspect-[16/9], a third of a
  *         1200px grid), the featured "Latest" card (aspect-[16/10] on narrow
@@ -39,9 +46,11 @@ import { ImageSpec } from '../../home-page/utils/image-spec';
  * The admin panel mirrors these numbers for its client-side hints.
  */
 
-export type BlogImageVariant = 'post' | 'postMobile';
+export type BlogImageVariant = 'heroDesktop' | 'heroMobile' | 'post' | 'postMobile';
 
 export const BLOG_IMAGE_SPECS: Readonly<Record<BlogImageVariant, ImageSpec>> = {
+  heroDesktop: INSIDER_IMAGE_SPECS.heroDesktop,
+  heroMobile: INSIDER_IMAGE_SPECS.heroMobile,
   post: { label: 'Post image', width: 1200, height: 675, ratioTolerance: 0.25 },
   postMobile: { label: 'Mobile image', width: 900, height: 1200, ratioTolerance: 0.25 },
 } as const;

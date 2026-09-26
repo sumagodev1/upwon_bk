@@ -14,7 +14,8 @@ import { asyncHandler } from '../../../core/utils/async-handler';
  * The /blog page, managed from the admin panel's "Resource Page > Blog"
  * sidebar item. One router per section, on the About page's pattern:
  *
- *   /hero-section     singleton: the hero slide's copy and two buttons.
+ *   /hero-section     ordered child list: the hero carousel's slides, on the
+ *                     Insider hero's routes.
  *   /topics-section   singleton: the "Insights by Topic" intro.
  *   /categories       ordered child list: the topic chips.
  *   /posts            the articles, ordered by publish date.
@@ -43,10 +44,11 @@ export default router;
  * The website-facing half. Mounted before the authentication middleware in
  * src/routes/index.ts, like the other public routers.
  *
- * The two copy blocks answer 404 until authored, so the site keeps its own
- * built-in copy; /posts is always a 200 and says "nothing authored" through
- * its has* flags instead. The categories have no public route of their own -
- * they arrive inside /posts, beside the posts they count.
+ * /hero-section is always a 200: the ACTIVE slides in order, an empty list
+ * when there are none. /topics-section answers 404 until authored, so the
+ * site keeps its own built-in copy; /posts is always a 200 and says "nothing
+ * authored" through its has* flags instead. The categories have no public
+ * route of their own - they arrive inside /posts, beside the posts they count.
  *
  * Read-only. Nothing under /public/blog accepts a write, so
  * scripts/route-audit.js needs no allowlist entry for it.
