@@ -19,6 +19,7 @@ import { seedErpEstablishers } from './erp-establishers.seed';
 import { seedSfaDmsPage } from './sfa-dms.seed';
 import { seedFmsPage } from './fms.seed';
 import { seedPosPage } from './pos.seed';
+import { seedHreasyPage } from './hreasy.seed';
 import { logger } from '../../core/utils/logger';
 import {
   INSIDER_FEATURE_SECTION,
@@ -1591,6 +1592,55 @@ const POS_SECTION_COPY: Array<{
   subtext: string | null;
 }> = [
   {
+    key: 'proof',
+    eyebrow: 'Proof Strip',
+    heading: "Not a Pitch. **Just What's Already Running.**",
+    subtext:
+      'Real transaction-level proof from live counters — not an inflated outlet count to win a headline war.',
+  },
+  {
+    key: 'recognition',
+    eyebrow: 'Recognition',
+    heading:
+      'Built for Bakery Counters, Sweets Shops, Dine-In, QSR and **Every Food Retail Business in Between.**',
+    subtext:
+      'A quick category map so a range of counter-level buyers — not just franchisors — see themselves immediately.',
+  },
+  {
+    key: 'video',
+    eyebrow: 'See It in Action',
+    heading: "It's Not Just a POS — **It's a Retail Sales Growth Engine.**",
+    subtext:
+      'See how one screen runs your counter, your kitchen and your stock — and turns every sale into growth.',
+  },
+  {
+    key: 'packages',
+    eyebrow: 'Module Versions & Growth Path',
+    heading: 'Start With Billing. **Grow Into Your Full Kitchen and Stock.**',
+    subtext:
+      'POS that fits a single counter or a 1,000-outlet chain \u2014 same UI, same reliability. Start small and switch modules on as you grow.',
+  },
+  {
+    key: 'establishers',
+    eyebrow: 'Secure, Compliant, Accountable',
+    heading: 'GST-Compliant by Default. **Your Sales Data Stays Yours.**',
+    subtext:
+      'UpWon POS is built with industry-leading compliance and connects effortlessly with the tools you already use.',
+  },
+  {
+    key: 'alternatives',
+    eyebrow: 'UpWon vs the Alternatives',
+    heading: "A Faster Till Is Not the Same as a **System You Won't Outgrow.**",
+    subtext:
+      'Star ratings reflect out-of-the-box capability, not what can be built with custom development.',
+  },
+  {
+    key: 'outcomes',
+    eyebrow: 'Customer Outcomes',
+    heading: 'Software replaced. **Results delivered.**',
+    subtext: 'The receipts from real F&B brands running their counter on UpWon POS.',
+  },
+  {
     key: 'faq',
     eyebrow: 'FAQ',
     heading: 'Questions Retail & F&B Owners **Ask Before They Commit.**',
@@ -1605,6 +1655,92 @@ const POS_SECTION_COPY: Array<{
       'A quick, focused conversation about your business, your counter, and how UpWon can help you grow.',
   },
 ];
+
+const HREASY_SECTION_COPY: Array<{
+  key: string;
+  eyebrow: string | null;
+  heading: string;
+  subtext: string | null;
+}> = [
+  {
+    key: 'proof',
+    eyebrow: 'Proof Strip',
+    heading: "UpWon HRMS \u2014 **Just What's Already Running.**",
+    subtext:
+      'Real, named-client proof from live deployments \u2014 not an inflated aggregate user count to win a headline war.',
+  },
+  {
+    key: 'capabilities',
+    eyebrow: 'Every HR Need',
+    heading:
+      'Advanced Platform for Every HR Need — **From Recruitment to Retirement.**',
+    subtext:
+      'One platform that understands a mixed workforce — office, plant and field — across the full employee lifecycle.',
+  },
+  {
+    key: 'lifecycle',
+    eyebrow: 'Core Capabilities',
+    heading: 'Everything From Hiring to Exit — **For Every Kind of Employee You Have.**',
+    subtext:
+      'Every stage of the employee lifecycle — recruit to retire — built for office, plant, field and contract staff alike, not a dry feature list.',
+  },
+  {
+    key: 'packages',
+    eyebrow: 'Module Versions & Growth Path',
+    heading: 'Start With Core HR. **Grow Into Full Performance Management.**',
+    subtext:
+      "HREasy's Core, Pro and Plus packages — start where you are today and add depth as you scale, on the same platform.",
+  },
+  {
+    key: 'alternatives',
+    eyebrow: 'UpWon vs the Alternatives',
+    heading:
+      "A Great HR App for Your Office Isn't the Same as **an HR System for Your Whole Business.**",
+    subtext:
+      'No star ratings — just the rows that actually differ: the shape of your workforce, and whether your HR connects to a manufacturing core.',
+  },
+  {
+    key: 'outcomes',
+    eyebrow: 'Customer Outcomes',
+    heading:
+      '95% Fewer HR Errors. 40% Less Admin Time. **One System, Three Business Verticals.**',
+    subtext:
+      'Named, published results from manufacturers running their whole workforce on HREasy — office, plant and field, on one platform.',
+  },
+  {
+    key: 'faq',
+    eyebrow: 'FAQ',
+    heading: 'Questions HR Leaders **Ask Before They Commit.**',
+    subtext:
+      'Practical, migration- and compliance-focused answers \u2014 the questions HR and payroll leaders actually ask before switching systems.',
+  },
+  {
+    key: 'cta',
+    eyebrow: "Let's Talk About Your Workforce",
+    heading: 'See Your Whole Workforce on One System \u2014 **Live, in 30 Minutes.**',
+    subtext:
+      "A conversation about your people, your process and your goals. We'll show you what's possible \u2014 for your actual workforce.",
+  },
+];
+
+async function seedHreasySectionCopy(client: PoolClient): Promise<number> {
+  const result = await client.query(
+    `
+    INSERT INTO page_section_copy (page_key, section_key, eyebrow, heading, subtext)
+    SELECT 'hreasy', u.key, u.eyebrow, u.heading, u.subtext
+      FROM unnest($1::text[], $2::text[], $3::text[], $4::text[])
+        AS u(key, eyebrow, heading, subtext)
+    ON CONFLICT (page_key, section_key) DO NOTHING
+    `,
+    [
+      HREASY_SECTION_COPY.map((s) => s.key),
+      HREASY_SECTION_COPY.map((s) => s.eyebrow),
+      HREASY_SECTION_COPY.map((s) => s.heading),
+      HREASY_SECTION_COPY.map((s) => s.subtext),
+    ],
+  );
+  return result.rowCount ?? 0;
+}
 
 async function seedPosSectionCopy(client: PoolClient): Promise<number> {
   const result = await client.query(
@@ -1836,6 +1972,8 @@ async function main(): Promise<void> {
       const fmsPage = await seedFmsPage(client);
       const posSectionCopyCount = await seedPosSectionCopy(client);
       const posPage = await seedPosPage(client);
+      const hreasySectionCopyCount = await seedHreasySectionCopy(client);
+      const hreasyPage = await seedHreasyPage(client);
       const insiderHeroSlideCount = await seedInsiderHeroSlides(client);
       const insiderIssueCounts = await seedInsiderIssues(client);
       const insiderFeatureCount = await seedInsiderFeatureSection(client);
@@ -1879,6 +2017,8 @@ async function main(): Promise<void> {
         fmsPage,
         posSectionCopyCount,
         posPage,
+        hreasySectionCopyCount,
+        hreasyPage,
         insiderHeroSlideCount,
         insiderIssueCounts,
         insiderFeatureCount,
@@ -1967,6 +2107,37 @@ async function main(): Promise<void> {
       posHeroSlides: summary.posPage.heroSlides,
       posFaqEntries: summary.posPage.faqEntries,
       posCtaSection: summary.posPage.ctaSection,
+      posProofLogos: summary.posPage.proofLogos,
+      posProofStats: summary.posPage.proofStats,
+      posRecognitionCategories: summary.posPage.recognitionCategories,
+      posVideoEntries: summary.posPage.videoEntries,
+      posGrowthSection: summary.posPage.growthSection,
+      posGrowthTiers: summary.posPage.growthTiers,
+      posGrowthFeatures: summary.posPage.growthFeatures,
+      posSecuritySection: summary.posPage.securitySection,
+      posSecurityBadges: summary.posPage.securityBadges,
+      posSecurityLogos: summary.posPage.securityLogos,
+      posSecurityAssurances: summary.posPage.securityAssurances,
+      posAlternativesColumns: summary.posPage.alternativesColumns,
+      posAlternativesRows: summary.posPage.alternativesRows,
+      posAlternativesCells: summary.posPage.alternativesCells,
+      posOutcomeStories: summary.posPage.outcomeStories,
+      hreasySectionCopy: summary.hreasySectionCopyCount,
+      hreasyHeroSlides: summary.hreasyPage.heroSlides,
+      hreasyCapabilityModules: summary.hreasyPage.capabilityModules,
+      hreasyLifecycleCards: summary.hreasyPage.lifecycleCards,
+      hreasyPackageTiers: summary.hreasyPage.packageTiers,
+      hreasyPackageFeatures: summary.hreasyPage.packageFeatures,
+      hreasyAlternativesColumns: summary.hreasyPage.alternativesColumns,
+      hreasyAlternativesRows: summary.hreasyPage.alternativesRows,
+      hreasyAlternativesCells: summary.hreasyPage.alternativesCells,
+      hreasyOutcomeStories: summary.hreasyPage.outcomeStories,
+      hreasyOutcomeStats: summary.hreasyPage.outcomeStats,
+      hreasyFaqEntries: summary.hreasyPage.faqEntries,
+      hreasyCtaSection: summary.hreasyPage.ctaSection,
+      hreasyCtaTrustItems: summary.hreasyPage.ctaTrustItems,
+      hreasyProofTiles: summary.hreasyPage.proofTiles,
+      hreasyProofCells: summary.hreasyPage.proofCells,
       insiderHeroSlides: summary.insiderHeroSlideCount,
       insiderIssues: summary.insiderIssueCounts.issues,
       insiderStories: summary.insiderIssueCounts.stories,

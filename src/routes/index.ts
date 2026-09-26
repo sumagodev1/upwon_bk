@@ -22,6 +22,9 @@ import sfaDmsPageRoutes, {
 } from '../modules/product-pages/sfa-dms-page/routes';
 import fmsPageRoutes, { publicFmsPageRouter } from '../modules/product-pages/fms-page/routes';
 import posPageRoutes, { publicPosPageRouter } from '../modules/product-pages/pos-page/routes';
+import hreasyPageRoutes, {
+  publicHreasyPageRouter,
+} from '../modules/product-pages/hreasy-page/routes';
 import insiderPageRoutes, { publicInsiderPageRouter } from '../modules/insider-page/routes';
 import contactPageRoutes, { publicContactPageRouter } from '../modules/contact-page/routes';
 import careersRoutes, { publicCareersRouter } from '../modules/careers/routes';
@@ -44,6 +47,7 @@ router.use('/public/erp-page', publicErpPageRouter);
 router.use('/public/sfa-dms-page', publicSfaDmsPageRouter);
 router.use('/public/fms-page', publicFmsPageRouter);
 router.use('/public/pos-page', publicPosPageRouter);
+router.use('/public/hreasy-page', publicHreasyPageRouter);
 router.use('/public/insider-page', publicInsiderPageRouter);
 router.use('/public/contact-page', publicContactPageRouter);
 router.use('/public/careers', publicCareersRouter);
@@ -76,6 +80,7 @@ router.use('/erp-page', erpPageRoutes);
 router.use('/sfa-dms-page', sfaDmsPageRoutes);
 router.use('/fms-page', fmsPageRoutes);
 router.use('/pos-page', posPageRoutes);
+router.use('/hreasy-page', hreasyPageRoutes);
 router.use('/insider-page', insiderPageRoutes);
 router.use('/contact-page', contactPageRoutes);
 router.use('/careers', careersRoutes);

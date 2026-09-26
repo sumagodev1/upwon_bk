@@ -46,6 +46,16 @@ export type ImageSlot =
   | 'fmsFranchisePhoto'
   | 'fmsOutcomeLogo'
   | 'fmsOutcomePhoto'
+  | 'hreasyHero'
+  | 'hreasyHeroMobile'
+  | 'hreasyCtaBanner'
+  | 'hreasyCapabilityPanel'
+  | 'hreasyLifecycleCard'
+  | 'hreasyOutcomeLogo'
+  | 'posOutcomeLogo'
+  | 'posOutcomePhoto'
+  | 'posSecurityShield'
+  | 'posSecurityIllustration'
   | 'posHero'
   | 'posHeroMobile'
   | 'posCtaDesktop'
@@ -248,6 +258,83 @@ export const IMAGE_SPECS: Readonly<Record<ImageSlot, ImageSpec>> = {
    * same wide band the FMS and SFA-DMS heroes use. Covered, so a differently
    * shaped upload is cropped rather than letterboxed; hence the ratio rule.
    */
+  /*
+   * The compliance shield between the two badge columns.
+   * public/images/Compliant by design.webp is 402x373 - very nearly square.
+   * Drawn contained at a fixed width, so the ratio matters but the exact
+   * pixel count does not.
+   */
+  /*
+   * The brand mark on a card. Drawn object-contain at a fixed height, so the
+   * width is what matters and the shape does not - hence no ratio rule.
+   */
+  // The slider's backgrounds, the same crop every product hero uses.
+  hreasyHero: { label: 'Desktop image', width: 1600, height: 566, ratioTolerance: 0.2 },
+  hreasyHeroMobile: { label: 'Mobile image', width: 800, height: 1200, ratioTolerance: 0.2 },
+  /*
+   * The closing band's banner. One image, not a pair: the band centres its
+   * copy over a full-width cover crop, so the same file serves both viewports.
+   */
+  hreasyCtaBanner: { label: 'Banner image', width: 1600, height: 566, ratioTolerance: 0.2 },
+  /*
+   * A capability panel's artwork - the composite carrying that stage's
+   * dashboard mock, photograph and flow.
+   *
+   * No ratio rule: the seven composites the section ships are a landscape
+   * card each, but each holds a different mock and they do not agree on a
+   * height, so a rule tight enough to be useful would reject artwork that
+   * renders correctly. It is drawn contained inside the panel, so a taller
+   * or shorter one just occupies less of the card's width. The floor is a 2x
+   * figure for the panel at its widest.
+   */
+  hreasyCapabilityPanel: {
+    label: 'Panel artwork',
+    width: 1200,
+    height: 800,
+    ratioTolerance: null,
+  },
+  /*
+   * The photograph at the top of a capability card.
+   *
+   * Drawn object-cover into a 4:3 box, so a differently shaped upload is
+   * cropped on one axis - hence a ratio rule here, where the switcher's
+   * contained panel needs none. 800x600 is the 2x size of the card at its
+   * widest column.
+   */
+  hreasyLifecycleCard: {
+    label: 'Card photograph',
+    width: 800,
+    height: 600,
+    ratioTolerance: 0.2,
+  },
+  /*
+   * The brand mark on an outcome card.
+   *
+   * No ratio rule: it is drawn object-contain at a fixed height, so a
+   * wordmark and a roundel both render correctly and a rule would reject
+   * valid artwork for no benefit. The floor is a 2x figure for the 130px box
+   * the card draws it in.
+   */
+  hreasyOutcomeLogo: { label: 'Brand mark', width: 260, height: 56, ratioTolerance: null },
+  posOutcomeLogo: { label: 'Brand mark', width: 200, height: 32, ratioTolerance: null },
+  /*
+   * The photograph filling the card's left panel, drawn object-cover - so a
+   * very different shape would be cropped hard. Matches the hero art the
+   * cards borrow today.
+   */
+  posOutcomePhoto: { label: 'Photograph', width: 1600, height: 566, ratioTolerance: 0.2 },
+  posSecurityShield: { label: 'Shield image', width: 402, height: 373, ratioTolerance: 0.2 },
+  /*
+   * The two illustrations flanking the data-ownership strip.
+   * public/images/sec_comp.webp is 1469x998 and layer.webp is 1486x986 - the
+   * same landscape shape, drawn at the same width, so one slot serves both.
+   */
+  posSecurityIllustration: {
+    label: 'Illustration',
+    width: 1400,
+    height: 950,
+    ratioTolerance: 0.2,
+  },
   posHero: { label: 'Desktop image', width: 1600, height: 566, ratioTolerance: 0.2 },
   posHeroMobile: { label: 'Mobile image', width: 800, height: 1200, ratioTolerance: 0.2 },
   /*

@@ -39,10 +39,16 @@ export const COMPARISON_COLUMN_TYPES: readonly ComparisonColumnType[] = [
  * RATING: each cell is a score out of five, as the SFA-DMS grid has them -
  * with zero meaning the dash the grid draws for "not available natively",
  * which is a different claim from one star.
+ * BOOLEAN: each cell is a yes or a no, drawn as a tick or a cross, as the
+ * HREasy grid has them.
  */
-export type ComparisonCellType = 'TEXT' | 'RATING';
+export type ComparisonCellType = 'TEXT' | 'RATING' | 'BOOLEAN';
 
-export const COMPARISON_CELL_TYPES: readonly ComparisonCellType[] = ['TEXT', 'RATING'];
+export const COMPARISON_CELL_TYPES: readonly ComparisonCellType[] = [
+  'TEXT',
+  'RATING',
+  'BOOLEAN',
+];
 
 /**
  * A row's shape.
@@ -118,19 +124,27 @@ export interface ComparisonCategory {
 }
 
 /**
- * One cell: prose or a score, never both.
+ * One cell: prose, a score, or a yes/no - never more than one.
  *
  * The database enforces the exclusivity; these stay separately nullable rather
- * than a union so a caller can read `content` or `rating` without narrowing
- * on a discriminator the row does not carry.
+ * than a union so a caller can read `content`, `rating` or `flag` without
+ * narrowing on a discriminator the row does not carry.
  */
 export interface ComparisonValue {
   id: string;
   rowId: string;
   columnId: string;
   content: string | null;
-  /** 0-5, where 0 is the dash. Null in a TEXT section. */
+  /** 0-5, where 0 is the dash. Null outside a RATING section. */
   rating: number | null;
+  /**
+   * The tick or the cross. Null outside a BOOLEAN section.
+   *
+   * `false` is a real answer rather than an absence - it is the cross, which
+   * is the point of the rows where two columns differ - so a caller must test
+   * for null rather than falsiness.
+   */
+  flag: boolean | null;
   /** Only set on a summary row's cells. */
   tone: ComparisonTone | null;
   createdAt: Date;
@@ -199,11 +213,12 @@ export type UpdateComparisonCategoryInput = Partial<CreateComparisonCategoryInpu
  * `values` replaces the row's cells wholesale - a column left out is cleared,
  * which is how a cell is emptied.
  */
-/** One cell as a form submits it: prose, or a score, or a summary badge. */
+/** One cell as a form submits it: prose, a score, a yes/no, or a summary badge. */
 export interface ComparisonCellInput {
   columnId: string;
   content?: string | null;
   rating?: number | null;
+  flag?: boolean | null;
   tone?: ComparisonTone | null;
 }
 

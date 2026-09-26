@@ -783,7 +783,7 @@ export const removeRow = async (id: string, executor?: Executor): Promise<boolea
 // ── cells ─────────────────────────────────────────────────────────────────
 
 const VALUE_COLUMNS = `
-  id, row_id, column_id, content, rating, tone, created_at, updated_at
+  id, row_id, column_id, content, rating, flag, tone, created_at, updated_at
 `;
 
 interface ValueRow {
@@ -793,6 +793,7 @@ interface ValueRow {
   content: string | null;
   /** SMALLINT, which node-postgres returns as a number. */
   rating: number | null;
+  flag: boolean | null;
   tone: ComparisonTone | null;
   created_at: Date;
   updated_at: Date;
@@ -804,6 +805,7 @@ const toValue = (row: ValueRow): ComparisonValue => ({
   columnId: row.column_id,
   content: row.content,
   rating: row.rating === null ? null : Number(row.rating),
+  flag: row.flag,
   tone: row.tone,
   createdAt: row.created_at,
   updatedAt: row.updated_at,
@@ -849,6 +851,7 @@ export const replaceValues = async (
     columnId: string;
     content?: string | null;
     rating?: number | null;
+    flag?: boolean | null;
     tone?: ComparisonTone | null;
   }>,
   adminId: string | null,
@@ -866,16 +869,18 @@ export const replaceValues = async (
   const result = await runQuery<ValueRow>(
     executor,
     `INSERT INTO comparison_values
-       (row_id, column_id, content, rating, tone, created_by, updated_by)
-     SELECT $1, u.column_id, u.content, u.rating, u.tone, $6, $6
-       FROM unnest($2::uuid[], $3::text[], $4::smallint[], $5::text[])
-         AS u(column_id, content, rating, tone)
+       (row_id, column_id, content, rating, flag, tone, created_by, updated_by)
+     SELECT $1, u.column_id, u.content, u.rating, u.flag, u.tone, $7, $7
+       FROM unnest($2::uuid[], $3::text[], $4::smallint[], $5::boolean[], $6::text[])
+         AS u(column_id, content, rating, flag, tone)
      RETURNING ${VALUE_COLUMNS}`,
     [
       rowId,
       values.map((v) => v.columnId),
       values.map((v) => v.content ?? null),
       values.map((v) => v.rating ?? null),
+      // `?? null` rather than `|| null`: false is a real answer here.
+      values.map((v) => v.flag ?? null),
       values.map((v) => v.tone ?? null),
       adminId,
     ],
