@@ -41,6 +41,14 @@ import {
   ABOUT_TEAM_MEMBERS,
   ABOUT_TEAM_SECTION,
 } from './about-page.data';
+import { SOCIAL_CONTACT_LINES, SOCIAL_LINKS } from './social-media-links.data';
+import { socialLinkLabel } from '../../modules/social-media-links/utils/icons';
+import {
+  BLOG_CATEGORIES,
+  BLOG_HERO_SECTION,
+  BLOG_POSTS,
+  BLOG_TOPICS_SECTION,
+} from './blog.data';
 
 /**
  * Idempotent seed. Safe to run repeatedly - every statement is an upsert or a
@@ -1181,6 +1189,191 @@ async function seedAboutCtaSection(client: PoolClient): Promise<number> {
   return result.rowCount ?? 0;
 }
 
+// ── social media links (the site footer) ──────────────────────────────────
+/**
+ * The footer's four contact lines, only while the table is empty - so a re-run
+ * never re-adds a line an administrator has since deleted or reordered.
+ */
+async function seedSocialContactLines(client: PoolClient): Promise<number> {
+  const existing = await client.query<{ count: number }>(
+    'SELECT COUNT(*) AS count FROM social_contact_lines',
+  );
+  if (Number(existing.rows[0].count) > 0) return 0;
+
+  const result = await client.query(
+    `
+    INSERT INTO social_contact_lines (kind, icon, value, display_order, status)
+    SELECT unnested.kind, unnested.icon, unnested.value,
+           unnested.display_order, 'ACTIVE'
+      FROM unnest($1::text[], $2::text[], $3::text[], $4::int[])
+        AS unnested(kind, icon, value, display_order)
+    `,
+    [
+      SOCIAL_CONTACT_LINES.map((line) => line.kind),
+      SOCIAL_CONTACT_LINES.map((line) => line.icon),
+      SOCIAL_CONTACT_LINES.map((line) => line.value),
+      // The order the footer prints them in today.
+      SOCIAL_CONTACT_LINES.map((_line, index) => index),
+    ],
+  );
+
+  return result.rowCount ?? 0;
+}
+
+/**
+ * The footer's LinkedIn and Twitter buttons, only while the table is empty -
+ * for the same reason as the contact lines above: a re-run must never bring
+ * back a link an administrator deleted. Their addresses are to be confirmed in
+ * the panel; see social-media-links.data.ts.
+ */
+async function seedSocialLinks(client: PoolClient): Promise<number> {
+  const existing = await client.query<{ count: number }>(
+    'SELECT COUNT(*) AS count FROM social_links',
+  );
+  if (Number(existing.rows[0].count) > 0) return 0;
+
+  const result = await client.query(
+    `
+    INSERT INTO social_links (label, icon, url, display_order, status)
+    SELECT unnested.label, unnested.icon, unnested.url,
+           unnested.display_order, 'ACTIVE'
+      FROM unnest($1::text[], $2::text[], $3::text[], $4::int[])
+        AS unnested(label, icon, url, display_order)
+    `,
+    [
+      // The label is the icon's platform name, exactly as the admin API writes it.
+      SOCIAL_LINKS.map((link) => socialLinkLabel(link.icon)),
+      SOCIAL_LINKS.map((link) => link.icon),
+      SOCIAL_LINKS.map((link) => link.url),
+      // The order the footer draws them in today.
+      SOCIAL_LINKS.map((_link, index) => index),
+    ],
+  );
+
+  return result.rowCount ?? 0;
+}
+
+// ── blog (Resource Page > Blog) ───────────────────────────────────────────
+/*
+ * The /blog page's content the website previously held as static data - see
+ * blog.data.ts for where each part came from. The two copy blocks are
+ * singletons pinned to id = 1, so DO NOTHING is exactly "only when empty"; the
+ * categories and the posts are each seeded only into an empty table, so a
+ * re-run never re-adds a category or a post an administrator has since
+ * deleted, and never reverts an edit.
+ */
+
+async function seedBlogHeroSection(client: PoolClient): Promise<number> {
+  const hero = BLOG_HERO_SECTION;
+  const result = await client.query(
+    `
+    INSERT INTO blog_hero_section
+      (id, eyebrow, heading, subtext, primary_cta_label, secondary_cta_label)
+    VALUES (1, $1, $2, $3, $4, $5)
+    ON CONFLICT (id) DO NOTHING
+    `,
+    [
+      hero.eyebrow,
+      hero.heading,
+      hero.subtext,
+      hero.primaryCtaLabel,
+      hero.secondaryCtaLabel,
+    ],
+  );
+
+  return result.rowCount ?? 0;
+}
+
+async function seedBlogTopicsSection(client: PoolClient): Promise<number> {
+  const topics = BLOG_TOPICS_SECTION;
+  const result = await client.query(
+    `
+    INSERT INTO blog_topics_section (id, eyebrow, heading, subtext)
+    VALUES (1, $1, $2, $3)
+    ON CONFLICT (id) DO NOTHING
+    `,
+    [topics.eyebrow, topics.heading, topics.subtext],
+  );
+
+  return result.rowCount ?? 0;
+}
+
+async function seedBlogCategories(client: PoolClient): Promise<number> {
+  const existing = await client.query<{ count: number }>(
+    'SELECT COUNT(*) AS count FROM blog_categories',
+  );
+  if (Number(existing.rows[0].count) > 0) return 0;
+
+  const result = await client.query(
+    `
+    INSERT INTO blog_categories (slug, label, icon, display_order, status)
+    SELECT unnested.slug, unnested.label, unnested.icon,
+           unnested.display_order, 'ACTIVE'
+      FROM unnest($1::text[], $2::text[], $3::text[], $4::int[])
+        AS unnested(slug, label, icon, display_order)
+    `,
+    [
+      BLOG_CATEGORIES.map((category) => category.slug),
+      BLOG_CATEGORIES.map((category) => category.label),
+      BLOG_CATEGORIES.map((category) => category.icon),
+      // The order the page draws the chips in today.
+      BLOG_CATEGORIES.map((_category, index) => index),
+    ],
+  );
+
+  return result.rowCount ?? 0;
+}
+
+/**
+ * Every post, filed under its category by slug. Runs after seedBlogCategories
+ * in the same transaction, so on a first run every slug resolves; a post whose
+ * category an administrator has since deleted is simply not re-created.
+ *
+ * This is the only writer of blog_posts.image_url: each seeded post's picture
+ * is the Unsplash URL data/blog.js has always used, and no uploaded file exists
+ * for it. The column is legacy / seed-only - the admin API never writes it,
+ * and a post's first upload (or removing its picture) clears it.
+ */
+async function seedBlogPosts(client: PoolClient): Promise<number> {
+  const existing = await client.query<{ count: number }>(
+    'SELECT COUNT(*) AS count FROM blog_posts',
+  );
+  if (Number(existing.rows[0].count) > 0) return 0;
+
+  // Bodies travel as JSON text and are cast per row: pg would encode a JS
+  // array of objects as a Postgres array literal, which is not jsonb. Dates
+  // travel as their YYYY-MM-DD text for the same reason in the other direction.
+  const result = await client.query(
+    `
+    INSERT INTO blog_posts
+      (slug, category_id, title, excerpt, image_url, read_time, published_on,
+       author, lead, body, status)
+    SELECT unnested.slug, c.id, unnested.title, unnested.excerpt, unnested.image_url,
+           unnested.read_time, unnested.published_on::date,
+           unnested.author, unnested.lead, unnested.body::jsonb, 'ACTIVE'
+      FROM unnest($1::text[], $2::text[], $3::text[], $4::text[], $5::text[], $6::text[],
+                  $7::text[], $8::text[], $9::text[], $10::text[])
+        AS unnested(slug, category_slug, title, excerpt, image_url, read_time,
+                    published_on, author, lead, body)
+      JOIN blog_categories c ON c.slug = unnested.category_slug
+    `,
+    [
+      BLOG_POSTS.map((post) => post.slug),
+      BLOG_POSTS.map((post) => post.categorySlug),
+      BLOG_POSTS.map((post) => post.title),
+      BLOG_POSTS.map((post) => post.excerpt),
+      BLOG_POSTS.map((post) => post.imageUrl),
+      BLOG_POSTS.map((post) => post.readTime),
+      BLOG_POSTS.map((post) => post.publishedOn),
+      BLOG_POSTS.map((post) => post.author),
+      BLOG_POSTS.map((post) => post.lead),
+      BLOG_POSTS.map((post) => JSON.stringify(post.body)),
+    ],
+  );
+
+  return result.rowCount ?? 0;
+}
+
 // ── runner ────────────────────────────────────────────────────────────────
 /**
  * The copy that heads each list section - one row per section rather than a
@@ -1851,6 +2044,13 @@ async function main(): Promise<void> {
       const aboutNumbersSectionCount = await seedAboutNumbersSection(client);
       const aboutNumberStatCount = await seedAboutNumberStats(client);
       const aboutCtaCount = await seedAboutCtaSection(client);
+      const socialContactLineCount = await seedSocialContactLines(client);
+      const socialLinkCount = await seedSocialLinks(client);
+      const blogHeroCount = await seedBlogHeroSection(client);
+      const blogTopicsCount = await seedBlogTopicsSection(client);
+      // Categories first: the posts are filed under them by slug.
+      const blogCategoryCount = await seedBlogCategories(client);
+      const blogPostCount = await seedBlogPosts(client);
       const rootAdmin = await seedRootAdmin(client);
       return {
         permissionCount,
@@ -1894,6 +2094,12 @@ async function main(): Promise<void> {
         aboutNumbersSectionCount,
         aboutNumberStatCount,
         aboutCtaCount,
+        socialContactLineCount,
+        socialLinkCount,
+        blogHeroCount,
+        blogTopicsCount,
+        blogCategoryCount,
+        blogPostCount,
         rootAdmin,
       };
     });
@@ -1983,6 +2189,12 @@ async function main(): Promise<void> {
       aboutNumbersSection: summary.aboutNumbersSectionCount,
       aboutNumberStats: summary.aboutNumberStatCount,
       aboutCtaSection: summary.aboutCtaCount,
+      socialContactLines: summary.socialContactLineCount,
+      socialLinks: summary.socialLinkCount,
+      blogHeroSection: summary.blogHeroCount,
+      blogTopicsSection: summary.blogTopicsCount,
+      blogCategories: summary.blogCategoryCount,
+      blogPosts: summary.blogPostCount,
       rootAdminEmail: summary.rootAdmin.email,
       rootAdminCreated: summary.rootAdmin.created,
     });

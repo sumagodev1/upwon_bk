@@ -82,6 +82,28 @@ export const APPLICATION_STATUSES = [
 ] as const;
 export type ApplicationStatus = (typeof APPLICATION_STATUSES)[number];
 
+/**
+ * What one of the footer's contact lines IS, which decides how the site links
+ * it: an ADDRESS is plain text, an EMAIL becomes a mailto:, a PHONE a tel:
+ * with everything but the digits and a leading + stripped, and a WEBSITE an
+ * https:// link (the scheme added when the line is written as a bare host).
+ *
+ * A closed list rather than inferring the kind from the text, because the text
+ * alone cannot say it - '+91 93568 98277' is a phone number, but so is nothing
+ * about a line that reads 'Sales: 1800-123-4567' - and a guess that turned an
+ * address into a dead tel: link would ship silently. It is also what the
+ * validator keys its per-kind rule on, so the value an admin types is checked
+ * against the link it will become.
+ *
+ * The four are exactly the four lines the footer renders today. Several rows of
+ * one kind are allowed (two phone numbers is an ordinary footer), so this is a
+ * type, not a slot.
+ *
+ * Mirrored by social_contact_lines_kind_check.
+ */
+export const SOCIAL_CONTACT_LINE_KINDS = ['ADDRESS', 'EMAIL', 'PHONE', 'WEBSITE'] as const;
+export type SocialContactLineKind = (typeof SOCIAL_CONTACT_LINE_KINDS)[number];
+
 // ── Roles ────────────────────────────────────────────────────────────────
 
 /**
@@ -251,6 +273,43 @@ export const PERMISSIONS = {
   // Partner Program inboxes were given exactly the same way out.
   DISCOVERY_CALLS_READ: 'discovery_calls.read',
   DISCOVERY_CALLS_DELETE: 'discovery_calls.delete',
+
+  // The site footer's contact lines and social icons. Two keys, like
+  // about_page.*, even though both halves are ordered lists whose rows are
+  // created and deleted - and for the same reason: a contact line or a social
+  // icon is not an object anybody posts and retires on its own schedule, it is
+  // one entry in the "how to reach us" block, and whoever may change the phone
+  // number printed there is the same person who adds the second one below it.
+  // Splitting create and delete out would produce a role that may reword the
+  // footer's address but not add a line to it, which nobody asked for.
+  //
+  // Its own module rather than a section of the Contact page's keys: the
+  // footer is on every page of the site, not on /contact, and the admin panel
+  // gives it its own sidebar item. contact_page.* governs one page's copy.
+  SOCIAL_MEDIA_LINKS_READ: 'social_media_links.read',
+  SOCIAL_MEDIA_LINKS_UPDATE: 'social_media_links.update',
+
+  // The Blog, under the admin panel's "Resource Page" sidebar parent: the
+  // /blog hero, the "Insights by Topic" intro, the topic categories and the
+  // posts themselves. Two keys, like about_page.* and social_media_links.*,
+  // even though categories and posts are rows that are created and deleted.
+  //
+  // The question the insider_page.* split answers - "may this person retire
+  // content, or only reword it?" - does not come up here the way it does for
+  // a monthly issue. A blog is one editorial desk: whoever may rewrite a
+  // post's lead is the person who decides it goes out, and whoever renames a
+  // topic is the one who adds the next. A role that may edit a post but not
+  // publish or delete one is a review workflow, and that is a feature of its
+  // own (drafts, approvers), not a permission split. The two destructive
+  // edges are guarded by the data instead: a category that still holds posts
+  // cannot be deleted (BLOG_CATEGORY_IN_USE), and unpublishing is always
+  // available as the reversible alternative to deleting.
+  //
+  // Its own module rather than a section of home_page.*: the blog is its own
+  // page with its own sidebar item, and granting it must not also grant the
+  // home page.
+  BLOG_READ: 'blog.read',
+  BLOG_UPDATE: 'blog.update',
 } as const;
 
 export type PermissionKey = (typeof PERMISSIONS)[keyof typeof PERMISSIONS];
@@ -340,6 +399,14 @@ export const PERMISSION_DESCRIPTIONS: Record<PermissionKey, string> = {
 
   'discovery_calls.read': 'View discovery calls booked through the About page form',
   'discovery_calls.delete': 'Delete booked discovery calls',
+
+  'social_media_links.read': "View the site footer's contact lines and social media links",
+  'social_media_links.update':
+    "Update, reorder and publish the site footer's contact lines and social media links",
+
+  'blog.read': 'View Blog page content: the hero, the topics intro, categories, and posts',
+  'blog.update':
+    'Create, update, reorder, publish and delete Blog page content, including its categories and posts',
 };
 
 /**
@@ -774,6 +841,51 @@ export const AUDIT_ACTIONS = {
   // not an event worth burying the trail under.
   ABOUT_DISCOVERY_CALL_DELETED: 'ABOUT_DISCOVERY_CALL_DELETED',
 
+  /*
+   * The site footer's two ordered lists, on the same pattern as every other
+   * ordered CMS row set in this API. Two families rather than one
+   * SOCIAL_MEDIA_LINK_* for both, because the trail's job is to say WHICH list
+   * changed - a phone number printed under the brand block and an icon in the
+   * row beneath it are different edits - without anybody having to read the
+   * entity type.
+   */
+  SOCIAL_CONTACT_LINE_CREATED: 'SOCIAL_CONTACT_LINE_CREATED',
+  SOCIAL_CONTACT_LINE_UPDATED: 'SOCIAL_CONTACT_LINE_UPDATED',
+  SOCIAL_CONTACT_LINE_STATUS_CHANGED: 'SOCIAL_CONTACT_LINE_STATUS_CHANGED',
+  SOCIAL_CONTACT_LINES_REORDERED: 'SOCIAL_CONTACT_LINES_REORDERED',
+  SOCIAL_CONTACT_LINE_DELETED: 'SOCIAL_CONTACT_LINE_DELETED',
+
+  SOCIAL_LINK_CREATED: 'SOCIAL_LINK_CREATED',
+  SOCIAL_LINK_UPDATED: 'SOCIAL_LINK_UPDATED',
+  SOCIAL_LINK_STATUS_CHANGED: 'SOCIAL_LINK_STATUS_CHANGED',
+  SOCIAL_LINKS_REORDERED: 'SOCIAL_LINKS_REORDERED',
+  SOCIAL_LINK_DELETED: 'SOCIAL_LINK_DELETED',
+
+  /*
+   * The Blog. The two copy blocks are singletons, each with one action, on the
+   * About page's pattern. Categories are an ordered list like every other one
+   * in this API; posts are not ordered at all - the page sorts them by their
+   * publish date - so they have no REORDERED action.
+   *
+   * Category and post families are kept apart for the reason the footer's two
+   * lists are: the trail should say WHICH kind of thing changed without anybody
+   * having to read the entity type, and renaming a topic chip is a different
+   * edit from rewriting an article.
+   */
+  BLOG_HERO_UPDATED: 'BLOG_HERO_UPDATED',
+  BLOG_TOPICS_UPDATED: 'BLOG_TOPICS_UPDATED',
+
+  BLOG_CATEGORY_CREATED: 'BLOG_CATEGORY_CREATED',
+  BLOG_CATEGORY_UPDATED: 'BLOG_CATEGORY_UPDATED',
+  BLOG_CATEGORY_STATUS_CHANGED: 'BLOG_CATEGORY_STATUS_CHANGED',
+  BLOG_CATEGORIES_REORDERED: 'BLOG_CATEGORIES_REORDERED',
+  BLOG_CATEGORY_DELETED: 'BLOG_CATEGORY_DELETED',
+
+  BLOG_POST_CREATED: 'BLOG_POST_CREATED',
+  BLOG_POST_UPDATED: 'BLOG_POST_UPDATED',
+  BLOG_POST_STATUS_CHANGED: 'BLOG_POST_STATUS_CHANGED',
+  BLOG_POST_DELETED: 'BLOG_POST_DELETED',
+
   UNAUTHORIZED_ACCESS_ATTEMPT: 'UNAUTHORIZED_ACCESS_ATTEMPT',
 } as const;
 
@@ -1015,6 +1127,32 @@ export const LIMITS = {
   // The stat cards render four to a row. Eight is two tidy rows; a third row
   // of numbers is a table, and nobody counts past it.
   MAX_ABOUT_NUMBER_STATS: 8,
+
+  // The footer's contact lines stack in a column under the brand block, beside
+  // four link columns they have to stay level with. The site ships four; six
+  // leaves room for a second phone number and a second email before that
+  // column outgrows its neighbours and the footer stops being a footer.
+  MAX_SOCIAL_CONTACT_LINES: 6,
+  // The social icons are one row of small squares under those lines. The site
+  // ships two; eight covers every network a B2B company is realistically on,
+  // and past that the row stops being a set of icons and becomes a directory.
+  MAX_SOCIAL_LINKS: 8,
+
+  // The blog's topic chips sit in one centred, wrapping row above the post
+  // grid, next to an "All" chip. The site ships six; twelve is two full rows
+  // on a laptop, and past that the row stops being a filter a reader scans and
+  // becomes a tag cloud - and the reorder list stops being usable.
+  MAX_BLOG_CATEGORIES: 12,
+  /*
+   * Posts are not paged: the admin list, the public index and the category
+   * counts on the chips all read the whole set, the way every other CMS list
+   * in this API does. That is only sound while the set is bounded, so it is.
+   * At two deep-reads a month - the cadence the page's own hero promises -
+   * five hundred posts is twenty years of publishing; a public index of that
+   * many summaries is still a few hundred kilobytes. If the blog ever gets
+   * near it, the answer is paging these reads, not raising this number.
+   */
+  MAX_BLOG_POSTS: 500,
 } as const;
 
 // ── Publicly served uploads ──────────────────────────────────────────────
@@ -1035,7 +1173,8 @@ export const LIMITS = {
  * cards and long-form feature, the Contact page's hero, the Partner Program
  * page's hero backdrop, and the About page's four - its rotating hero
  * backdrops, the founder's portrait, the team headshots and the closing CTA
- * banner.
+ * banner - and the Blog's post images, which are the card, the featured card
+ * and the article's full-bleed header all at once.
  *
  * One entry per section rather than per viewport: a section's desktop and
  * mobile crops are the same slot authored twice, and splitting them would only
@@ -1098,6 +1237,7 @@ export const PUBLIC_FILE_ENTITY_TYPES = [
   'about_founder',
   'about_team_member',
   'about_cta',
+  'blog_post_image',
 ] as const;
 
 export type PublicFileEntityType = (typeof PUBLIC_FILE_ENTITY_TYPES)[number];
