@@ -22,6 +22,19 @@ import sfaDmsPageRoutes, {
 } from '../modules/product-pages/sfa-dms-page/routes';
 import fmsPageRoutes, { publicFmsPageRouter } from '../modules/product-pages/fms-page/routes';
 import posPageRoutes, { publicPosPageRouter } from '../modules/product-pages/pos-page/routes';
+import engineeringManufacturingPageRoutes, {
+  publicEngineeringManufacturingPageRouter,
+} from '../modules/industry-pages/engineering-manufacturing-page/routes';
+import beveragePageRoutes, {
+  publicBeveragePageRouter,
+} from '../modules/industry-pages/beverage-page/routes';
+import spicesAgroPageRoutes, {
+  publicSpicesAgroPageRouter,
+} from '../modules/industry-pages/spices-agro-page/routes';
+import qsrFranchisePageRoutes, {
+  publicQsrFranchisePageRouter,
+} from '../modules/industry-pages/qsr-franchise-page/routes';
+import whyUpwonPageRoutes, { publicWhyUpwonPageRouter } from '../modules/why-upwon-page/routes';
 import insiderPageRoutes, { publicInsiderPageRouter } from '../modules/insider-page/routes';
 import contactPageRoutes, { publicContactPageRouter } from '../modules/contact-page/routes';
 import careersRoutes, { publicCareersRouter } from '../modules/careers/routes';
@@ -44,6 +57,11 @@ router.use('/public/erp-page', publicErpPageRouter);
 router.use('/public/sfa-dms-page', publicSfaDmsPageRouter);
 router.use('/public/fms-page', publicFmsPageRouter);
 router.use('/public/pos-page', publicPosPageRouter);
+router.use('/public/engineering-manufacturing-page', publicEngineeringManufacturingPageRouter);
+router.use('/public/beverage-page', publicBeveragePageRouter);
+router.use('/public/spices-agro-page', publicSpicesAgroPageRouter);
+router.use('/public/qsr-franchise-page', publicQsrFranchisePageRouter);
+router.use('/public/why-upwon-page', publicWhyUpwonPageRouter);
 router.use('/public/insider-page', publicInsiderPageRouter);
 router.use('/public/contact-page', publicContactPageRouter);
 router.use('/public/careers', publicCareersRouter);
@@ -76,6 +94,11 @@ router.use('/erp-page', erpPageRoutes);
 router.use('/sfa-dms-page', sfaDmsPageRoutes);
 router.use('/fms-page', fmsPageRoutes);
 router.use('/pos-page', posPageRoutes);
+router.use('/engineering-manufacturing-page', engineeringManufacturingPageRoutes);
+router.use('/beverage-page', beveragePageRoutes);
+router.use('/spices-agro-page', spicesAgroPageRoutes);
+router.use('/qsr-franchise-page', qsrFranchisePageRoutes);
+router.use('/why-upwon-page', whyUpwonPageRoutes);
 router.use('/insider-page', insiderPageRoutes);
 router.use('/contact-page', contactPageRoutes);
 router.use('/careers', careersRoutes);
