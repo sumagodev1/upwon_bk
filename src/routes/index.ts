@@ -32,6 +32,10 @@ import partnerProgramRoutes, {
   publicPartnerProgramRouter,
 } from '../modules/partner-program/routes';
 import aboutPageRoutes, { publicAboutPageRouter } from '../modules/about-page/routes';
+import socialMediaLinksRoutes, {
+  publicSocialMediaLinksRouter,
+} from '../modules/social-media-links/routes';
+import blogRoutes, { publicBlogRouter } from '../modules/blog/routes';
 
 const router = Router();
 
@@ -53,6 +57,12 @@ router.use('/public/contact-page', publicContactPageRouter);
 router.use('/public/careers', publicCareersRouter);
 router.use('/public/partner-program', publicPartnerProgramRouter);
 router.use('/public/about-page', publicAboutPageRouter);
+// The site footer's contact lines and social icons - one GET for both lists,
+// on every page. See modules/social-media-links/routes/index.ts.
+router.use('/public/social-media-links', publicSocialMediaLinksRouter);
+// The /blog page: its hero, its topics intro, and the chips and posts - plus
+// one article per slug. See modules/blog/routes/index.ts.
+router.use('/public/blog', publicBlogRouter);
 
 // Public: the images those sections reference. Serves only uploads that opted
 // in by entity type - see PUBLIC_FILE_ENTITY_TYPES and fileService.getPublicImage.
@@ -86,5 +96,7 @@ router.use('/contact-page', contactPageRoutes);
 router.use('/careers', careersRoutes);
 router.use('/partner-program', partnerProgramRoutes);
 router.use('/about-page', aboutPageRoutes);
+router.use('/social-media-links', socialMediaLinksRoutes);
+router.use('/blog', blogRoutes);
 
 export default router;
