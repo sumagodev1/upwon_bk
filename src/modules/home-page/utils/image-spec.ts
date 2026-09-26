@@ -342,8 +342,36 @@ export const IMAGE_SPECS: Readonly<Record<ImageSlot, ImageSpec>> = {
   erpDashboard: { label: 'Dashboard image', width: 1448, height: 1086, ratioTolerance: 0.2 },
 };
 
-export const describeImageSpec = (slot: ImageSlot): string => {
-  const spec = IMAGE_SPECS[slot];
+/**
+ * The two hero viewports under the names the Insider, Contact, About and
+ * Partner spec tables reuse them by.
+ *
+ * Those pages each carry their own slot table, so they cannot key into
+ * ImageSlot - they borrow the hero's measurements by value instead. Kept as a
+ * view onto IMAGE_SPECS rather than a second copy of the numbers, so changing
+ * the hero crop changes every page that inherits it.
+ */
+export type HeroImageVariant = 'desktop' | 'mobile';
+
+export const HERO_IMAGE_SPECS: Readonly<Record<HeroImageVariant, ImageSpec>> = {
+  desktop: IMAGE_SPECS.heroDesktop,
+  mobile: IMAGE_SPECS.heroMobile,
+};
+
+/**
+ * A slot name or the spec itself.
+ *
+ * Home and the product pages name a slot, because every slot they use is in
+ * ImageSlot. The pages merged from keshav_backend hold their own tables and
+ * pass the spec directly. Both are accepted so neither has to translate.
+ */
+export type ImageSpecRef = ImageSlot | ImageSpec;
+
+const resolveSpec = (ref: ImageSpecRef): ImageSpec =>
+  typeof ref === 'string' ? IMAGE_SPECS[ref] : ref;
+
+export const describeImageSpec = (ref: ImageSpecRef): string => {
+  const spec = resolveSpec(ref);
   return spec.ratioTolerance === null
     ? `at least ${spec.width}x${spec.height}px, any shape`
     : `at least ${spec.width}x${spec.height}px`;
@@ -355,10 +383,10 @@ export const describeImageSpec = (slot: ImageSlot): string => {
  * @returns null when acceptable, otherwise a message naming what is wrong.
  */
 export function checkImageDimensions(
-  slot: ImageSlot,
+  ref: ImageSpecRef,
   dimensions: ImageDimensions,
 ): string | null {
-  const spec = IMAGE_SPECS[slot];
+  const spec = resolveSpec(ref);
 
   if (dimensions.width < spec.width || dimensions.height < spec.height) {
     return `${spec.label} must be at least ${spec.width}x${spec.height}px; this one is ${dimensions.width}x${dimensions.height}px`;

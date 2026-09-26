@@ -7,6 +7,23 @@ const UUID_PATTERN =
 const SLUG_PATTERN = /^[a-z0-9]+(-[a-z0-9]+)*$/;
 const PHONE_PATTERN = /^\+?[0-9\s\-().]{7,20}$/;
 
+/**
+ * C0 control characters, less tab, newline and carriage return.
+ *
+ * A validator's contract here is "anything that gets past me will insert".
+ * NUL broke that: it is not whitespace, so it is not blank and it costs one
+ * character against a max, and PostgreSQL cannot store it in a text or varchar
+ * value at all - so a body carrying "Acme\0Ltd" passed every check and
+ * then failed on the bind, which the caller reads as a 500 INTERNAL_ERROR
+ * naming no field instead of a 422 naming the one that is wrong. On the public
+ * enquiry route that is an anonymous caller turning a validation mistake into
+ * an error-level log line with a stack.
+ *
+ * Tab, newline and carriage return are allowed through: a message field keeps
+ * its paragraphs. Nothing a person types produces the rest.
+ */
+const CONTROL_CHARACTERS = /[\x00-\x08\x0B\x0C\x0E-\x1F]/;
+
 export class Validator {
   private readonly errors: FieldError[] = [];
   private readonly source: Record<string, unknown>;
@@ -50,6 +67,13 @@ export class Validator {
       return '';
     }
     const trimmed = value.trim();
+    if (CONTROL_CHARACTERS.test(trimmed)) {
+      this.fail(
+        field,
+        `${field} contains characters that are not allowed`,
+        'INVALID_CHARACTERS',
+      );
+    }
     if (opts.min !== undefined && trimmed.length < opts.min) {
       this.fail(field, `${field} must be at least ${opts.min} characters`, 'TOO_SHORT');
     }
@@ -65,6 +89,24 @@ export class Validator {
   ): string | undefined {
     const value = this.raw(field);
     if (value === undefined || value === null) return undefined;
+    return this.requiredString(field, opts);
+  }
+
+  /**
+   * For nullable columns an edit form clears by emptying the input.
+   *
+   * Three outcomes, where optionalString has two: absent is undefined (leave the
+   * value alone), null or blank is null (clear it), anything else is validated
+   * as a string. Without this an emptied input fails as "required" on a field
+   * that is not.
+   */
+  nullableString(
+    field: string,
+    opts: { min?: number; max?: number } = {},
+  ): string | null | undefined {
+    const value = this.raw(field);
+    if (value === undefined) return undefined;
+    if (this.isBlank(value)) return null;
     return this.requiredString(field, opts);
   }
 
@@ -167,6 +209,37 @@ export class Validator {
       return [];
     }
     return [...new Set(value as string[])];
+  }
+
+  /**
+   * An ordered list of copy - paragraphs, bullet points.
+   *
+   * Unlike stringArray this keeps order and duplicates, because in copy both
+   * carry meaning. Entries are trimmed and blank ones dropped, so the trailing
+   * empty row an editor leaves behind never saves as an empty paragraph.
+   */
+  textList(field: string, opts: { max?: number; maxLength?: number } = {}): string[] {
+    const value = this.raw(field);
+    if (value === undefined || value === null) return [];
+    if (!Array.isArray(value)) {
+      this.fail(field, `${field} must be an array of strings`, 'INVALID_TYPE');
+      return [];
+    }
+    if (value.some((entry) => typeof entry !== 'string')) {
+      this.fail(field, `${field} must contain only strings`, 'INVALID_TYPE');
+      return [];
+    }
+
+    const entries = (value as string[]).map((entry) => entry.trim()).filter(Boolean);
+    const { max, maxLength } = opts;
+
+    if (max !== undefined && entries.length > max) {
+      this.fail(field, `${field} may contain at most ${max} items`, 'TOO_MANY');
+    }
+    if (maxLength !== undefined && entries.some((entry) => entry.length > maxLength)) {
+      this.fail(field, `Each ${field} entry must be at most ${maxLength} characters`, 'TOO_LONG');
+    }
+    return entries;
   }
 
   // ── enums ──────────────────────────────────────────────────────────────

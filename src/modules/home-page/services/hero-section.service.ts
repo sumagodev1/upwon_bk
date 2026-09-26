@@ -8,13 +8,9 @@ import { ValidationError } from '../../../core/errors/ValidationError';
 import { PaginationParams, RequestContext } from '../../../core/types/common.types';
 import { buildPaginationMeta, PaginationMeta } from '../../../core/utils/pagination';
 import * as auditLogService from '../../audit-logs/services/audit-log.service';
-import * as fileRepository from '../../files/repositories/file.repository';
-import { env } from '../../../config/env';
-import { getStorageProvider } from '../../../storage/storage.factory';
 import * as heroRepository from '../repositories/hero-section.repository';
 import { parseHeading, plainHeading } from '../utils/heading-markup';
-import { checkImageDimensions, ImageSlot } from '../utils/image-spec';
-import { readImageDimensions } from '../utils/image-dimensions';
+import { assertUsableImageFile, resolveImageSource } from '../utils/image-asset';
 import {
   CreateHeroSlideInput,
   HeroSlide,
@@ -27,42 +23,16 @@ import {
 const MODULE = 'home_page';
 const ENTITY = 'home_hero_slide';
 
-/** Only images belong in the hero; a PDF in an <img> is a broken slide. */
-const IMAGE_MIME_PREFIX = 'image/';
-
 /**
- * Turns an imageFileId into a URL an anonymous browser can render.
- *
- * Deliberately NOT the storage provider's getPublicUrl. Under LOCAL storage
- * that points at the files module's download route, which requires FILES_READ
- * and responds with Content-Disposition: attachment - so the marketing site,
- * which holds no token, could neither fetch it nor render it in an <img>.
- *
- * The public file route has neither problem: it is unauthenticated, serves
- * inline, and is restricted to uploads that opted in by entity type. It also
- * behaves identically whatever STORAGE_DRIVER is set to, so moving to S3 later
- * does not change the URLs already embedded in the site.
+ * Both image pairs resolve through utils/image-asset, which explains why the
+ * URL is the public file route rather than the storage provider's own.
  */
-const resolveSource = async (
-  url: string | null,
-  fileId: string | null,
-): Promise<string | null> => {
-  if (url) return url;
-  if (!fileId) return null;
-
-  const file = await fileRepository.findById(fileId);
-  // Soft-deleted or purged asset: render the slide without an image rather than
-  // failing the whole request for one missing file.
-  if (!file) return null;
-  return `${env.publicApiBaseUrl}/public/files/${file.id}`;
-};
-
 const resolveImage = (slide: HeroSlide): Promise<string | null> =>
-  resolveSource(slide.imageUrl, slide.imageFileId);
+  resolveImageSource(slide.imageUrl, slide.imageFileId);
 
 /** Null here means "no mobile-specific art" - the site falls back to `image`. */
 const resolveMobileImage = (slide: HeroSlide): Promise<string | null> =>
-  resolveSource(slide.mobileImageUrl, slide.mobileImageFileId);
+  resolveImageSource(slide.mobileImageUrl, slide.mobileImageFileId);
 
 const toResolved = async (slide: HeroSlide): Promise<ResolvedHeroSlide> => {
   const [image, mobileImage] = await Promise.all([
@@ -88,63 +58,6 @@ const toPublic = (slide: ResolvedHeroSlide): PublicHeroSlide => ({
   imageAlt: slide.image ? (slide.imageAlt ?? plainHeading(slide.heading)) : null,
   shine: slide.shine,
 });
-
-/**
- * Rejects a file id that does not point at a live image asset of the right
- * shape for the viewport it is destined for.
- *
- * Checked in the service rather than the validator for two reasons: it needs
- * the database (the FK alone would accept a soft-deleted row or a PDF), and the
- * dimension check needs the stored bytes.
- */
-const assertUsableImageFile = async (
-  fileId: string,
-  slot: ImageSlot,
-  field: string,
-): Promise<void> => {
-  const file = await fileRepository.findById(fileId);
-  if (!file) {
-    throw new ValidationError('Image file not found', [
-      {
-        field,
-        message: 'No such uploaded file, or it has been deleted',
-        code: 'UNKNOWN_FILE',
-      },
-    ]);
-  }
-  if (!file.mimeType.startsWith(IMAGE_MIME_PREFIX)) {
-    throw new ValidationError('Image file must be an image', [
-      { field, message: `Expected an image, got ${file.mimeType}`, code: 'INVALID_FILE_TYPE' },
-    ]);
-  }
-
-  /*
-   * The dimension check reads the blob back. That is one storage round trip per
-   * changed image on save - only on create/update, never on a read path - and
-   * it is the only way to know what was actually uploaded. The admin panel
-   * checks the same rules in the browser before uploading, so reaching a
-   * failure here means the client was bypassed.
-   */
-  const buffer = await getStorageProvider().getFile(file.storageKey);
-  const dimensions = readImageDimensions(buffer);
-
-  if (!dimensions) {
-    throw new ValidationError('Image could not be read', [
-      {
-        field,
-        message: `${file.originalName} is not a readable PNG, JPEG, GIF or WebP image`,
-        code: 'UNREADABLE_IMAGE',
-      },
-    ]);
-  }
-
-  const problem = checkImageDimensions(slot, dimensions);
-  if (problem) {
-    throw new ValidationError('Image is the wrong size', [
-      { field, message: problem, code: 'INVALID_IMAGE_DIMENSIONS' },
-    ]);
-  }
-};
 
 // ── reads ─────────────────────────────────────────────────────────────────
 

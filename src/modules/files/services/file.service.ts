@@ -3,6 +3,7 @@
 import { withTransaction } from '../../../config/database';
 import {
   AUDIT_ACTIONS,
+  isModuleOwnedEntityType,
   isPubliclyServableEntityType,
   isPubliclyServableMimeType,
 } from '../../../config/constants';
@@ -64,9 +65,23 @@ export const list = async (
   return { rows: withUrls, meta: buildPaginationMeta(total, pagination) };
 };
 
+/**
+ * An upload another module owns is not this module's to hand over.
+ *
+ * Reported as a plain 404 rather than a 403, for the same reason
+ * getPublicImage below reports one: a files.read holder must not be able to
+ * tell "this id belongs to a resume" from "this id does not exist". See
+ * MANAGED_FILE_ENTITY_TYPES in config/constants.ts for what is on the list and
+ * why holding files.read is not the same as being allowed to read a CV.
+ */
+const refuseIfModuleOwned = (file: FileRecord): void => {
+  if (isModuleOwnedEntityType(file.entityType)) throw new NotFoundError('File');
+};
+
 export const getById = async (id: string): Promise<FileRecord & { url: string }> => {
   const file = await fileRepository.findById(id);
   if (!file) throw new NotFoundError('File');
+  refuseIfModuleOwned(file);
   return { ...file, url: await storage.getPublicUrl(file.storageKey) };
 };
 
@@ -75,6 +90,7 @@ export const download = async (
 ): Promise<{ file: FileRecord; buffer: Buffer }> => {
   const file = await fileRepository.findById(id);
   if (!file) throw new NotFoundError('File');
+  refuseIfModuleOwned(file);
   const buffer = await storage.getFile(file.storageKey);
   return { file, buffer };
 };
@@ -199,6 +215,7 @@ export const remove = async (id: string, context: RequestContext): Promise<void>
   const file = await withTransaction(async (client) => {
     const existing = await fileRepository.findById(id, client);
     if (!existing) throw new NotFoundError('File');
+    refuseIfModuleOwned(existing);
 
     await fileRepository.softDelete(id, client);
 

@@ -1,7 +1,7 @@
 // src/modules/files/repositories/file.repository.ts
 
 import { Executor, runQuery } from '../../../config/database';
-import { StorageProviderName } from '../../../config/constants';
+import { MANAGED_FILE_ENTITY_TYPES, StorageProviderName } from '../../../config/constants';
 import { PaginatedResult, PaginationParams } from '../../../core/types/common.types';
 import { SqlBuilder } from '../../../core/utils/query-builder';
 import { CreateFileRecordInput, FileFilters, FileRecord } from '../types/file.types';
@@ -91,6 +91,15 @@ export const findAll = async (
 ): Promise<PaginatedResult<FileRecord>> => {
   const builder = new SqlBuilder();
   builder.raw('f.deleted_at IS NULL');
+  // Uploads another module owns are not listed here at all - not by name, not
+  // by size, and not by the entityType filter, which would otherwise be a
+  // one-parameter index of every CV in the table for anyone holding files.read.
+  // Applied in the query rather than in the service so the COUNT(*) OVER()
+  // below counts the same rows the caller is given. See
+  // MANAGED_FILE_ENTITY_TYPES in config/constants.ts.
+  builder.raw('(f.entity_type IS NULL OR NOT (f.entity_type = ANY(?)))', [
+    ...MANAGED_FILE_ENTITY_TYPES,
+  ]);
   builder.whereIf(filters.entityType, {
     column: 'f.entity_type',
     operator: '=',
