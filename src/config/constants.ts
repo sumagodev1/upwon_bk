@@ -163,6 +163,13 @@ export const PERMISSIONS = {
   INSIDER_PAGE_UPDATE: 'insider_page.update',
   INSIDER_PAGE_DELETE: 'insider_page.delete',
 
+  // The Clients & Case Studies page (/clients), module-wide like the Insider
+  // page's four: its hero slides are rows created, reordered and deleted.
+  CLIENTS_PAGE_READ: 'clients_page.read',
+  CLIENTS_PAGE_CREATE: 'clients_page.create',
+  CLIENTS_PAGE_UPDATE: 'clients_page.update',
+  CLIENTS_PAGE_DELETE: 'clients_page.delete',
+
   // The Contact page, module-wide like the two above. Only two keys, not four:
   // every section is a singleton that its own first save creates and every
   // later save replaces, so there is nothing for a create or a delete
@@ -310,6 +317,14 @@ export const PERMISSION_DESCRIPTIONS: Record<PermissionKey, string> = {
   'insider_page.create': 'Create Insider hero slides, issues, and stories',
   'insider_page.update': 'Update, reorder, and publish Insider page content',
   'insider_page.delete': 'Delete Insider hero slides, issues, and stories',
+
+  'clients_page.read':
+    'View Clients page content: hero, case studies, roster logos, network map, testimonials',
+  'clients_page.create':
+    'Create Clients page hero slides, case studies, roster logos, network states, testimonials',
+  'clients_page.update': 'Update, reorder, and publish Clients page content',
+  'clients_page.delete':
+    'Delete Clients page hero slides, case studies, roster logos, network states, testimonials',
 
   'contact_page.read': 'View Contact page content: hero, enquiry form, and contact details',
   'contact_page.update': 'Update and publish Contact page section content',
@@ -681,6 +696,43 @@ export const AUDIT_ACTIONS = {
   INSIDER_HERO_SLIDES_REORDERED: 'INSIDER_HERO_SLIDES_REORDERED',
   INSIDER_HERO_SLIDE_DELETED: 'INSIDER_HERO_SLIDE_DELETED',
 
+  CLIENTS_HERO_SLIDE_CREATED: 'CLIENTS_HERO_SLIDE_CREATED',
+  CLIENTS_HERO_SLIDE_UPDATED: 'CLIENTS_HERO_SLIDE_UPDATED',
+  CLIENTS_HERO_SLIDE_STATUS_CHANGED: 'CLIENTS_HERO_SLIDE_STATUS_CHANGED',
+  CLIENTS_HERO_SLIDES_REORDERED: 'CLIENTS_HERO_SLIDES_REORDERED',
+  CLIENTS_HERO_SLIDE_DELETED: 'CLIENTS_HERO_SLIDE_DELETED',
+
+  CLIENTS_CASE_CARD_CREATED: 'CLIENTS_CASE_CARD_CREATED',
+  CLIENTS_CASE_CARD_UPDATED: 'CLIENTS_CASE_CARD_UPDATED',
+  CLIENTS_CASE_CARD_STATUS_CHANGED: 'CLIENTS_CASE_CARD_STATUS_CHANGED',
+  CLIENTS_CASE_CARDS_REORDERED: 'CLIENTS_CASE_CARDS_REORDERED',
+  CLIENTS_CASE_CARD_DELETED: 'CLIENTS_CASE_CARD_DELETED',
+  CLIENTS_CASE_SECTION_STATUS_CHANGED: 'CLIENTS_CASE_SECTION_STATUS_CHANGED',
+  // One set for the story's four list sections; entityType names which.
+  CLIENTS_CASE_ROW_CREATED: 'CLIENTS_CASE_ROW_CREATED',
+  CLIENTS_CASE_ROW_UPDATED: 'CLIENTS_CASE_ROW_UPDATED',
+  CLIENTS_CASE_ROW_STATUS_CHANGED: 'CLIENTS_CASE_ROW_STATUS_CHANGED',
+  CLIENTS_CASE_ROWS_REORDERED: 'CLIENTS_CASE_ROWS_REORDERED',
+  CLIENTS_CASE_ROW_DELETED: 'CLIENTS_CASE_ROW_DELETED',
+
+  CLIENTS_ROSTER_LOGO_CREATED: 'CLIENTS_ROSTER_LOGO_CREATED',
+  CLIENTS_ROSTER_LOGO_UPDATED: 'CLIENTS_ROSTER_LOGO_UPDATED',
+  CLIENTS_ROSTER_LOGO_STATUS_CHANGED: 'CLIENTS_ROSTER_LOGO_STATUS_CHANGED',
+  CLIENTS_ROSTER_LOGOS_REORDERED: 'CLIENTS_ROSTER_LOGOS_REORDERED',
+  CLIENTS_ROSTER_LOGO_DELETED: 'CLIENTS_ROSTER_LOGO_DELETED',
+
+  CLIENTS_NETWORK_STATE_CREATED: 'CLIENTS_NETWORK_STATE_CREATED',
+  CLIENTS_NETWORK_STATE_UPDATED: 'CLIENTS_NETWORK_STATE_UPDATED',
+  CLIENTS_NETWORK_STATE_STATUS_CHANGED: 'CLIENTS_NETWORK_STATE_STATUS_CHANGED',
+  CLIENTS_NETWORK_STATES_REORDERED: 'CLIENTS_NETWORK_STATES_REORDERED',
+  CLIENTS_NETWORK_STATE_DELETED: 'CLIENTS_NETWORK_STATE_DELETED',
+
+  CLIENTS_TESTIMONIAL_CREATED: 'CLIENTS_TESTIMONIAL_CREATED',
+  CLIENTS_TESTIMONIAL_UPDATED: 'CLIENTS_TESTIMONIAL_UPDATED',
+  CLIENTS_TESTIMONIAL_STATUS_CHANGED: 'CLIENTS_TESTIMONIAL_STATUS_CHANGED',
+  CLIENTS_TESTIMONIALS_REORDERED: 'CLIENTS_TESTIMONIALS_REORDERED',
+  CLIENTS_TESTIMONIAL_DELETED: 'CLIENTS_TESTIMONIAL_DELETED',
+
   INSIDER_ISSUE_CREATED: 'INSIDER_ISSUE_CREATED',
   INSIDER_ISSUE_UPDATED: 'INSIDER_ISSUE_UPDATED',
   INSIDER_ISSUE_STATUS_CHANGED: 'INSIDER_ISSUE_STATUS_CHANGED',
@@ -980,6 +1032,27 @@ export const LIMITS = {
   MAX_POS_FAQ_ENTRIES: 24,
   // The Insider hero is the same auto-rotating slider, so the same reasoning.
   MAX_INSIDER_HERO_SLIDES: 12,
+  // The Clients hero is the same slider again.
+  MAX_CLIENTS_HERO_SLIDES: 12,
+  // The featured case studies sit in rows of three; three rows is already a
+  // long scroll before the roster.
+  MAX_CLIENTS_CASE_CARDS: 9,
+  // One outcomes list serves both: the card's three-column foot shows the
+  // first three active, the story's "Headline outcomes" row shows them all.
+  // Counted per case study, active and inactive alike.
+  MAX_CLIENTS_CASE_OUTCOMES: 6,
+  // The story page's lists, capped where each stops reading as a summary.
+  MAX_CLIENTS_CASE_CHALLENGES: 8,
+  MAX_CLIENTS_CASE_TIMELINE_STEPS: 8,
+  MAX_CLIENTS_CASE_DELIVERABLES: 12,
+  // The roster marquee loops, so the cap is about how long one lap takes.
+  MAX_CLIENTS_ROSTER_LOGOS: 24,
+  // The network map: India has 36 states and union territories, and a state
+  // card lists its cities on two short lines before it stops being scannable.
+  MAX_CLIENTS_NETWORK_STATES: 36,
+  MAX_CLIENTS_NETWORK_CITIES_PER_STATE: 12,
+  // The testimonials marquee loops; past this a lap takes minutes.
+  MAX_CLIENTS_TESTIMONIALS: 16,
   // An issue is a monthly digest laid out in rows of three; past a dozen
   // stories it stops being a digest and the reorder list stops being usable.
   MAX_INSIDER_STORIES_PER_ISSUE: 12,
@@ -1090,6 +1163,9 @@ export const PUBLIC_FILE_ENTITY_TYPES = [
   'comparison_column_logo',
   'erp_outcome_image',
   'insider_hero_slide',
+  'clients_hero_slide',
+  'clients_roster_logo',
+  'clients_testimonial_avatar',
   'insider_story',
   'insider_feature',
   'contact_hero',
@@ -1189,6 +1265,12 @@ export const PAGE_SECTION_KEYS = {
    * carry their own eyebrow, headline and subhead.
    */
   pos: ['faq', 'cta'],
+  /*
+   * The Clients page. Its hero slides each carry their own copy; 'outcomes'
+   * heads the featured case study cards, 'trust' the roster's logo marquee,
+   * 'network' the operational network map and 'testimonials' the quote marquee.
+   */
+  clients: ['outcomes', 'trust', 'network', 'testimonials'],
 } as const;
 
 export const PAGE_KEYS = Object.keys(PAGE_SECTION_KEYS) as Array<keyof typeof PAGE_SECTION_KEYS>;

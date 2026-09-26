@@ -26,6 +26,18 @@ import {
   INSIDER_ISSUES,
 } from './insider-page.data';
 import {
+  CLIENTS_CASE_CARDS,
+  CLIENTS_CASE_STORIES,
+  CLIENTS_CASES_SECTION_COPY,
+  CLIENTS_HERO_SLIDES,
+  CLIENTS_NETWORK_SECTION_COPY,
+  CLIENTS_NETWORK_STATES,
+  CLIENTS_ROSTER_LOGOS,
+  CLIENTS_ROSTER_SECTION_COPY,
+  CLIENTS_TESTIMONIALS,
+  CLIENTS_TESTIMONIALS_SECTION_COPY,
+} from './clients-page.data';
+import {
   CONTACT_DETAILS_SECTION,
   CONTACT_FORM_SECTION,
   CONTACT_HERO_SECTION,
@@ -792,6 +804,246 @@ async function seedInsiderHeroSlides(client: PoolClient): Promise<number> {
     ],
   );
 
+  return result.rowCount ?? 0;
+}
+
+async function seedClientsHeroSlides(client: PoolClient): Promise<number> {
+  // Only into an empty table, like the Insider hero: re-running the seed must
+  // never duplicate slides or revert an admin's edits.
+  const existing = await client.query<{ count: number }>(
+    'SELECT COUNT(*) AS count FROM clients_hero_slides',
+  );
+  if (Number(existing.rows[0].count) > 0) return 0;
+
+  const result = await client.query(
+    `
+    INSERT INTO clients_hero_slides
+      (heading, subtext, image_url, display_order, status)
+    SELECT unnested.heading, unnested.subtext, unnested.image_url,
+           unnested.display_order, 'ACTIVE'
+      FROM unnest($1::text[], $2::text[], $3::text[], $4::int[])
+        AS unnested(heading, subtext, image_url, display_order)
+    `,
+    [
+      CLIENTS_HERO_SLIDES.map((slide) => slide.heading),
+      CLIENTS_HERO_SLIDES.map((slide) => slide.subtext),
+      CLIENTS_HERO_SLIDES.map((slide) => slide.imageUrl),
+      CLIENTS_HERO_SLIDES.map((_slide, index) => index),
+    ],
+  );
+
+  return result.rowCount ?? 0;
+}
+
+/** Upserted only if absent, like every other page's section copy. */
+async function seedClientsSectionCopy(client: PoolClient): Promise<number> {
+  const sections = [
+    { key: 'outcomes', ...CLIENTS_CASES_SECTION_COPY },
+    { key: 'trust', ...CLIENTS_ROSTER_SECTION_COPY },
+    { key: 'network', ...CLIENTS_NETWORK_SECTION_COPY },
+    { key: 'testimonials', ...CLIENTS_TESTIMONIALS_SECTION_COPY },
+  ];
+  const result = await client.query(
+    `
+    INSERT INTO page_section_copy (page_key, section_key, eyebrow, heading, subtext)
+    SELECT 'clients', u.key, u.eyebrow, u.heading, u.subtext
+      FROM unnest($1::text[], $2::text[], $3::text[], $4::text[])
+        AS u(key, eyebrow, heading, subtext)
+    ON CONFLICT (page_key, section_key) DO NOTHING
+    `,
+    [
+      sections.map((s) => s.key),
+      sections.map((s) => s.eyebrow),
+      sections.map((s) => s.heading),
+      sections.map((s) => s.subtext),
+    ],
+  );
+  return result.rowCount ?? 0;
+}
+
+/**
+ * Fills the story of each seeded card, matched by brand: the text fields on the
+ * card, and the four list sections as rows. Only a card with no story yet
+ * (slug IS NULL) is touched, so re-running the seed never overwrites a story an
+ * admin has written or edited.
+ */
+async function seedClientsCaseStories(client: PoolClient): Promise<number> {
+  let filled = 0;
+  for (const story of CLIENTS_CASE_STORIES) {
+    const card = await client.query<{ id: string }>(
+      `
+      UPDATE clients_case_cards
+         SET slug = $2, duration = $3, challenge_one_line = $4, challenge_summary = $5,
+             why_upwon = $6, testimonial_quote = $7, testimonial_author = $8,
+             testimonial_role = $9
+       WHERE brand = $1
+         AND slug IS NULL
+         AND NOT EXISTS (SELECT 1 FROM clients_case_cards taken WHERE taken.slug = $2)
+      RETURNING id
+      `,
+      [
+        story.brand,
+        story.slug,
+        story.duration,
+        story.challengeOneLine,
+        story.challengeSummary,
+        story.whyUpwon,
+        story.testimonialQuote,
+        story.testimonialAuthor,
+        story.testimonialRole,
+      ],
+    );
+    const caseId = card.rows[0]?.id;
+    if (!caseId) continue;
+
+    // Each list only into an empty section, for the same reason as above.
+    const fill = async (table: string, columns: string[], rows: string[][]) => {
+      const existing = await client.query<{ count: number }>(
+        `SELECT COUNT(*) AS count FROM ${table} WHERE case_id = $1`,
+        [caseId],
+      );
+      if (Number(existing.rows[0].count) > 0 || rows.length === 0) return;
+      const arrays = columns.map((_c, i) => rows.map((row) => row[i]));
+      const casts = columns.map((_c, i) => `$${i + 2}::text[]`).join(', ');
+      await client.query(
+        `
+        INSERT INTO ${table} (case_id, ${columns.join(', ')}, display_order)
+        SELECT $1, ${columns.map((c) => `u.${c}`).join(', ')}, (u.ord - 1)::int
+          FROM unnest(${casts}) WITH ORDINALITY AS u(${columns.join(', ')}, ord)
+        `,
+        [caseId, ...arrays],
+      );
+    };
+
+    await fill(
+      'clients_case_outcomes',
+      ['value', 'label'],
+      story.outcomes.map((o) => [o.value, o.label]),
+    );
+    await fill(
+      'clients_case_challenges',
+      ['title', 'description'],
+      story.challenges.map((c) => [c.title, c.desc]),
+    );
+    await fill(
+      'clients_case_timeline_steps',
+      ['week', 'title', 'detail'],
+      story.timeline.map((t) => [t.week, t.title, t.detail]),
+    );
+    await fill(
+      'clients_case_deliverables',
+      ['text'],
+      story.deliverables.map((d) => [d]),
+    );
+
+    filled += 1;
+  }
+  return filled;
+}
+
+/** Only into an empty table, so re-running never reverts an admin's edits. */
+async function seedClientsTestimonials(client: PoolClient): Promise<number> {
+  const existing = await client.query<{ count: number }>(
+    'SELECT COUNT(*) AS count FROM clients_testimonials',
+  );
+  if (Number(existing.rows[0].count) > 0) return 0;
+
+  const result = await client.query(
+    `
+    INSERT INTO clients_testimonials
+      (quote, author, company, rating, avatar_url, fallback_color, display_order, status)
+    SELECT u.quote, u.author, u.company, 5, u.avatar_url, u.fallback_color,
+           u.display_order, u.status
+      FROM unnest($1::text[], $2::text[], $3::text[], $4::text[], $5::text[],
+                  $6::int[], $7::text[])
+        AS u(quote, author, company, avatar_url, fallback_color, display_order, status)
+    `,
+    [
+      CLIENTS_TESTIMONIALS.map((t) => t.quote),
+      CLIENTS_TESTIMONIALS.map((t) => t.author),
+      CLIENTS_TESTIMONIALS.map((t) => t.company),
+      CLIENTS_TESTIMONIALS.map((t) => t.avatarUrl),
+      CLIENTS_TESTIMONIALS.map((t) => t.fallbackColor),
+      CLIENTS_TESTIMONIALS.map((_t, index) => index),
+      CLIENTS_TESTIMONIALS.map((t) => t.status),
+    ],
+  );
+  return result.rowCount ?? 0;
+}
+
+/** Only into an empty table, so re-running never reverts an admin's edits. */
+async function seedClientsNetworkStates(client: PoolClient): Promise<number> {
+  const existing = await client.query<{ count: number }>(
+    'SELECT COUNT(*) AS count FROM clients_network_states',
+  );
+  if (Number(existing.rows[0].count) > 0) return 0;
+
+  const result = await client.query(
+    `
+    INSERT INTO clients_network_states (state, zone, cities, display_order, status)
+    SELECT u.state, u.zone, u.cities::jsonb, u.display_order, 'ACTIVE'
+      FROM unnest($1::text[], $2::text[], $3::text[], $4::int[])
+        AS u(state, zone, cities, display_order)
+    `,
+    [
+      CLIENTS_NETWORK_STATES.map((row) => row.state),
+      CLIENTS_NETWORK_STATES.map((row) => row.zone),
+      CLIENTS_NETWORK_STATES.map((row) => JSON.stringify(row.cities)),
+      CLIENTS_NETWORK_STATES.map((_row, index) => index),
+    ],
+  );
+  return result.rowCount ?? 0;
+}
+
+/** Only into an empty table, so re-running never reverts an admin's edits. */
+async function seedClientsRosterLogos(client: PoolClient): Promise<number> {
+  const existing = await client.query<{ count: number }>(
+    'SELECT COUNT(*) AS count FROM clients_roster_logos',
+  );
+  if (Number(existing.rows[0].count) > 0) return 0;
+
+  const result = await client.query(
+    `
+    INSERT INTO clients_roster_logos (name, image_url, display_order, status)
+    SELECT u.name, u.image_url, u.display_order, 'ACTIVE'
+      FROM unnest($1::text[], $2::text[], $3::int[]) AS u(name, image_url, display_order)
+    `,
+    [
+      CLIENTS_ROSTER_LOGOS.map((logo) => logo.name),
+      CLIENTS_ROSTER_LOGOS.map((logo) => logo.imageUrl),
+      CLIENTS_ROSTER_LOGOS.map((_logo, index) => index),
+    ],
+  );
+  return result.rowCount ?? 0;
+}
+
+/** Only into an empty table, so re-running never reverts an admin's edits. */
+async function seedClientsCaseCards(client: PoolClient): Promise<number> {
+  const existing = await client.query<{ count: number }>(
+    'SELECT COUNT(*) AS count FROM clients_case_cards',
+  );
+  if (Number(existing.rows[0].count) > 0) return 0;
+
+  const result = await client.query(
+    `
+    INSERT INTO clients_case_cards
+      (category, brand, location, scale, headline, story_url, display_order, status)
+    SELECT u.category, u.brand, u.location, u.scale, u.headline,
+           u.story_url, u.display_order, 'ACTIVE'
+      FROM unnest($1::text[], $2::text[], $3::text[], $4::text[], $5::text[],
+                  $6::text[], $7::int[])
+        AS u(category, brand, location, scale, headline, story_url, display_order)
+    `,
+    [
+      CLIENTS_CASE_CARDS.map((card) => card.category),
+      CLIENTS_CASE_CARDS.map((card) => card.brand),
+      CLIENTS_CASE_CARDS.map((card) => card.location),
+      CLIENTS_CASE_CARDS.map((card) => card.scale),
+      CLIENTS_CASE_CARDS.map((card) => card.headline),
+      CLIENTS_CASE_CARDS.map((card) => card.storyUrl),
+      CLIENTS_CASE_CARDS.map((_card, index) => index),
+    ],
+  );
   return result.rowCount ?? 0;
 }
 
@@ -1839,6 +2091,13 @@ async function main(): Promise<void> {
       const insiderHeroSlideCount = await seedInsiderHeroSlides(client);
       const insiderIssueCounts = await seedInsiderIssues(client);
       const insiderFeatureCount = await seedInsiderFeatureSection(client);
+      const clientsHeroSlideCount = await seedClientsHeroSlides(client);
+      const clientsSectionCopyCount = await seedClientsSectionCopy(client);
+      const clientsCaseCardCount = await seedClientsCaseCards(client);
+      const clientsCaseStoryCount = await seedClientsCaseStories(client);
+      const clientsRosterLogoCount = await seedClientsRosterLogos(client);
+      const clientsNetworkStateCount = await seedClientsNetworkStates(client);
+      const clientsTestimonialCount = await seedClientsTestimonials(client);
       const contactHeroCount = await seedContactHeroSection(client);
       const contactFormCount = await seedContactFormSection(client);
       const contactDetailsCount = await seedContactDetailsSection(client);
@@ -1882,6 +2141,13 @@ async function main(): Promise<void> {
         insiderHeroSlideCount,
         insiderIssueCounts,
         insiderFeatureCount,
+        clientsHeroSlideCount,
+        clientsSectionCopyCount,
+        clientsCaseCardCount,
+        clientsCaseStoryCount,
+        clientsRosterLogoCount,
+        clientsNetworkStateCount,
+        clientsTestimonialCount,
         contactHeroCount,
         contactFormCount,
         contactDetailsCount,
@@ -1971,6 +2237,13 @@ async function main(): Promise<void> {
       insiderIssues: summary.insiderIssueCounts.issues,
       insiderStories: summary.insiderIssueCounts.stories,
       insiderFeatureSection: summary.insiderFeatureCount,
+      clientsHeroSlides: summary.clientsHeroSlideCount,
+      clientsSectionCopy: summary.clientsSectionCopyCount,
+      clientsCaseCards: summary.clientsCaseCardCount,
+      clientsCaseStories: summary.clientsCaseStoryCount,
+      clientsRosterLogos: summary.clientsRosterLogoCount,
+      clientsNetworkStates: summary.clientsNetworkStateCount,
+      clientsTestimonials: summary.clientsTestimonialCount,
       contactHeroSection: summary.contactHeroCount,
       contactFormSection: summary.contactFormCount,
       contactDetailsSection: summary.contactDetailsCount,

@@ -29,6 +29,7 @@ import partnerProgramRoutes, {
   publicPartnerProgramRouter,
 } from '../modules/partner-program/routes';
 import aboutPageRoutes, { publicAboutPageRouter } from '../modules/about-page/routes';
+import clientsPageRoutes, { publicClientsPageRouter } from '../modules/clients-page/routes';
 
 const router = Router();
 
@@ -49,6 +50,7 @@ router.use('/public/contact-page', publicContactPageRouter);
 router.use('/public/careers', publicCareersRouter);
 router.use('/public/partner-program', publicPartnerProgramRouter);
 router.use('/public/about-page', publicAboutPageRouter);
+router.use('/public/clients-page', publicClientsPageRouter);
 
 // Public: the images those sections reference. Serves only uploads that opted
 // in by entity type - see PUBLIC_FILE_ENTITY_TYPES and fileService.getPublicImage.
@@ -81,5 +83,6 @@ router.use('/contact-page', contactPageRoutes);
 router.use('/careers', careersRoutes);
 router.use('/partner-program', partnerProgramRoutes);
 router.use('/about-page', aboutPageRoutes);
+router.use('/clients-page', clientsPageRoutes);
 
 export default router;
