@@ -22,7 +22,12 @@ import { ImageDimensions } from './image-dimensions';
 
 export type HeroImageVariant = 'desktop' | 'mobile';
 
-export interface HeroImageSpec {
+/**
+ * The shape rules for one image slot. Not hero-specific: any CMS section with
+ * an uploaded image declares one of these and is checked by
+ * checkImageDimensions below, so every slot reports failures the same way.
+ */
+export interface ImageSpec {
   /** Used in the error message, so it reads as the field the admin sees. */
   label: string;
   /** The recommended size, and also the minimum. */
@@ -32,6 +37,9 @@ export interface HeroImageSpec {
   ratioTolerance: number;
 }
 
+/** The hero's name for the same shape, kept so existing imports stay valid. */
+export type HeroImageSpec = ImageSpec;
+
 export const HERO_IMAGE_SPECS: Readonly<Record<HeroImageVariant, HeroImageSpec>> = {
   // Matches public/images/home_hero_bg.webp on the website.
   desktop: { label: 'Desktop image', width: 1600, height: 566, ratioTolerance: 0.2 },
@@ -39,22 +47,21 @@ export const HERO_IMAGE_SPECS: Readonly<Record<HeroImageVariant, HeroImageSpec>>
   mobile: { label: 'Mobile image', width: 800, height: 1200, ratioTolerance: 0.2 },
 } as const;
 
-export const describeHeroImageSpec = (variant: HeroImageVariant): string => {
-  const spec = HERO_IMAGE_SPECS[variant];
-  return `at least ${spec.width}x${spec.height}px`;
-};
+export const describeImageSpec = (spec: ImageSpec): string =>
+  `at least ${spec.width}x${spec.height}px`;
+
+export const describeHeroImageSpec = (variant: HeroImageVariant): string =>
+  describeImageSpec(HERO_IMAGE_SPECS[variant]);
 
 /**
- * Checks dimensions against a variant's spec.
+ * Checks dimensions against a spec.
  *
  * @returns null when acceptable, otherwise a message naming what is wrong.
  */
-export function checkHeroImageDimensions(
-  variant: HeroImageVariant,
+export function checkImageDimensions(
+  spec: ImageSpec,
   dimensions: ImageDimensions,
 ): string | null {
-  const spec = HERO_IMAGE_SPECS[variant];
-
   if (dimensions.width < spec.width || dimensions.height < spec.height) {
     return `${spec.label} must be at least ${spec.width}x${spec.height}px; this one is ${dimensions.width}x${dimensions.height}px`;
   }
@@ -69,4 +76,12 @@ export function checkHeroImageDimensions(
   }
 
   return null;
+}
+
+/** Checks dimensions against a hero variant's spec. */
+export function checkHeroImageDimensions(
+  variant: HeroImageVariant,
+  dimensions: ImageDimensions,
+): string | null {
+  return checkImageDimensions(HERO_IMAGE_SPECS[variant], dimensions);
 }

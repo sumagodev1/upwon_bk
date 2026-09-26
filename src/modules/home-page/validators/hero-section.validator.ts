@@ -4,6 +4,7 @@ import { CONTENT_STATUSES, LIMITS } from '../../../config/constants';
 import { PaginationParams } from '../../../core/types/common.types';
 import { parsePagination } from '../../../core/utils/pagination';
 import { validator, Validator } from '../../../core/utils/validation';
+import { validateContentUrl } from '../utils/content-url';
 import { hasBalancedAccentMarkers } from '../utils/heading-markup';
 import {
   CreateHeroSlideInput,
@@ -19,35 +20,10 @@ const IMAGE_URL_MAX = 1000;
 
 /**
  * An absolute http(s) URL, or a site-relative path like '/images/hero.webp'.
- *
- * Anything else is rejected rather than escaped: this value goes straight into
- * an `src` attribute on the public site, and the schemes worth blocking there
- * (`javascript:`, `data:`) are exactly the ones a validator can enumerate away.
+ * The rule itself is shared with every CMS URL field - see utils/content-url.
  */
 function validateImageUrl(v: Validator, field: string, value: string): void {
-  if (value.startsWith('/')) {
-    v.custom(
-      !value.startsWith('//'),
-      field,
-      `${field} must not be protocol-relative; give a full https:// URL instead`,
-      'INVALID_IMAGE_URL',
-    );
-    return;
-  }
-
-  let parsed: URL | null = null;
-  try {
-    parsed = new URL(value);
-  } catch {
-    parsed = null;
-  }
-
-  v.custom(
-    parsed !== null && (parsed.protocol === 'https:' || parsed.protocol === 'http:'),
-    field,
-    `${field} must be an https:// URL or a site-relative path starting with '/'`,
-    'INVALID_IMAGE_URL',
-  );
+  validateContentUrl(v, field, value, 'INVALID_IMAGE_URL');
 }
 
 function validateHeading(v: Validator, field: string, value: string): void {

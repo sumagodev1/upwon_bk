@@ -16,6 +16,13 @@ import notificationRoutes from '../modules/notifications/routes/notification.rou
 import apiKeyRoutes from '../modules/api-keys/routes/api-key.routes';
 import fileRoutes, { publicFileRouter } from '../modules/files/routes/file.routes';
 import homePageRoutes, { publicHomePageRouter } from '../modules/home-page/routes';
+import insiderPageRoutes, { publicInsiderPageRouter } from '../modules/insider-page/routes';
+import contactPageRoutes, { publicContactPageRouter } from '../modules/contact-page/routes';
+import careersRoutes, { publicCareersRouter } from '../modules/careers/routes';
+import partnerProgramRoutes, {
+  publicPartnerProgramRouter,
+} from '../modules/partner-program/routes';
+import aboutPageRoutes, { publicAboutPageRouter } from '../modules/about-page/routes';
 
 const router = Router();
 
@@ -27,6 +34,11 @@ router.use('/auth', authRoutes);
 // section's public router is read-only and returns a narrowed shape - see
 // modules/home-page/routes/hero-section.routes.ts.
 router.use('/public/home-page', publicHomePageRouter);
+router.use('/public/insider-page', publicInsiderPageRouter);
+router.use('/public/contact-page', publicContactPageRouter);
+router.use('/public/careers', publicCareersRouter);
+router.use('/public/partner-program', publicPartnerProgramRouter);
+router.use('/public/about-page', publicAboutPageRouter);
 
 // Public: the images those sections reference. Serves only uploads that opted
 // in by entity type - see PUBLIC_FILE_ENTITY_TYPES and fileService.getPublicImage.
@@ -50,5 +62,10 @@ router.use('/notifications', notificationRoutes);
 router.use('/api-keys', apiKeyRoutes);
 router.use('/files', fileRoutes);
 router.use('/home-page', homePageRoutes);
+router.use('/insider-page', insiderPageRoutes);
+router.use('/contact-page', contactPageRoutes);
+router.use('/careers', careersRoutes);
+router.use('/partner-program', partnerProgramRoutes);
+router.use('/about-page', aboutPageRoutes);
 
 export default router;

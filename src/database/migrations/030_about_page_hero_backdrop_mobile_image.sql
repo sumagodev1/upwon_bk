@@ -1,0 +1,60 @@
+-- About page hero: a mobile crop per rotating backdrop.
+--
+-- WHY THIS MIGRATION ADDS NO COLUMN.
+--
+-- Every other hero in this CMS carries its image as two columns per crop, so a
+-- second crop is two more columns - see
+-- 029_partner_program_hero_mobile_image.sql, added alongside this one. This
+-- hero's backdrops are an ordered jsonb array instead (023_about_page_hero.sql
+-- says why: ordered content with no identity of its own, always written as a
+-- whole set), and the mobile crop belongs to an ENTRY rather than to the
+-- section. So the change is to the shape of each object inside that array, and
+-- jsonb has no DDL for it: the entry shape is enforced by the validator, which
+-- can report 'backdrops[1].mobileImageFileId' against the slot that is actually
+-- wrong, where a CHECK could only say the whole column is bad.
+--
+-- What changes, then, is what the column is documented to hold, and that is
+-- worth a migration of its own rather than a silent change in TypeScript: the
+-- schema is what a DBA reads, the old comment in 023 describes an entry with one
+-- pair of sources, and an applied migration is not edited after the fact.
+--
+-- THE NEW ENTRY SHAPE - each element of about_hero_section.backdrops:
+--
+--   {
+--     "imageUrl":       string | null,   -- desktop: URL or site-relative path
+--     "imageFileId":    uuid   | null,   -- desktop: an upload, exclusive with imageUrl
+--     "mobileImageUrl": string | null,   -- narrow-viewport crop, same two sources,
+--     "mobileImageFileId": uuid | null   -- also exclusive with each other
+--   }
+--
+-- The two mobile keys are OPTIONAL and absent on every row seeded or saved
+-- before this migration; a missing key reads as null, which means "this backdrop
+-- has no phone crop, so the desktop one serves every viewport". That is what
+-- every published row says today, so this migration changes no page. An entry
+-- with a mobile crop and no desktop source is refused by the validator rather
+-- than stored: the fallback runs one way only, and a slide whose only image is
+-- the phone crop would render as a blank frame on a laptop.
+--
+-- Why a phone crop at all: <HeroSlider> paints each backdrop with object-cover
+-- under a navy scrim, and on a phone that band measures 375x688 CSS px (measured
+-- on the running page) against a desktop crop authored at 2:1 - so one wide file
+-- is cropped to a narrow vertical sliver of its middle, which is usually where
+-- the composition was. With a crop published, the slider renders the backdrop
+-- through a <picture> whose (max-width: 767px) <source> the browser resolves
+-- before any of our code runs, so a phone never downloads the desktop file.
+--
+-- AND THE COST OF KEEPING IT IN jsonb, restated because this migration doubles
+-- the exposure 023 named. 029 gives the Partner hero a real column, so its
+-- mobile_image_file_id is an FK with ON DELETE SET NULL. mobileImageFileId here is
+-- not: it lives inside this jsonb, nothing in the files module checks what still
+-- references an asset before removing it, and so a purged upload leaves a dangling
+-- id behind exactly as 023 says imageFileId does. The outcome is the same one the
+-- FK's SET NULL would produce and it is silent either way - resolveImageSource
+-- answers null for a missing asset, and toPublic keeps the slide with
+-- mobileImage: null - so the slide quietly goes back to serving its desktop crop
+-- at every width and the admin form shows that mobile slot as empty. Two ids per
+-- entry can now dangle instead of one. Whatever referenced-by check the files
+-- module grows has to read this column, not just the FKs.
+
+COMMENT ON COLUMN about_hero_section.backdrops IS
+  'Ordered rotating backdrops. Each entry: { imageUrl, imageFileId, mobileImageUrl, mobileImageFileId } - at most one source set per crop, the mobile pair optional, a NULL mobile crop meaning the desktop image serves every viewport. Entry shape enforced by the validator so a bad slot can be named; see 030_about_page_hero_backdrop_mobile_image.sql.';

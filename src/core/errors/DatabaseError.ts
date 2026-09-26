@@ -56,6 +56,23 @@ const CONSTRAINT_MESSAGES: Record<string, { message: string; code: string }> = {
     message: 'A permission with this key already exists',
     code: 'PERMISSION_KEY_TAKEN',
   },
+  insider_issues_slug_key: {
+    message: 'An Insider issue with this slug already exists',
+    code: 'SLUG_TAKEN',
+  },
+  insider_issues_issue_number_key: {
+    message: 'An Insider issue with this issue number already exists',
+    code: 'ISSUE_NUMBER_TAKEN',
+  },
+  // Only reachable when two admins mark different issues current at once.
+  insider_issues_single_current_idx: {
+    message: 'Another issue was made current at the same time - please retry',
+    code: 'CURRENT_ISSUE_CONFLICT',
+  },
+  insider_stories_issue_slug_key: {
+    message: 'A story with this slug already exists in this issue',
+    code: 'SLUG_TAKEN',
+  },
 };
 
 export class DatabaseError extends AppError {
