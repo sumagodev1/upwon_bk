@@ -21,6 +21,20 @@ import sfaDmsPageRoutes, {
   publicSfaDmsPageRouter,
 } from '../modules/product-pages/sfa-dms-page/routes';
 import fmsPageRoutes, { publicFmsPageRouter } from '../modules/product-pages/fms-page/routes';
+import bakeryPageRoutes, {
+  publicBakeryPageRouter,
+} from '../modules/industry-pages/bakery-page/routes';
+import fmcgPageRoutes, { publicFmcgPageRouter } from '../modules/industry-pages/fmcg-page/routes';
+import sweetsPageRoutes, {
+  publicSweetsPageRouter,
+} from '../modules/industry-pages/sweets-page/routes';
+import foodProcessingPageRoutes, {
+  publicFoodProcessingPageRouter,
+} from '../modules/industry-pages/food-processing-page/routes';
+import nonFoodFmcgPageRoutes, {
+  publicNonFoodFmcgPageRouter,
+} from '../modules/industry-pages/non-food-fmcg-page/routes';
+import dairyPageRoutes, { publicDairyPageRouter } from '../modules/industry-pages/dairy-page/routes';
 
 const router = Router();
 
@@ -35,6 +49,12 @@ router.use('/public/home-page', publicHomePageRouter);
 router.use('/public/erp-page', publicErpPageRouter);
 router.use('/public/sfa-dms-page', publicSfaDmsPageRouter);
 router.use('/public/fms-page', publicFmsPageRouter);
+router.use('/public/bakery-page', publicBakeryPageRouter);
+router.use('/public/fmcg-page', publicFmcgPageRouter);
+router.use('/public/sweets-page', publicSweetsPageRouter);
+router.use('/public/food-processing-page', publicFoodProcessingPageRouter);
+router.use('/public/non-food-fmcg-page', publicNonFoodFmcgPageRouter);
+router.use('/public/dairy-page', publicDairyPageRouter);
 
 // Public: the images those sections reference. Serves only uploads that opted
 // in by entity type - see PUBLIC_FILE_ENTITY_TYPES and fileService.getPublicImage.
@@ -61,5 +81,11 @@ router.use('/home-page', homePageRoutes);
 router.use('/erp-page', erpPageRoutes);
 router.use('/sfa-dms-page', sfaDmsPageRoutes);
 router.use('/fms-page', fmsPageRoutes);
+router.use('/bakery-page', bakeryPageRoutes);
+router.use('/fmcg-page', fmcgPageRoutes);
+router.use('/sweets-page', sweetsPageRoutes);
+router.use('/food-processing-page', foodProcessingPageRoutes);
+router.use('/non-food-fmcg-page', nonFoodFmcgPageRoutes);
+router.use('/dairy-page', dairyPageRoutes);
 
 export default router;

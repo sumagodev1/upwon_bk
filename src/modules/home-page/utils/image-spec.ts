@@ -47,7 +47,47 @@ export type ImageSlot =
   | 'erpIndustry'
   | 'erpAvatar'
   | 'erpOutcome'
-  | 'erpDashboard';
+  | 'erpDashboard'
+  | 'bakeryHero'
+  | 'bakeryHeroMobile'
+  | 'bakeryStatIcon'
+  | 'bakeryPlatformIcon'
+  | 'bakeryHelpVisual'
+  | 'bakeryCtaDesktop'
+  | 'bakeryCtaMobile'
+  | 'fmcgHero'
+  | 'fmcgHeroMobile'
+  | 'fmcgPlatformIcon'
+  | 'fmcgCtaDesktop'
+  | 'fmcgCtaMobile'
+  | 'sweetsHero'
+  | 'sweetsHeroMobile'
+  | 'sweetsPlatformIcon'
+  | 'sweetsCtaDesktop'
+  | 'sweetsCtaMobile'
+  | 'foodProcessingHero'
+  | 'foodProcessingHeroMobile'
+  | 'foodProcessingTrustPanel'
+  | 'foodProcessingPlatformIcon'
+  | 'foodProcessingCoverage'
+  | 'foodProcessingCtaDesktop'
+  | 'foodProcessingCtaMobile'
+  | 'nonFoodFmcgHero'
+  | 'nonFoodFmcgHeroMobile'
+  | 'nonFoodFmcgCapability'
+  | 'nonFoodFmcgPlatformIcon'
+  | 'nonFoodFmcgCoverageDashboard'
+  | 'nonFoodFmcgCtaDesktop'
+  | 'nonFoodFmcgCtaMobile'
+  | 'dairyHero'
+  | 'dairyHeroMobile'
+  | 'dairyTrustStat'
+  | 'dairyCapabilitiesPanel'
+  | 'dairyPlatformIcon'
+  | 'dairyBenefitsPanel'
+  | 'dairyCoverage'
+  | 'dairyCtaDesktop'
+  | 'dairyCtaMobile';
 
 export interface ImageSpec {
   /** Used in the error message, so it reads as the field the admin sees. */
@@ -281,6 +321,144 @@ export const IMAGE_SPECS: Readonly<Record<ImageSlot, ImageSpec>> = {
    * beside it, which are shown whole.
    */
   erpDashboard: { label: 'Dashboard image', width: 1448, height: 1086, ratioTolerance: 0.2 },
+
+  // ── Bakery & Confectionery industry page ────────────────────────────────
+  /*
+   * The slider banners - public/images/bakertandconfenary1..3 are all
+   * 1600x566, the same wide band the FMS and home heroes use. Covered, so a
+   * differently shaped upload is cropped; hence the ratio rule.
+   */
+  bakeryHero: { label: 'Desktop image', width: 1600, height: 566, ratioTolerance: 0.2 },
+  bakeryHeroMobile: { label: 'Mobile image', width: 800, height: 1200, ratioTolerance: 0.2 },
+  /*
+   * The round illustration above each trust figure - the shipped set runs from
+   * 210x207 to 247x247. Drawn as a 64px circle with object-cover, so anything
+   * far from square loses its edges; the floor sits just under the smallest.
+   */
+  bakeryStatIcon: { label: 'Icon', width: 200, height: 200, ratioTolerance: 0.25 },
+  /*
+   * The product mark in a platform tile - ERP.webp and its siblings are 222px
+   * wide with heights from 184 to 215. object-contain, so no ratio rule.
+   */
+  bakeryPlatformIcon: { label: 'Tile icon', width: 200, height: 180, ratioTolerance: null },
+  /*
+   * The "How UpWON helps" diagram - public/images/how_UpWon_helps.webp is
+   * 1619x971. Drawn full width at its natural height, so it is never cropped,
+   * but a very different shape would change the section's whole proportion.
+   */
+  bakeryHelpVisual: { label: 'Diagram', width: 1600, height: 960, ratioTolerance: 0.25 },
+  /*
+   * The closing band - public/images/bake_cta_back.webp is 1600x565 and the
+   * phone crop bake_mb_cta.webp is 822x1914. Both object-cover, so both crop.
+   */
+  bakeryCtaDesktop: { label: 'Desktop artwork', width: 1600, height: 565, ratioTolerance: 0.2 },
+  bakeryCtaMobile: { label: 'Mobile artwork', width: 822, height: 1914, ratioTolerance: 0.2 },
+
+  // ── FMCG Distribution industry page ─────────────────────────────────────
+  /*
+   * The slider banners - move_product_faster.webp and its three siblings run
+   * from 1774x887 to 1829x860, a 2:1 band. Covered, so a differently shaped
+   * upload is cropped; hence the ratio rule.
+   */
+  fmcgHero: { label: 'Desktop image', width: 1600, height: 800, ratioTolerance: 0.2 },
+  fmcgHeroMobile: { label: 'Mobile image', width: 800, height: 1200, ratioTolerance: 0.2 },
+  // The same product marks as the bakery page's tiles, drawn the same way.
+  fmcgPlatformIcon: { label: 'Tile icon', width: 200, height: 180, ratioTolerance: null },
+  /*
+   * The closing band - public/images/fmcg_cta_sec.webp is 1983x793. Covered
+   * and anchored top, with the copy over its empty left panel.
+   */
+  fmcgCtaDesktop: { label: 'Desktop artwork', width: 1600, height: 640, ratioTolerance: 0.2 },
+  /*
+   * The phone banner above the copy. Optional - without one the page crops
+   * the desktop artwork into it - and any shape, since it is a 230px-tall
+   * cover crop at whatever width the phone is.
+   */
+  fmcgCtaMobile: { label: 'Mobile artwork', width: 800, height: 460, ratioTolerance: null },
+
+  // ── Sweets & Namkeen industry page ──────────────────────────────────────
+  /*
+   * The slider banners - public/images/sweet_hero_1..3 are 1600x566, the same
+   * wide band the bakery and home heroes use. Covered, so the ratio rule.
+   */
+  sweetsHero: { label: 'Desktop image', width: 1600, height: 565, ratioTolerance: 0.2 },
+  sweetsHeroMobile: { label: 'Mobile image', width: 800, height: 1200, ratioTolerance: 0.2 },
+  // The same product marks as the other industry pages' tiles.
+  sweetsPlatformIcon: { label: 'Tile icon', width: 200, height: 180, ratioTolerance: null },
+  /*
+   * The closing band - sweet_cta_desktop.webp is 1774x887, a 2:1 band with
+   * the copy over its empty left panel; sweet_cta_mobile.webp is a 468x984
+   * portrait, cropped from the top into the phone banner. Both covered.
+   */
+  sweetsCtaDesktop: { label: 'Desktop artwork', width: 1600, height: 800, ratioTolerance: 0.2 },
+  sweetsCtaMobile: { label: 'Mobile artwork', width: 460, height: 960, ratioTolerance: 0.2 },
+
+  // ── Food Processing industry page ───────────────────────────────────────
+  // food_process_hero_1..4 are 1600x566 - the same covered band as the others.
+  foodProcessingHero: { label: 'Desktop image', width: 1600, height: 565, ratioTolerance: 0.2 },
+  foodProcessingHeroMobile: { label: 'Mobile image', width: 800, height: 1200, ratioTolerance: 0.2 },
+  /*
+   * The photograph beside the trust figures - food_process_proof_strip.webp is
+   * 1672x941. Covered into a column whose height follows the copy, so no one
+   * shape fits and there is no ratio rule.
+   */
+  foodProcessingTrustPanel: { label: 'Photograph', width: 800, height: 450, ratioTolerance: null },
+  foodProcessingPlatformIcon: { label: 'Tile icon', width: 200, height: 180, ratioTolerance: null },
+  /*
+   * A coverage category's illustration - the shipped set runs 1536x1024 to
+   * 1672x941, drawn object-contain at 96px tall. No ratio rule.
+   */
+  foodProcessingCoverage: { label: 'Category art', width: 400, height: 260, ratioTolerance: null },
+  /*
+   * The closing band - food_process_cta.webp is 1600x567, drawn at its natural
+   * height with the copy over its left panel; the phone crop is 440x820.
+   */
+  foodProcessingCtaDesktop: { label: 'Desktop artwork', width: 1600, height: 565, ratioTolerance: 0.2 },
+  foodProcessingCtaMobile: { label: 'Mobile artwork', width: 440, height: 820, ratioTolerance: 0.2 },
+
+  // ── Non-Food FMCG industry page ─────────────────────────────────────────
+  nonFoodFmcgHero: { label: 'Desktop image', width: 1600, height: 565, ratioTolerance: 0.2 },
+  nonFoodFmcgHeroMobile: { label: 'Mobile image', width: 800, height: 1200, ratioTolerance: 0.2 },
+  /*
+   * A capability card's illustration - the shipped set are 338px tall and
+   * 350-456 wide, drawn object-contain in a 112px frame. No ratio rule.
+   */
+  nonFoodFmcgCapability: { label: 'Card illustration', width: 300, height: 280, ratioTolerance: null },
+  nonFoodFmcgPlatformIcon: { label: 'Tile icon', width: 200, height: 180, ratioTolerance: null },
+  /*
+   * The dashboard in the coverage section - industry_cov_dashboard.webp is
+   * 1598x984, drawn full width at its natural height.
+   */
+  nonFoodFmcgCoverageDashboard: { label: 'Dashboard image', width: 1200, height: 740, ratioTolerance: 0.2 },
+  nonFoodFmcgCtaDesktop: { label: 'Desktop artwork', width: 1600, height: 565, ratioTolerance: 0.2 },
+  // non_fmcg_cta_mobile.webp is 440x954.
+  nonFoodFmcgCtaMobile: { label: 'Mobile artwork', width: 440, height: 950, ratioTolerance: 0.2 },
+
+  // ── Dairy & Ice Cream industry page ─────────────────────────────────────
+  // dairy_hero_* are 1600x566-569 - the same covered band as the others.
+  dairyHero: { label: 'Desktop image', width: 1600, height: 565, ratioTolerance: 0.2 },
+  dairyHeroMobile: { label: 'Mobile image', width: 800, height: 1200, ratioTolerance: 0.2 },
+  /*
+   * The photograph shown with a trust figure - the shipped three run 1254x1254
+   * to 1409x1117, covered into the card's photo column. No ratio rule.
+   */
+  dairyTrustStat: { label: 'Photograph', width: 800, height: 640, ratioTolerance: null },
+  /*
+   * The collage beside the capability cards - dairy_capabilities.webp is
+   * 1231x1277, drawn at its natural ratio.
+   */
+  dairyCapabilitiesPanel: { label: 'Collage image', width: 900, height: 930, ratioTolerance: 0.2 },
+  dairyPlatformIcon: { label: 'Tile icon', width: 200, height: 180, ratioTolerance: null },
+  // The image beside the benefits - dairy_benefits_sec.webp is 1536x1024.
+  dairyBenefitsPanel: { label: 'Section image', width: 1200, height: 800, ratioTolerance: 0.2 },
+  /*
+   * A coverage category's photograph - the shipped set are 1536x1024 and
+   * 1448x1086, covered into the scrolling cards. No ratio rule.
+   */
+  dairyCoverage: { label: 'Category image', width: 600, height: 400, ratioTolerance: null },
+  // The closing band - dairy_cta_desktop.webp is 1600x566, the phone crop 440x956.
+  dairyCtaDesktop: { label: 'Desktop artwork', width: 1600, height: 565, ratioTolerance: 0.2 },
+  dairyCtaMobile: { label: 'Mobile artwork', width: 440, height: 950, ratioTolerance: 0.2 },
 };
 
 export const describeImageSpec = (slot: ImageSlot): string => {
