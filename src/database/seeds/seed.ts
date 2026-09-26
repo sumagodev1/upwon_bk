@@ -51,6 +51,12 @@ import {
 } from './blog.data';
 import { FREE_AUDIT_HERO_SLIDES } from './free-audit.data';
 import { KB_ARTICLES, KB_CATEGORIES, KB_HERO_SLIDES } from './knowledgebase.data';
+import {
+  VS_SAP_ANSWER_SECTION,
+  VS_SAP_CAPABILITIES,
+  VS_SAP_COMPARISON_SECTION,
+  VS_SAP_HERO_SLIDES,
+} from './vs-sap-page.data';
 
 /**
  * Idempotent seed. Safe to run repeatedly - every statement is an upsert or a
@@ -1521,6 +1527,120 @@ async function seedKbArticles(client: PoolClient): Promise<number> {
   return result.rowCount ?? 0;
 }
 
+// ── upwon vs sap (Resource Page > UpWon vs SAP) ───────────────────────────
+/*
+ * The /compare/upwon-vs-sap content the website previously held as static data
+ * - see vs-sap-page.data.ts for where each part came from. The straight answer
+ * and the comparison table's copy are singletons pinned to id = 1, so DO
+ * NOTHING is exactly "only when empty"; the hero slides and the capability rows
+ * are each seeded only into an empty table, like the Free Audit hero, so a
+ * re-run never re-adds a slide or a row an administrator has since deleted, and
+ * never reverts an edit.
+ */
+
+async function seedVsSapHeroSlides(client: PoolClient): Promise<number> {
+  const existing = await client.query<{ count: number }>(
+    'SELECT COUNT(*) AS count FROM vs_sap_hero_slides',
+  );
+  if (Number(existing.rows[0].count) > 0) return 0;
+
+  const result = await client.query(
+    `
+    INSERT INTO vs_sap_hero_slides
+      (eyebrow, heading, subtext, image_url, display_order, status)
+    SELECT unnested.eyebrow, unnested.heading, unnested.subtext,
+           unnested.image_url, unnested.display_order, 'ACTIVE'
+      FROM unnest($1::text[], $2::text[], $3::text[], $4::text[], $5::int[])
+        AS unnested(eyebrow, heading, subtext, image_url, display_order)
+    `,
+    [
+      VS_SAP_HERO_SLIDES.map((slide) => slide.eyebrow),
+      VS_SAP_HERO_SLIDES.map((slide) => slide.heading),
+      VS_SAP_HERO_SLIDES.map((slide) => slide.subtext),
+      VS_SAP_HERO_SLIDES.map((slide) => slide.imageUrl),
+      VS_SAP_HERO_SLIDES.map((_slide, index) => index),
+    ],
+  );
+
+  return result.rowCount ?? 0;
+}
+
+async function seedVsSapAnswerSection(client: PoolClient): Promise<number> {
+  const section = VS_SAP_ANSWER_SECTION;
+  // The two lists are serialised explicitly: handed a JS array, pg would
+  // encode it as a Postgres array literal, which is not valid jsonb.
+  const result = await client.query(
+    `
+    INSERT INTO vs_sap_answer_section
+      (id, eyebrow, heading, upwon_title, upwon_points, sap_title, sap_points,
+       closing_line)
+    VALUES (1, $1, $2, $3, $4::jsonb, $5, $6::jsonb, $7)
+    ON CONFLICT (id) DO NOTHING
+    `,
+    [
+      section.eyebrow,
+      section.heading,
+      section.upwonTitle,
+      JSON.stringify(section.upwonPoints),
+      section.sapTitle,
+      JSON.stringify(section.sapPoints),
+      section.closingLine,
+    ],
+  );
+
+  return result.rowCount ?? 0;
+}
+
+async function seedVsSapComparisonSection(client: PoolClient): Promise<number> {
+  const section = VS_SAP_COMPARISON_SECTION;
+  const result = await client.query(
+    `
+    INSERT INTO vs_sap_comparison_section
+      (id, eyebrow, heading, subtext, tco_upwon, tco_sap, tco_netsuite)
+    VALUES (1, $1, $2, $3, $4, $5, $6)
+    ON CONFLICT (id) DO NOTHING
+    `,
+    [
+      section.eyebrow,
+      section.heading,
+      section.subtext,
+      section.tcoUpwon,
+      section.tcoSap,
+      section.tcoNetsuite,
+    ],
+  );
+
+  return result.rowCount ?? 0;
+}
+
+async function seedVsSapCapabilities(client: PoolClient): Promise<number> {
+  const existing = await client.query<{ count: number }>(
+    'SELECT COUNT(*) AS count FROM vs_sap_capabilities',
+  );
+  if (Number(existing.rows[0].count) > 0) return 0;
+
+  const result = await client.query(
+    `
+    INSERT INTO vs_sap_capabilities
+      (capability, upwon, sap, netsuite, display_order, status)
+    SELECT unnested.capability, unnested.upwon, unnested.sap, unnested.netsuite,
+           unnested.display_order, 'ACTIVE'
+      FROM unnest($1::text[], $2::int[], $3::int[], $4::int[], $5::int[])
+        AS unnested(capability, upwon, sap, netsuite, display_order)
+    `,
+    [
+      VS_SAP_CAPABILITIES.map((row) => row.capability),
+      VS_SAP_CAPABILITIES.map((row) => row.upwon),
+      VS_SAP_CAPABILITIES.map((row) => row.sap),
+      VS_SAP_CAPABILITIES.map((row) => row.netsuite),
+      // The order the table draws the rows in today.
+      VS_SAP_CAPABILITIES.map((_row, index) => index),
+    ],
+  );
+
+  return result.rowCount ?? 0;
+}
+
 // ── runner ────────────────────────────────────────────────────────────────
 /**
  * The copy that heads each list section - one row per section rather than a
@@ -2203,6 +2323,10 @@ async function main(): Promise<void> {
       // Categories first: the articles are filed under them by slug.
       const kbCategoryCount = await seedKbCategories(client);
       const kbArticleCount = await seedKbArticles(client);
+      const vsSapHeroSlideCount = await seedVsSapHeroSlides(client);
+      const vsSapAnswerSectionCount = await seedVsSapAnswerSection(client);
+      const vsSapComparisonSectionCount = await seedVsSapComparisonSection(client);
+      const vsSapCapabilityCount = await seedVsSapCapabilities(client);
       const rootAdmin = await seedRootAdmin(client);
       return {
         permissionCount,
@@ -2256,6 +2380,10 @@ async function main(): Promise<void> {
         kbHeroSlideCount,
         kbCategoryCount,
         kbArticleCount,
+        vsSapHeroSlideCount,
+        vsSapAnswerSectionCount,
+        vsSapComparisonSectionCount,
+        vsSapCapabilityCount,
         rootAdmin,
       };
     });
@@ -2355,6 +2483,10 @@ async function main(): Promise<void> {
       kbHeroSlides: summary.kbHeroSlideCount,
       kbCategories: summary.kbCategoryCount,
       kbArticles: summary.kbArticleCount,
+      vsSapHeroSlides: summary.vsSapHeroSlideCount,
+      vsSapAnswerSection: summary.vsSapAnswerSectionCount,
+      vsSapComparisonSection: summary.vsSapComparisonSectionCount,
+      vsSapCapabilities: summary.vsSapCapabilityCount,
       rootAdminEmail: summary.rootAdmin.email,
       rootAdminCreated: summary.rootAdmin.created,
     });

@@ -35,6 +35,7 @@ import socialMediaLinksRoutes, {
 import blogRoutes, { publicBlogRouter } from '../modules/blog/routes';
 import freeAuditRoutes, { publicFreeAuditRouter } from '../modules/free-audit/routes';
 import knowledgebaseRoutes, { publicKnowledgebaseRouter } from '../modules/knowledgebase/routes';
+import vsSapPageRoutes, { publicVsSapPageRouter } from '../modules/vs-sap-page/routes';
 
 const router = Router();
 
@@ -67,6 +68,9 @@ router.use('/public/free-audit', publicFreeAuditRouter);
 // The /knowledgebase pages: the hub's hero and category cards, each category's
 // page and each article. See modules/knowledgebase/routes/index.ts.
 router.use('/public/knowledgebase', publicKnowledgebaseRouter);
+// The /compare/upwon-vs-sap page: its hero, the straight answer cards, and the
+// capability comparison table. See modules/vs-sap-page/routes/index.ts.
+router.use('/public/vs-sap-page', publicVsSapPageRouter);
 
 // Public: the images those sections reference. Serves only uploads that opted
 // in by entity type - see PUBLIC_FILE_ENTITY_TYPES and fileService.getPublicImage.
@@ -103,5 +107,6 @@ router.use('/social-media-links', socialMediaLinksRoutes);
 router.use('/blog', blogRoutes);
 router.use('/free-audit', freeAuditRoutes);
 router.use('/knowledgebase', knowledgebaseRoutes);
+router.use('/vs-sap-page', vsSapPageRoutes);
 
 export default router;

@@ -350,6 +350,20 @@ export const PERMISSIONS = {
   // the blog.
   KNOWLEDGEBASE_READ: 'knowledgebase.read',
   KNOWLEDGEBASE_UPDATE: 'knowledgebase.update',
+
+  // The UpWon vs SAP comparison page, the fourth item under the admin panel's
+  // "Resource Page" sidebar parent: the /compare/upwon-vs-sap hero, its "The
+  // straight answer" cards and its capability comparison table. Two keys, like
+  // free_audit.*, even though the hero slides and the table's rows are created
+  // and deleted: the page is one argument, and whoever may reword a card is the
+  // person who re-rates a capability or adds the next row. Unpublishing is
+  // always available as the reversible alternative to deleting.
+  //
+  // Its own module rather than a section of any other page's keys:
+  // /compare/upwon-vs-sap is its own page with its own sidebar item, and
+  // granting it must not also grant the blog or the Free Operational Audit.
+  VS_SAP_PAGE_READ: 'vs_sap_page.read',
+  VS_SAP_PAGE_UPDATE: 'vs_sap_page.update',
 } as const;
 
 export type PermissionKey = (typeof PERMISSIONS)[keyof typeof PERMISSIONS];
@@ -460,6 +474,11 @@ export const PERMISSION_DESCRIPTIONS: Record<PermissionKey, string> = {
     'View Knowledgebase content: the hero slides, the categories, and the articles',
   'knowledgebase.update':
     'Create, update, reorder, publish and delete Knowledgebase content, including its categories and articles',
+
+  'vs_sap_page.read':
+    'View UpWon vs SAP page content: the hero slides, the straight answer cards, and the capability comparison',
+  'vs_sap_page.update':
+    'Create, update, reorder, publish and delete UpWon vs SAP page content, including its capability rows',
 };
 
 /**
@@ -984,6 +1003,28 @@ export const AUDIT_ACTIONS = {
   KB_ARTICLE_STATUS_CHANGED: 'KB_ARTICLE_STATUS_CHANGED',
   KB_ARTICLE_DELETED: 'KB_ARTICLE_DELETED',
 
+  /*
+   * The UpWon vs SAP page. The hero slides are the Free Audit hero's family,
+   * action for action. The straight answer and the comparison table's copy are
+   * singletons with one action each, on the About page's pattern; the table's
+   * capability rows are an ordered list like every other one in this API.
+   */
+  VS_SAP_HERO_SLIDE_CREATED: 'VS_SAP_HERO_SLIDE_CREATED',
+  VS_SAP_HERO_SLIDE_UPDATED: 'VS_SAP_HERO_SLIDE_UPDATED',
+  VS_SAP_HERO_SLIDE_STATUS_CHANGED: 'VS_SAP_HERO_SLIDE_STATUS_CHANGED',
+  VS_SAP_HERO_SLIDES_REORDERED: 'VS_SAP_HERO_SLIDES_REORDERED',
+  VS_SAP_HERO_SLIDE_DELETED: 'VS_SAP_HERO_SLIDE_DELETED',
+
+  VS_SAP_ANSWER_SECTION_UPDATED: 'VS_SAP_ANSWER_SECTION_UPDATED',
+
+  VS_SAP_COMPARISON_SECTION_UPDATED: 'VS_SAP_COMPARISON_SECTION_UPDATED',
+
+  VS_SAP_CAPABILITY_CREATED: 'VS_SAP_CAPABILITY_CREATED',
+  VS_SAP_CAPABILITY_UPDATED: 'VS_SAP_CAPABILITY_UPDATED',
+  VS_SAP_CAPABILITY_STATUS_CHANGED: 'VS_SAP_CAPABILITY_STATUS_CHANGED',
+  VS_SAP_CAPABILITIES_REORDERED: 'VS_SAP_CAPABILITIES_REORDERED',
+  VS_SAP_CAPABILITY_DELETED: 'VS_SAP_CAPABILITY_DELETED',
+
   UNAUTHORIZED_ACCESS_ATTEMPT: 'UNAUTHORIZED_ACCESS_ATTEMPT',
 } as const;
 
@@ -1272,6 +1313,18 @@ export const LIMITS = {
   // sound while the set is bounded. If the knowledgebase ever gets near this,
   // the answer is paging those reads, not raising the number.
   MAX_KB_ARTICLES: 500,
+
+  // The UpWon vs SAP hero is the same auto-rotating slider again, so the same
+  // reasoning and the same cap.
+  MAX_VS_SAP_HERO_SLIDES: 12,
+  // Per card, for each of the straight answer's two lists. The site ships six
+  // and four; past ten a card stops being a verdict a reader takes in at a
+  // glance and outgrows the card beside it.
+  MAX_VS_SAP_ANSWER_POINTS: 10,
+  // The comparison table's rows. The site ships eleven; thirty is about as far
+  // as a visitor will scroll a star grid before it stops being a comparison and
+  // becomes a feature list - and the reorder list stops being usable.
+  MAX_VS_SAP_CAPABILITIES: 30,
 } as const;
 
 // ── Publicly served uploads ──────────────────────────────────────────────
@@ -1294,8 +1347,8 @@ export const LIMITS = {
  * backdrops, the founder's portrait, the team headshots and the closing CTA
  * banner - and the Blog's two: its hero slides' backgrounds, and its post
  * images, which are the card, the featured card and the article's full-bleed
- * header all at once - and the Free Operational Audit page's and the
- * Knowledgebase hub's hero slides' backgrounds.
+ * header all at once - and the Free Operational Audit page's, the
+ * Knowledgebase hub's and the UpWon vs SAP page's hero slides' backgrounds.
  *
  * One entry per section rather than per viewport: a section's desktop and
  * mobile crops are the same slot authored twice, and splitting them would only
@@ -1362,6 +1415,7 @@ export const PUBLIC_FILE_ENTITY_TYPES = [
   'blog_post_image',
   'free_audit_hero_slide',
   'kb_hero_slide',
+  'vs_sap_hero_slide',
 ] as const;
 
 export type PublicFileEntityType = (typeof PUBLIC_FILE_ENTITY_TYPES)[number];
