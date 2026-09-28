@@ -20,6 +20,8 @@ import { seedSfaDmsPage } from './sfa-dms.seed';
 import { seedFmsPage } from './fms.seed';
 import { seedPosPage } from './pos.seed';
 import { seedHreasyPage } from './hreasy.seed';
+import { seedWmsPage } from './wms.seed';
+import { seedVendorPortalPage } from './vendor-portal.seed';
 import { logger } from '../../core/utils/logger';
 import {
   INSIDER_FEATURE_SECTION,
@@ -1935,6 +1937,151 @@ async function seedHreasySectionCopy(client: PoolClient): Promise<number> {
   return result.rowCount ?? 0;
 }
 
+const WMS_SECTION_COPY: Array<{
+  key: string;
+  eyebrow: string | null;
+  heading: string;
+  subtext: string | null;
+}> = [
+  {
+    key: 'proof',
+    eyebrow: 'Proof Strip',
+    heading: "Not a Pitch. **Just What's Already Running.**",
+    subtext:
+      'Real, sourced operational numbers from live UpWon deployments — shown honestly, not inflated to win a headline war.',
+  },
+  {
+    key: 'recognition',
+    eyebrow: 'Recognition',
+    heading: 'Built for All Types **of Warehouses**',
+    subtext:
+      'From cold-storage managers to multi-plant FG warehouse heads and raw-material stores managers — our platform is built to help you see yourself in every workflow.',
+  },
+  {
+    key: 'capabilities',
+    eyebrow: 'Core Capabilities',
+    heading: 'Everything From the Receiving Dock to the **Dispatch Bay — In One Flow.**',
+    subtext:
+      'Seven connected capabilities that bring visibility, speed and control to every movement inside your warehouse.',
+  },
+  {
+    key: 'outcomes',
+    eyebrow: 'Customer Outcomes',
+    /*
+     * Both figures are accented, on two lines. The site's own markup breaks
+     * the line after "Wastage." with a <br>, which the accent markers cannot
+     * express - so the heading is stored as two lines and the parser gives
+     * the component the same two back.
+     */
+    heading: '**15–20%** Less Wastage.\n**20–35%** Better Fulfilment Accuracy.',
+    subtext:
+      'Real operational impact across manufacturing and distribution — from better inventory precision and reduced wastage to faster, more accurate order fulfilment.',
+  },
+  {
+    key: 'faq',
+    eyebrow: 'FAQ',
+    heading: 'Questions Warehouse & Plant Heads **Ask Before They Commit.**',
+    subtext:
+      'Practical answers to the rollout, integration and operational questions warehouse leaders ask before choosing a WMS.',
+  },
+  {
+    key: 'cta',
+    eyebrow: "Let's Talk About Your Warehouse",
+    heading: 'See Your Warehouse on UpWon — **Live, in 30 Minutes.**',
+    subtext:
+      "Let's understand your warehouse, your challenges and your goals. We'll show you the impact UpWon WMS can deliver for your actual operations.",
+  },
+];
+
+async function seedWmsSectionCopy(client: PoolClient): Promise<number> {
+  const result = await client.query(
+    `
+    INSERT INTO page_section_copy (page_key, section_key, eyebrow, heading, subtext)
+    SELECT 'wms', u.key, u.eyebrow, u.heading, u.subtext
+      FROM unnest($1::text[], $2::text[], $3::text[], $4::text[])
+        AS u(key, eyebrow, heading, subtext)
+    ON CONFLICT (page_key, section_key) DO NOTHING
+    `,
+    [
+      WMS_SECTION_COPY.map((s) => s.key),
+      WMS_SECTION_COPY.map((s) => s.eyebrow),
+      WMS_SECTION_COPY.map((s) => s.heading),
+      WMS_SECTION_COPY.map((s) => s.subtext),
+    ],
+  );
+  return result.rowCount ?? 0;
+}
+
+const VMS_SECTION_COPY: Array<{
+  key: string;
+  eyebrow: string | null;
+  heading: string;
+  subtext: string | null;
+}> = [
+  {
+    key: 'proof',
+    eyebrow: 'Proof Strip',
+    heading: "Not a Pitch. **Just What's Already Under Control.**",
+    subtext:
+      'Best-available operational proof from live UpWon deployments — presented honestly, without inflating results or implying unsupported VMS-specific outcomes.',
+  },
+  {
+    key: 'capabilities',
+    eyebrow: 'Core Capabilities',
+    /*
+     * The accent span is drawn `block` on the site, so it sits on its own
+     * line - which is a newline here, not a space.
+     */
+    heading: 'From First Quote to Final Payment-\n**In One System.**',
+    /*
+     * Three separate lines on the page rather than one paragraph. Stored with
+     * the newlines intact; the site splits on them.
+     */
+    subtext:
+      'Every stage connected.\nEvery vendor interaction visible.\nEvery decision backed by data.',
+  },
+  {
+    key: 'outcomes',
+    eyebrow: 'Customer Outcomes',
+    heading: 'The Proof Point This **Page Still Needs.**',
+    subtext:
+      'See how UpWon helps businesses bring vendors into one connected workflow — with self-service, streamlined procurement, and better visibility across the vendor base.',
+  },
+  {
+    key: 'faq',
+    eyebrow: 'FAQ',
+    heading: 'Questions Procurement Leads **Ask Before They Commit.**',
+    subtext:
+      'Practical, adoption-focused answers to the questions procurement teams ask before bringing vendors onto a new management platform.',
+  },
+  {
+    key: 'cta',
+    eyebrow: null,
+    heading: 'See Your Vendor Base\non UpWon — **Live, in 30 Minutes.**',
+    subtext:
+      "An invitation to a conversation about your business's own vendor relationships — not a demo request form.",
+  },
+];
+
+async function seedVmsSectionCopy(client: PoolClient): Promise<number> {
+  const result = await client.query(
+    `
+    INSERT INTO page_section_copy (page_key, section_key, eyebrow, heading, subtext)
+    SELECT 'vms', u.key, u.eyebrow, u.heading, u.subtext
+      FROM unnest($1::text[], $2::text[], $3::text[], $4::text[])
+        AS u(key, eyebrow, heading, subtext)
+    ON CONFLICT (page_key, section_key) DO NOTHING
+    `,
+    [
+      VMS_SECTION_COPY.map((s) => s.key),
+      VMS_SECTION_COPY.map((s) => s.eyebrow),
+      VMS_SECTION_COPY.map((s) => s.heading),
+      VMS_SECTION_COPY.map((s) => s.subtext),
+    ],
+  );
+  return result.rowCount ?? 0;
+}
+
 async function seedPosSectionCopy(client: PoolClient): Promise<number> {
   const result = await client.query(
     `
@@ -2167,6 +2314,10 @@ async function main(): Promise<void> {
       const posPage = await seedPosPage(client);
       const hreasySectionCopyCount = await seedHreasySectionCopy(client);
       const hreasyPage = await seedHreasyPage(client);
+      const wmsSectionCopyCount = await seedWmsSectionCopy(client);
+      const wmsPage = await seedWmsPage(client);
+      const vmsSectionCopyCount = await seedVmsSectionCopy(client);
+      const vendorPortalPage = await seedVendorPortalPage(client);
       const insiderHeroSlideCount = await seedInsiderHeroSlides(client);
       const insiderIssueCounts = await seedInsiderIssues(client);
       const insiderFeatureCount = await seedInsiderFeatureSection(client);
@@ -2218,6 +2369,10 @@ async function main(): Promise<void> {
         posSectionCopyCount,
         posPage,
         hreasySectionCopyCount,
+        wmsSectionCopyCount,
+        wmsPage,
+        vmsSectionCopyCount,
+        vendorPortalPage,
         hreasyPage,
         insiderHeroSlideCount,
         insiderIssueCounts,
@@ -2328,6 +2483,23 @@ async function main(): Promise<void> {
       posAlternativesRows: summary.posPage.alternativesRows,
       posAlternativesCells: summary.posPage.alternativesCells,
       posOutcomeStories: summary.posPage.outcomeStories,
+      wmsSectionCopy: summary.wmsSectionCopyCount,
+      vmsSectionCopy: summary.vmsSectionCopyCount,
+      vmsHeroSlides: summary.vendorPortalPage.heroSlides,
+      vmsProofTiles: summary.vendorPortalPage.proofTiles,
+      vmsCapabilityCards: summary.vendorPortalPage.capabilityCards,
+      vmsOutcomeVideos: summary.vendorPortalPage.outcomeVideos,
+      vmsFaqEntries: summary.vendorPortalPage.faqEntries,
+      vmsCtaSection: summary.vendorPortalPage.ctaSection,
+      wmsHeroSlides: summary.wmsPage.heroSlides,
+      wmsProofCards: summary.wmsPage.proofCards,
+      wmsProofSlides: summary.wmsPage.proofSlides,
+      wmsRecognitionCards: summary.wmsPage.recognitionCards,
+      wmsCapabilityModules: summary.wmsPage.capabilityModules,
+      wmsOutcomeCards: summary.wmsPage.outcomeCards,
+      wmsFaqEntries: summary.wmsPage.faqEntries,
+      wmsCtaSection: summary.wmsPage.ctaSection,
+      wmsCtaTrustItems: summary.wmsPage.ctaTrustItems,
       hreasySectionCopy: summary.hreasySectionCopyCount,
       hreasyHeroSlides: summary.hreasyPage.heroSlides,
       hreasyCapabilityModules: summary.hreasyPage.capabilityModules,

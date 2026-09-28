@@ -25,6 +25,10 @@ import posPageRoutes, { publicPosPageRouter } from '../modules/product-pages/pos
 import hreasyPageRoutes, {
   publicHreasyPageRouter,
 } from '../modules/product-pages/hreasy-page/routes';
+import wmsPageRoutes, { publicWmsPageRouter } from '../modules/product-pages/wms-page/routes';
+import vendorPortalPageRoutes, {
+  publicVendorPortalPageRouter,
+} from '../modules/product-pages/vendor-portal-page/routes';
 import insiderPageRoutes, { publicInsiderPageRouter } from '../modules/insider-page/routes';
 import contactPageRoutes, { publicContactPageRouter } from '../modules/contact-page/routes';
 import careersRoutes, { publicCareersRouter } from '../modules/careers/routes';
@@ -52,6 +56,8 @@ router.use('/public/sfa-dms-page', publicSfaDmsPageRouter);
 router.use('/public/fms-page', publicFmsPageRouter);
 router.use('/public/pos-page', publicPosPageRouter);
 router.use('/public/hreasy-page', publicHreasyPageRouter);
+router.use('/public/wms-page', publicWmsPageRouter);
+router.use('/public/vendor-portal-page', publicVendorPortalPageRouter);
 router.use('/public/insider-page', publicInsiderPageRouter);
 router.use('/public/contact-page', publicContactPageRouter);
 router.use('/public/careers', publicCareersRouter);
@@ -91,6 +97,8 @@ router.use('/sfa-dms-page', sfaDmsPageRoutes);
 router.use('/fms-page', fmsPageRoutes);
 router.use('/pos-page', posPageRoutes);
 router.use('/hreasy-page', hreasyPageRoutes);
+router.use('/wms-page', wmsPageRoutes);
+router.use('/vendor-portal-page', vendorPortalPageRoutes);
 router.use('/insider-page', insiderPageRoutes);
 router.use('/contact-page', contactPageRoutes);
 router.use('/careers', careersRoutes);

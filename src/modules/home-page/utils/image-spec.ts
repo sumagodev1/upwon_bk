@@ -52,6 +52,20 @@ export type ImageSlot =
   | 'hreasyCapabilityPanel'
   | 'hreasyLifecycleCard'
   | 'hreasyOutcomeLogo'
+  | 'wmsHero'
+  | 'wmsHeroMobile'
+  | 'wmsCtaDesktop'
+  | 'wmsCtaMobile'
+  | 'wmsProofSlide'
+  | 'wmsRecognitionCard'
+  | 'wmsCapabilityPanel'
+  | 'vmsHero'
+  | 'vmsHeroMobile'
+  | 'vmsProofImage'
+  | 'vmsCapabilityImage'
+  | 'vmsOutcomePoster'
+  | 'vmsCtaDesktop'
+  | 'vmsCtaMobile'
   | 'posOutcomeLogo'
   | 'posOutcomePhoto'
   | 'posSecurityShield'
@@ -316,6 +330,120 @@ export const IMAGE_SPECS: Readonly<Record<ImageSlot, ImageSpec>> = {
    * the card draws it in.
    */
   hreasyOutcomeLogo: { label: 'Brand mark', width: 260, height: 56, ratioTolerance: null },
+
+  // The WMS slider's backgrounds, the same wide crop every product hero uses.
+  wmsHero: { label: 'Desktop image', width: 1600, height: 566, ratioTolerance: 0.2 },
+  wmsHeroMobile: { label: 'Mobile image', width: 800, height: 1200, ratioTolerance: 0.2 },
+  /*
+   * The closing band's photograph and its phone crop.
+   *
+   * A pair, unlike the HREasy band's single banner: this design lays its copy
+   * over the left of a landscape photograph, and that crop keeps nothing
+   * readable on a phone. Both are drawn object-cover, so both carry a ratio
+   * rule - a differently shaped upload would put the text over the subject.
+   */
+  wmsCtaDesktop: { label: 'Desktop photograph', width: 1600, height: 900, ratioTolerance: 0.2 },
+  wmsCtaMobile: { label: 'Mobile photograph', width: 800, height: 1200, ratioTolerance: 0.2 },
+  /*
+   * One stat card in the proof row. Drawn object-cover into an 11:8 frame, so
+   * a differently shaped upload is cropped and the figure baked into it can
+   * lose an edge - hence a ratio rule. 1100x800 is that frame at 2x.
+   */
+  wmsProofSlide: { label: 'Stat card', width: 1100, height: 800, ratioTolerance: 0.2 },
+  /*
+   * The illustration at the top of a warehouse-type card.
+   *
+   * No ratio rule, unlike the stat card directly above it: this one is drawn
+   * object-contain in a fixed band with the title underneath, so a squarer or
+   * wider illustration letterboxes inside the band rather than being cropped.
+   * The seven shipped illustrations bear that out - they are a mix of square
+   * and landscape compositions and all sit correctly. The floor is roughly 2x
+   * the band at its widest column, which is what keeps line art crisp on a
+   * high-density screen.
+   */
+  wmsRecognitionCard: {
+    label: 'Card illustration',
+    width: 600,
+    height: 400,
+    ratioTolerance: null,
+  },
+  /*
+   * The artwork beside a capability band - the composite carrying that
+   * capability's dashboard mock, photograph and caption strip.
+   *
+   * No ratio rule, for the same reason the HREasy panel above carries none:
+   * the seven composites are each a landscape card, but they hold different
+   * mocks and do not agree on a height, so a rule tight enough to be useful
+   * would reject artwork that renders correctly. It is drawn contained in the
+   * band, so a taller or shorter one occupies less of the band's width. The
+   * floor is a 2x figure for the band at its widest.
+   */
+  wmsCapabilityPanel: {
+    label: 'Panel artwork',
+    width: 1200,
+    height: 700,
+    ratioTolerance: null,
+  },
+
+  // ── Vendor Portal (VMS) page ────────────────────────────────────────────
+  /*
+   * The slider's backgrounds.
+   *
+   * No ratio rule, unusually for a covered hero. The five shipped slides do
+   * not agree on a shape: vms_deliver_quality and vms_quality_score are
+   * 1536x1024 and vms_one_dashboard is 1549x1015 - all about 3:2 - but
+   * vms_quote is 1727x911, which is nearly 2:1. A rule tight enough to be
+   * useful rejects one group or the other, and rejecting the section's own
+   * artwork only blocks whoever replaces it. The floor sits under the
+   * smallest of them on each axis.
+   */
+  vmsHero: { label: 'Desktop image', width: 1500, height: 880, ratioTolerance: null },
+  // Portrait, for the <picture> source phones actually download.
+  vmsHeroMobile: { label: 'Mobile image', width: 800, height: 1200, ratioTolerance: 0.2 },
+  /*
+   * A picture tile in the proof bento.
+   *
+   * The two shipped tiles are 1774x887 and 1744x902 - both very close to 2:1,
+   * even though one occupies seven of the twelve columns and the other five.
+   * So there is a target shape after all, and since the tile covers its box a
+   * portrait upload would be cropped to a strip; hence a ratio rule.
+   */
+  vmsProofImage: { label: 'Tile picture', width: 1700, height: 880, ratioTolerance: 0.2 },
+  /*
+   * A capability card's screenshot. The carousel draws every card at one size
+   * and covers it, so the shape does matter here.
+   *
+   * The seven shipped screenshots run 1692x930 to 1840x854 - a ratio spread
+   * of 1.82 to 2.15, tight enough for a rule but not for a tight one. The
+   * target is the middle of that spread rather than a rounder number, and the
+   * floor sits under the smallest on each axis so no shipped card fails on a
+   * technicality.
+   */
+  vmsCapabilityImage: {
+    label: 'Card screenshot',
+    width: 1600,
+    height: 850,
+    ratioTolerance: 0.2,
+  },
+  /*
+   * The still behind a showcase video before it plays. Fills the player, so
+   * it wants the player's shape - 16:9, the ratio the films themselves are.
+   * No shipped example to measure: the section has no posters today.
+   */
+  vmsOutcomePoster: { label: 'Poster image', width: 1280, height: 720, ratioTolerance: 0.2 },
+  /*
+   * The closing band's photograph and its phone crop - vms_final_cta.webp is
+   * 2109x746 and vms_cta_mobile.webp is 440x956.
+   *
+   * The desktop art is drawn at its own height with the copy laid over its
+   * left third, so a differently shaped upload moves the text off the clear
+   * part of the picture; the phone crop is a tall recut of the same scene.
+   * Both carry a ratio rule for that reason, and both floors are the shipped
+   * asset's own size - the mobile one is a background behind text, not detail
+   * anyone reads, so there is no point demanding a 2x figure it has never met.
+   */
+  vmsCtaDesktop: { label: 'Desktop photograph', width: 2100, height: 740, ratioTolerance: 0.2 },
+  vmsCtaMobile: { label: 'Mobile photograph', width: 440, height: 956, ratioTolerance: 0.2 },
   posOutcomeLogo: { label: 'Brand mark', width: 200, height: 32, ratioTolerance: null },
   /*
    * The photograph filling the card's left panel, drawn object-cover - so a

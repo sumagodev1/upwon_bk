@@ -796,6 +796,74 @@ export const AUDIT_ACTIONS = {
   HREASY_OUTCOME_STAT_DELETED: 'HREASY_OUTCOME_STAT_DELETED',
   HREASY_OUTCOME_STATS_REORDERED: 'HREASY_OUTCOME_STATS_REORDERED',
 
+  WMS_HERO_SLIDE_CREATED: 'WMS_HERO_SLIDE_CREATED',
+  WMS_HERO_SLIDE_UPDATED: 'WMS_HERO_SLIDE_UPDATED',
+  WMS_HERO_SLIDE_DELETED: 'WMS_HERO_SLIDE_DELETED',
+  WMS_HERO_SLIDES_REORDERED: 'WMS_HERO_SLIDES_REORDERED',
+
+  WMS_FAQ_ENTRY_CREATED: 'WMS_FAQ_ENTRY_CREATED',
+  WMS_FAQ_ENTRY_UPDATED: 'WMS_FAQ_ENTRY_UPDATED',
+  WMS_FAQ_ENTRY_DELETED: 'WMS_FAQ_ENTRY_DELETED',
+  WMS_FAQ_ENTRIES_REORDERED: 'WMS_FAQ_ENTRIES_REORDERED',
+
+  WMS_CTA_SECTION_UPDATED: 'WMS_CTA_SECTION_UPDATED',
+  WMS_CTA_TRUST_ITEM_CREATED: 'WMS_CTA_TRUST_ITEM_CREATED',
+  WMS_CTA_TRUST_ITEM_UPDATED: 'WMS_CTA_TRUST_ITEM_UPDATED',
+  WMS_CTA_TRUST_ITEM_DELETED: 'WMS_CTA_TRUST_ITEM_DELETED',
+  WMS_CTA_TRUST_ITEMS_REORDERED: 'WMS_CTA_TRUST_ITEMS_REORDERED',
+
+  WMS_PROOF_CARD_CREATED: 'WMS_PROOF_CARD_CREATED',
+  WMS_PROOF_CARD_UPDATED: 'WMS_PROOF_CARD_UPDATED',
+  WMS_PROOF_CARD_DELETED: 'WMS_PROOF_CARD_DELETED',
+  WMS_PROOF_CARDS_REORDERED: 'WMS_PROOF_CARDS_REORDERED',
+  WMS_PROOF_SLIDE_CREATED: 'WMS_PROOF_SLIDE_CREATED',
+  WMS_PROOF_SLIDE_UPDATED: 'WMS_PROOF_SLIDE_UPDATED',
+  WMS_PROOF_SLIDE_DELETED: 'WMS_PROOF_SLIDE_DELETED',
+  WMS_PROOF_SLIDES_REORDERED: 'WMS_PROOF_SLIDES_REORDERED',
+
+  WMS_RECOGNITION_CARD_CREATED: 'WMS_RECOGNITION_CARD_CREATED',
+  WMS_RECOGNITION_CARD_UPDATED: 'WMS_RECOGNITION_CARD_UPDATED',
+  WMS_RECOGNITION_CARD_DELETED: 'WMS_RECOGNITION_CARD_DELETED',
+  WMS_RECOGNITION_CARDS_REORDERED: 'WMS_RECOGNITION_CARDS_REORDERED',
+
+  WMS_CAPABILITY_MODULE_CREATED: 'WMS_CAPABILITY_MODULE_CREATED',
+  WMS_CAPABILITY_MODULE_UPDATED: 'WMS_CAPABILITY_MODULE_UPDATED',
+  WMS_CAPABILITY_MODULE_DELETED: 'WMS_CAPABILITY_MODULE_DELETED',
+  WMS_CAPABILITY_MODULES_REORDERED: 'WMS_CAPABILITY_MODULES_REORDERED',
+
+  WMS_OUTCOME_CARD_CREATED: 'WMS_OUTCOME_CARD_CREATED',
+  WMS_OUTCOME_CARD_UPDATED: 'WMS_OUTCOME_CARD_UPDATED',
+  WMS_OUTCOME_CARD_DELETED: 'WMS_OUTCOME_CARD_DELETED',
+  WMS_OUTCOME_CARDS_REORDERED: 'WMS_OUTCOME_CARDS_REORDERED',
+
+  // ── Vendor Portal (VMS) page ────────────────────────────────────────────
+  VMS_HERO_SLIDE_CREATED: 'VMS_HERO_SLIDE_CREATED',
+  VMS_HERO_SLIDE_UPDATED: 'VMS_HERO_SLIDE_UPDATED',
+  VMS_HERO_SLIDE_DELETED: 'VMS_HERO_SLIDE_DELETED',
+  VMS_HERO_SLIDES_REORDERED: 'VMS_HERO_SLIDES_REORDERED',
+
+  VMS_PROOF_TILE_CREATED: 'VMS_PROOF_TILE_CREATED',
+  VMS_PROOF_TILE_UPDATED: 'VMS_PROOF_TILE_UPDATED',
+  VMS_PROOF_TILE_DELETED: 'VMS_PROOF_TILE_DELETED',
+  VMS_PROOF_TILES_REORDERED: 'VMS_PROOF_TILES_REORDERED',
+
+  VMS_CAPABILITY_CARD_CREATED: 'VMS_CAPABILITY_CARD_CREATED',
+  VMS_CAPABILITY_CARD_UPDATED: 'VMS_CAPABILITY_CARD_UPDATED',
+  VMS_CAPABILITY_CARD_DELETED: 'VMS_CAPABILITY_CARD_DELETED',
+  VMS_CAPABILITY_CARDS_REORDERED: 'VMS_CAPABILITY_CARDS_REORDERED',
+
+  VMS_OUTCOME_VIDEO_CREATED: 'VMS_OUTCOME_VIDEO_CREATED',
+  VMS_OUTCOME_VIDEO_UPDATED: 'VMS_OUTCOME_VIDEO_UPDATED',
+  VMS_OUTCOME_VIDEO_DELETED: 'VMS_OUTCOME_VIDEO_DELETED',
+  VMS_OUTCOME_VIDEOS_REORDERED: 'VMS_OUTCOME_VIDEOS_REORDERED',
+
+  VMS_FAQ_ENTRY_CREATED: 'VMS_FAQ_ENTRY_CREATED',
+  VMS_FAQ_ENTRY_UPDATED: 'VMS_FAQ_ENTRY_UPDATED',
+  VMS_FAQ_ENTRY_DELETED: 'VMS_FAQ_ENTRY_DELETED',
+  VMS_FAQ_ENTRIES_REORDERED: 'VMS_FAQ_ENTRIES_REORDERED',
+
+  VMS_CTA_SECTION_UPDATED: 'VMS_CTA_SECTION_UPDATED',
+
   FMS_FRANCHISE_CATEGORY_CREATED: 'FMS_FRANCHISE_CATEGORY_CREATED',
   FMS_FRANCHISE_CATEGORY_UPDATED: 'FMS_FRANCHISE_CATEGORY_UPDATED',
   FMS_FRANCHISE_CATEGORY_DELETED: 'FMS_FRANCHISE_CATEGORY_DELETED',
@@ -1288,6 +1356,64 @@ export const LIMITS = {
    * would wrap under the rule and break the card's proportions.
    */
   MAX_HREASY_OUTCOME_STATS: 3,
+
+  /** The WMS page, on the same caps as the HREasy page's equivalents. */
+  MAX_WMS_HERO_SLIDES: 12,
+  MAX_WMS_FAQ_ENTRIES: 24,
+  /*
+   * The trust strip is one row of four under the buttons. Six allows a second
+   * line of three on a narrow viewport without the row falling apart.
+   */
+  MAX_WMS_CTA_TRUST_ITEMS: 6,
+  /*
+   * The proof row is three columns wide on a desktop grid, so a fourth card
+   * wraps onto a line of its own and the row stops reading as one strip.
+   */
+  MAX_WMS_PROOF_CARDS: 4,
+  /*
+   * How many images one card flips through. Three today at 5.5 seconds each;
+   * past eight the loop takes longer to come round than a visitor stays.
+   */
+  MAX_WMS_PROOF_SLIDES: 8,
+  /*
+   * The warehouse-type map. Seven cards today, laid out four across and then
+   * three. Twelve is three full rows - past that the grid stops being a list
+   * a visitor scans for their own operation and becomes one they read.
+   */
+  MAX_WMS_RECOGNITION_CARDS: 12,
+  /*
+   * The capability stack. Seven bands today, and the subtext above them says
+   * "Seven connected capabilities" - so the practical ceiling is whatever an
+   * editor is willing to rewrite that line for. Twelve bands is already a
+   * long scroll before the FAQ.
+   */
+  MAX_WMS_CAPABILITY_MODULES: 12,
+  /*
+   * The customer-outcomes row. Five cards today, and the grid is five across
+   * on a desktop - a sixth wraps onto a line of its own and the row stops
+   * reading as one strip. Ten is two full rows for anyone who wants them.
+   */
+  MAX_WMS_OUTCOME_CARDS: 10,
+
+  /** The Vendor Portal page, on the same caps as its WMS equivalents. */
+  MAX_VMS_HERO_SLIDES: 12,
+  MAX_VMS_FAQ_ENTRIES: 24,
+  /*
+   * The proof bento. Five tiles today across two rows of twelve columns.
+   * Eight is four rows at the narrowest span the grid allows, which is past
+   * the point the strip reads as one glance.
+   */
+  MAX_VMS_PROOF_TILES: 8,
+  /*
+   * The capability carousel. Seven cards today; it scrolls, so the ceiling is
+   * patience rather than layout - twelve is already a long sideways trip.
+   */
+  MAX_VMS_CAPABILITY_CARDS: 12,
+  /*
+   * The outcome showcase's tab strip. Three today, stacked beside the player;
+   * past six the strip is taller than the video it switches.
+   */
+  MAX_VMS_OUTCOME_VIDEOS: 6,
   // The Insider hero is the same auto-rotating slider, so the same reasoning.
   MAX_INSIDER_HERO_SLIDES: 12,
   // An issue is a monthly digest laid out in rows of three; past a dozen
@@ -1431,6 +1557,40 @@ export const PUBLIC_FILE_ENTITY_TYPES = [
   'hreasy_hero_slide',
   'hreasy_cta_banner',
   'hreasy_proof_logo',
+  /*
+   * The last three were missed when those sections were built, the same way
+   * the WMS slots below were: the admin panel tags an upload with the slot's
+   * entity type, and every CMS image slot refuses a file whose type is not on
+   * this list - so the upload succeeded and the save that attached it failed
+   * with FILE_NOT_PUBLIC.
+   */
+  'hreasy_capability_module',
+  'hreasy_lifecycle_card',
+  'hreasy_outcome_logo',
+  /*
+   * The WMS page's five image slots.
+   *
+   * The first three were missed when those sections were built, which made
+   * their uploads unusable rather than merely unserved: the admin panel tags
+   * an upload with the slot's entity type, and every CMS image slot refuses a
+   * file whose type is not on this list - so saving a hero slide, a proof
+   * slide or the closing band's artwork failed with FILE_NOT_PUBLIC even
+   * though the upload itself had succeeded.
+   *
+   * 'wms_cta_banner' covers both halves of the closing band; that form sends
+   * one type for the desktop photograph and its phone crop alike.
+   */
+  'wms_hero_slide',
+  'wms_proof_slide',
+  'wms_cta_banner',
+  'wms_recognition_card',
+  'wms_capability_panel',
+  'vms_hero_slide',
+  'vms_proof_image',
+  'vms_capability_image',
+  'vms_outcome_video',
+  'vms_outcome_poster',
+  'vms_cta_image',
   'fms_integration_logo',
   'fms_integration_centre_logo',
   'sfa_video',
@@ -1567,6 +1727,20 @@ export const PAGE_SECTION_KEYS = {
     'faq',
     'cta',
   ],
+  /*
+   * The WMS page. The hero is absent on purpose, as on every other product
+   * page: its slides each carry their own eyebrow, headline and subhead.
+   *
+   * Only the sections built so far - the rest of the page is still static,
+   * and each key arrives with its section.
+   */
+  wms: ['proof', 'recognition', 'capabilities', 'outcomes', 'faq', 'cta'],
+  /*
+   * The Vendor Portal page. The hero is absent on purpose, as on every other
+   * product page: its slides each carry their own eyebrow, headline and
+   * subhead.
+   */
+  vms: ['proof', 'capabilities', 'outcomes', 'faq', 'cta'],
 } as const;
 
 export const PAGE_KEYS = Object.keys(PAGE_SECTION_KEYS) as Array<keyof typeof PAGE_SECTION_KEYS>;
