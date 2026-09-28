@@ -67,6 +67,7 @@ import nonFoodFmcgPageRoutes, {
   publicNonFoodFmcgPageRouter,
 } from '../modules/industry-pages/non-food-fmcg-page/routes';
 import dairyPageRoutes, { publicDairyPageRouter } from '../modules/industry-pages/dairy-page/routes';
+import clientsPageRoutes, { publicClientsPageRouter } from '../modules/clients-page/routes';
 
 const router = Router();
 
@@ -107,6 +108,7 @@ router.use('/public/sweets-page', publicSweetsPageRouter);
 router.use('/public/food-processing-page', publicFoodProcessingPageRouter);
 router.use('/public/non-food-fmcg-page', publicNonFoodFmcgPageRouter);
 router.use('/public/dairy-page', publicDairyPageRouter);
+router.use('/public/clients-page', publicClientsPageRouter);
 
 // Public: the images those sections reference. Serves only uploads that opted
 // in by entity type - see PUBLIC_FILE_ENTITY_TYPES and fileService.getPublicImage.
@@ -155,5 +157,6 @@ router.use('/sweets-page', sweetsPageRoutes);
 router.use('/food-processing-page', foodProcessingPageRoutes);
 router.use('/non-food-fmcg-page', nonFoodFmcgPageRoutes);
 router.use('/dairy-page', dairyPageRoutes);
+router.use('/clients-page', clientsPageRoutes);
 
 export default router;
