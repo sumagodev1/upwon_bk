@@ -22,6 +22,12 @@ import { seedPosPage } from './pos.seed';
 import { seedHreasyPage } from './hreasy.seed';
 import { seedWmsPage } from './wms.seed';
 import { seedVendorPortalPage } from './vendor-portal.seed';
+import { seedBakeryPage } from './bakery.seed';
+import { seedFmcgPage } from './fmcg.seed';
+import { seedSweetsPage } from './sweets.seed';
+import { seedFoodProcessingPage } from './food-processing.seed';
+import { seedNonFoodFmcgPage } from './non-food-fmcg.seed';
+import { seedDairyPage } from './dairy.seed';
 import { logger } from '../../core/utils/logger';
 import {
   INSIDER_FEATURE_SECTION,
@@ -2120,6 +2126,413 @@ async function seedFmsSectionCopy(client: PoolClient): Promise<number> {
   return result.rowCount ?? 0;
 }
 
+/**
+ * The Bakery & Confectionery industry page's section copy, exactly as the page
+ * ships it today. The hero is absent - each slide carries its own copy.
+ *
+ * The CTA opens straight on its heading, so its eyebrow is null. Its heading
+ * keeps the page's three-line break: a newline is a line break, and each
+ * accented line is wrapped on its own because an accent never spans one.
+ */
+const BAKERY_SECTION_COPY: Array<{
+  key: string;
+  eyebrow: string | null;
+  heading: string;
+  subtext: string | null;
+}> = [
+  {
+    key: 'trust',
+    eyebrow: 'TRUSTED BY BAKERS ACROSS INDIA',
+    heading: 'Powering Growth for **Bakery & Confectionery Businesses**',
+    subtext:
+      'From artisan bakeries to large multi-location brands, thousands trust UpWon to run their operations every day.',
+  },
+  {
+    key: 'platform',
+    eyebrow: 'Connected Technology for Bakery & Confectionery Businesses',
+    heading: 'One Connected Platform for **Every Bakery & Confectionery Operation**',
+    subtext:
+      'From sourcing ingredients and managing production to controlling inventory, outlets, sales, and distribution—keep every part of your business working together.',
+  },
+  {
+    key: 'helps',
+    eyebrow: 'HOW UPWON HELPS',
+    heading: 'One Connected **Platform** for Your Bakery Operations',
+    subtext:
+      'UpWon connects the key workflows behind your bakery and confectionery business—so teams can move from reactive operations to better planned, data-driven decisions.',
+  },
+  {
+    key: 'faq',
+    eyebrow: 'FAQ',
+    heading: 'Questions Bakery Owners **Ask Before They Switch.**',
+    subtext:
+      'Practical answers to what bakery and confectionery teams want to know before moving production, inventory and outlet operations onto one platform.',
+  },
+  {
+    key: 'cta',
+    eyebrow: null,
+    heading: 'Ready to Bring More\n**Control to Your**\n**Bakery Operations?**',
+    subtext:
+      'Connect procurement, inventory, production, and business operations with a system designed to support growing bakery and confectionery businesses.',
+  },
+];
+
+async function seedBakerySectionCopy(client: PoolClient): Promise<number> {
+  const result = await client.query(
+    `
+    INSERT INTO page_section_copy (page_key, section_key, eyebrow, heading, subtext)
+    SELECT 'bakery', u.key, u.eyebrow, u.heading, u.subtext
+      FROM unnest($1::text[], $2::text[], $3::text[], $4::text[])
+        AS u(key, eyebrow, heading, subtext)
+    ON CONFLICT (page_key, section_key) DO NOTHING
+    `,
+    [
+      BAKERY_SECTION_COPY.map((s) => s.key),
+      BAKERY_SECTION_COPY.map((s) => s.eyebrow),
+      BAKERY_SECTION_COPY.map((s) => s.heading),
+      BAKERY_SECTION_COPY.map((s) => s.subtext),
+    ],
+  );
+  return result.rowCount ?? 0;
+}
+
+/**
+ * The FMCG Distribution industry page's section copy, exactly as the page ships
+ * it today. The hero is absent - each slide carries its own copy - and the CTA
+ * opens straight on its heading, so its eyebrow is null.
+ */
+const FMCG_SECTION_COPY: Array<{
+  key: string;
+  eyebrow: string | null;
+  heading: string;
+  subtext: string | null;
+}> = [
+  {
+    key: 'trust',
+    eyebrow: 'TRUSTED ACROSS FMCG DISTRIBUTION',
+    heading: 'Powering Growth for **FMCG Distribution Businesses**',
+    subtext:
+      'From regional distributors to multi-location FMCG brands, teams use UpWon to keep inventory, orders, and channel operations moving every day.',
+  },
+  {
+    key: 'platform',
+    eyebrow: 'Connected Technology for FMCG Distribution Businesses',
+    heading: 'Five Connected Solutions. **One Smarter Distribution Operation.**',
+    subtext:
+      'From procurement and inventory to warehouses, distributors, sales teams, and deliveries—keep every part of your FMCG distribution operation connected through one integrated ecosystem.',
+  },
+  {
+    key: 'faq',
+    eyebrow: 'FAQ',
+    heading: 'Questions Distribution Teams **Ask Before They Switch.**',
+    subtext:
+      'Practical answers to what FMCG distribution teams want to know before moving inventory, orders and channel operations onto one platform.',
+  },
+  {
+    key: 'cta',
+    eyebrow: null,
+    heading: 'Ready to Bring More Control to Your **FMCG Distribution Operations?**',
+    subtext:
+      'Connect inventory, warehouses, orders, distributors, and business operations through one platform designed to support the speed and complexity of FMCG distribution.',
+  },
+];
+
+async function seedFmcgIndustrySectionCopy(client: PoolClient): Promise<number> {
+  const result = await client.query(
+    `
+    INSERT INTO page_section_copy (page_key, section_key, eyebrow, heading, subtext)
+    SELECT 'fmcg', u.key, u.eyebrow, u.heading, u.subtext
+      FROM unnest($1::text[], $2::text[], $3::text[], $4::text[])
+        AS u(key, eyebrow, heading, subtext)
+    ON CONFLICT (page_key, section_key) DO NOTHING
+    `,
+    [
+      FMCG_SECTION_COPY.map((s) => s.key),
+      FMCG_SECTION_COPY.map((s) => s.eyebrow),
+      FMCG_SECTION_COPY.map((s) => s.heading),
+      FMCG_SECTION_COPY.map((s) => s.subtext),
+    ],
+  );
+  return result.rowCount ?? 0;
+}
+
+/**
+ * The Sweets & Namkeen industry page's section copy, exactly as the page ships
+ * it today. The hero is absent - each slide carries its own copy. Unlike the
+ * other industry pages, this closing band opens on an eyebrow line.
+ */
+const SWEETS_SECTION_COPY: Array<{
+  key: string;
+  eyebrow: string | null;
+  heading: string;
+  subtext: string | null;
+}> = [
+  {
+    key: 'trust',
+    eyebrow: 'TRUSTED BY SWEET & NAMKEEN BUSINESSES ACROSS INDIA',
+    heading: 'Powering Growth for **Sweet & Namkeen Businesses**',
+    subtext:
+      'From traditional sweet shops to leading snack brands and multi-outlet chains, UpWon helps you run every operation, every day.',
+  },
+  {
+    key: 'platform',
+    eyebrow: 'Connected Technology for Sweets & Namkeen Businesses',
+    heading: 'One Connected Platform for **Every Sweets & Namkeen Operation**',
+    subtext:
+      'Keep ingredients, batches, inventory, production, outlets, distributors, and sales connected through one integrated platform designed to support growing operations.',
+  },
+  {
+    key: 'faq',
+    eyebrow: 'FAQ',
+    heading: 'Questions Sweets & Namkeen Owners **Ask Before They Switch.**',
+    subtext:
+      'Practical answers to what sweets and namkeen teams want to know before moving production, inventory and outlet operations onto one platform.',
+  },
+  {
+    key: 'cta',
+    eyebrow: 'Real Kitchens. Real Counters. Real Growth.',
+    heading: 'Ready to Bring Your **Sweets & Namkeen Operations Together?**',
+    subtext:
+      'Connect ingredients, production, inventory, warehouses, outlets, distributors, sales, and business operations through one platform designed to support the complexity of growing sweets and namkeen businesses.',
+  },
+];
+
+async function seedSweetsSectionCopy(client: PoolClient): Promise<number> {
+  const result = await client.query(
+    `
+    INSERT INTO page_section_copy (page_key, section_key, eyebrow, heading, subtext)
+    SELECT 'sweets', u.key, u.eyebrow, u.heading, u.subtext
+      FROM unnest($1::text[], $2::text[], $3::text[], $4::text[])
+        AS u(key, eyebrow, heading, subtext)
+    ON CONFLICT (page_key, section_key) DO NOTHING
+    `,
+    [
+      SWEETS_SECTION_COPY.map((s) => s.key),
+      SWEETS_SECTION_COPY.map((s) => s.eyebrow),
+      SWEETS_SECTION_COPY.map((s) => s.heading),
+      SWEETS_SECTION_COPY.map((s) => s.subtext),
+    ],
+  );
+  return result.rowCount ?? 0;
+}
+
+/** The Food Processing industry page's section copy, exactly as the page ships it. */
+const FOOD_PROCESSING_SECTION_COPY: Array<{
+  key: string;
+  eyebrow: string | null;
+  heading: string;
+  subtext: string | null;
+}> = [
+  {
+    key: "trust",
+    eyebrow: "TRUSTED BY FOOD PROCESSING BUSINESSES ACROSS INDIA",
+    heading: "Better Control Across **Every Stage of Food Production.**",
+    subtext:
+      "From incoming raw materials and production workflows to quality, inventory, warehousing, and distribution—keep every critical movement connected through one operational platform.",
+  },
+  {
+    key: "platform",
+    eyebrow: "5 Connected Solutions for Food Processing",
+    heading: "Five Connected Solutions. **One Smarter Food Processing Operation.**",
+    subtext:
+      "From raw materials and production to warehouses, people, sales, distribution, and finished-product movement—keep every part of your food processing operation connected through one integrated ecosystem.",
+  },
+  {
+    key: "coverage",
+    eyebrow: "INDUSTRY COVERAGE",
+    heading: "Built for a Wide Range of **Food Processing Businesses.**",
+    subtext:
+      "Every sub-sector has its own production workflows, quality requirements, and shelf-life realities. UpWon is built to support them across the categories food processing businesses actually operate in.",
+  },
+  {
+    key: "faq",
+    eyebrow: "FAQ",
+    heading: "Questions Food Processing Teams **Ask Before They Switch.**",
+    subtext:
+      "Practical answers to what food processing teams want to know before moving production, quality and inventory operations onto one platform.",
+  },
+  {
+    key: "cta",
+    eyebrow: null,
+    heading: "Ready to Bring Your **Food Processing Operations Together?**",
+    subtext:
+      "Connect raw materials, recipes, production, quality, inventory, warehouses, sales, distribution, and business operations through one platform designed to support the complexity of growing food processing businesses.",
+  },
+];
+
+async function seedFoodProcessingSectionCopy(client: PoolClient): Promise<number> {
+  const result = await client.query(
+    `
+    INSERT INTO page_section_copy (page_key, section_key, eyebrow, heading, subtext)
+    SELECT 'food-processing', u.key, u.eyebrow, u.heading, u.subtext
+      FROM unnest($1::text[], $2::text[], $3::text[], $4::text[])
+        AS u(key, eyebrow, heading, subtext)
+    ON CONFLICT (page_key, section_key) DO NOTHING
+    `,
+    [
+      FOOD_PROCESSING_SECTION_COPY.map((s) => s.key),
+      FOOD_PROCESSING_SECTION_COPY.map((s) => s.eyebrow),
+      FOOD_PROCESSING_SECTION_COPY.map((s) => s.heading),
+      FOOD_PROCESSING_SECTION_COPY.map((s) => s.subtext),
+    ],
+  );
+  return result.rowCount ?? 0;
+}
+
+/** The Non-Food FMCG industry page's section copy, exactly as the page ships it. */
+const NON_FOOD_FMCG_SECTION_COPY: Array<{
+  key: string;
+  eyebrow: string | null;
+  heading: string;
+  subtext: string | null;
+}> = [
+  {
+    key: "trust",
+    eyebrow: "TRUSTED BY NON-FOOD FMCG BRANDS",
+    heading: "Better Visibility Across **Products, Channels, and Operations.**",
+    subtext:
+      "From what you make to where it sells, every part of the operation works from the same connected information.",
+  },
+  {
+    key: "capabilities",
+    eyebrow: "CORE CAPABILITIES",
+    heading: "Everything You Need. **One Connected Platform.**",
+    subtext:
+      "UpWon brings all key operations of your non-food FMCG business together in one connected platform.",
+  },
+  {
+    key: "platform",
+    eyebrow: "5 Connected Solutions for Non-Food FMCG",
+    heading: "Five Connected Solutions. **One Smarter Non-Food FMCG Operation.**",
+    subtext:
+      "From products and inventory to warehouses, people, sales, distribution, and market execution—keep every part of your non-food FMCG business connected through one integrated ecosystem.",
+  },
+  {
+    key: "benefits",
+    eyebrow: "BENEFITS",
+    heading: "Greater Control Over Every Channel. **Better Visibility Across Every Product Movement.**",
+    subtext:
+      "With UpWon, non-food FMCG businesses can connect their core operations and reduce the complexity of managing products, inventory, warehouses, sales, distributors, field teams, and distribution across multiple teams and locations.",
+  },
+  {
+    key: "coverage",
+    eyebrow: "INDUSTRY COVERAGE",
+    heading: "Built for a Wide Range of **Non-Food FMCG Businesses.**",
+    subtext:
+      "UpWon can support connected workflows across a wide range of fast-moving consumer product categories, including:",
+  },
+  {
+    key: "faq",
+    eyebrow: "FAQ",
+    heading: "Questions FMCG Brand Teams **Ask Before They Switch.**",
+    subtext:
+      "Practical answers to what non-food FMCG teams want to know before moving products, channels and field operations onto one platform.",
+  },
+  {
+    key: "cta",
+    eyebrow: null,
+    heading: "Ready to Bring Your **Non-Food FMCG Operations Together?**",
+    subtext:
+      "Connect products, inventory, warehouses, sales, distributors, field teams, distribution, and business operations through one platform designed to support the complexity of growing non-food FMCG businesses.",
+  },
+];
+
+async function seedNonFoodFmcgSectionCopy(client: PoolClient): Promise<number> {
+  const result = await client.query(
+    `
+    INSERT INTO page_section_copy (page_key, section_key, eyebrow, heading, subtext)
+    SELECT 'non-food-fmcg', u.key, u.eyebrow, u.heading, u.subtext
+      FROM unnest($1::text[], $2::text[], $3::text[], $4::text[])
+        AS u(key, eyebrow, heading, subtext)
+    ON CONFLICT (page_key, section_key) DO NOTHING
+    `,
+    [
+      NON_FOOD_FMCG_SECTION_COPY.map((s) => s.key),
+      NON_FOOD_FMCG_SECTION_COPY.map((s) => s.eyebrow),
+      NON_FOOD_FMCG_SECTION_COPY.map((s) => s.heading),
+      NON_FOOD_FMCG_SECTION_COPY.map((s) => s.subtext),
+    ],
+  );
+  return result.rowCount ?? 0;
+}
+
+/** The Dairy & Ice Cream industry page's section copy, exactly as the page ships it. */
+const DAIRY_SECTION_COPY: Array<{
+  key: string;
+  eyebrow: string | null;
+  heading: string;
+  subtext: string | null;
+}> = [
+  {
+    key: "trust",
+    eyebrow: "TRUSTED BY GROWING BRANDS",
+    heading: "Join the food, dairy and FMCG brands\n**running their operations on UpWon.**",
+    subtext:
+      "Teams across bakery, sweets, dairy, and FMCG use UpWon to keep production, inventory, warehouses, sales, and distribution connected across their locations.",
+  },
+  {
+    key: "capabilities",
+    eyebrow: "CORE CAPABILITIES",
+    heading: "Built to Simplify. Connected to Scale. **Designed for Dairy & Ice Cream Operations.**",
+    subtext:
+      "From raw materials to final delivery, UpWon brings all the moving parts of your operations together—so you can work smarter, move faster, and grow with confidence.",
+  },
+  {
+    key: "platform",
+    eyebrow: "5 Connected Solutions for Dairy & Ice Cream",
+    heading: "Five Connected Solutions. **One Smarter Dairy & Ice Cream Operation.**",
+    subtext:
+      "From raw materials and production to cold storage, warehouses, people, sales, distribution, and finished-product movement—keep every part of your dairy and ice cream operation connected through one integrated ecosystem.",
+  },
+  {
+    key: "benefits",
+    eyebrow: "THE BENEFITS",
+    heading: "Greater Control Over Every Batch. **Better Visibility Across Every Product Movement.**",
+    subtext:
+      "With UpWon, dairy and ice cream businesses can connect their core operations and reduce the complexity of managing raw materials, production, quality, inventory, cold storage, warehouses, sales, and distribution across multiple teams and locations.",
+  },
+  {
+    key: "coverage",
+    eyebrow: "INDUSTRY COVERAGE",
+    heading: "Built for a Wide Range of\n**Dairy & Ice Cream Businesses.**",
+    subtext:
+      "UpWon can support connected workflows across dairy and frozen product categories, including:",
+  },
+  {
+    key: "faq",
+    eyebrow: "FAQ",
+    heading: "Questions Dairy Teams **Ask Before They Switch.**",
+    subtext:
+      "Practical answers to what dairy and ice cream teams want to know before moving production, quality and distribution onto one platform.",
+  },
+  {
+    key: "cta",
+    eyebrow: null,
+    heading: "Ready to Bring Your **Dairy & Ice Cream Operations Together?**",
+    subtext:
+      "Connect raw materials, production, quality, inventory, cold storage, warehouses, sales, distribution, and business operations through one platform designed to support growing dairy and ice cream businesses.",
+  },
+];
+
+async function seedDairySectionCopy(client: PoolClient): Promise<number> {
+  const result = await client.query(
+    `
+    INSERT INTO page_section_copy (page_key, section_key, eyebrow, heading, subtext)
+    SELECT 'dairy', u.key, u.eyebrow, u.heading, u.subtext
+      FROM unnest($1::text[], $2::text[], $3::text[], $4::text[])
+        AS u(key, eyebrow, heading, subtext)
+    ON CONFLICT (page_key, section_key) DO NOTHING
+    `,
+    [
+      DAIRY_SECTION_COPY.map((s) => s.key),
+      DAIRY_SECTION_COPY.map((s) => s.eyebrow),
+      DAIRY_SECTION_COPY.map((s) => s.heading),
+      DAIRY_SECTION_COPY.map((s) => s.subtext),
+    ],
+  );
+  return result.rowCount ?? 0;
+}
+
 async function seedSfaSectionCopy(client: PoolClient): Promise<number> {
   const result = await client.query(
     `
@@ -2340,6 +2753,18 @@ async function main(): Promise<void> {
       // Categories first: the posts are filed under them by slug.
       const blogCategoryCount = await seedBlogCategories(client);
       const blogPostCount = await seedBlogPosts(client);
+      const bakerySectionCopyCount = await seedBakerySectionCopy(client);
+      const bakeryPage = await seedBakeryPage(client);
+      const fmcgSectionCopyCount = await seedFmcgIndustrySectionCopy(client);
+      const fmcgPage = await seedFmcgPage(client);
+      const sweetsSectionCopyCount = await seedSweetsSectionCopy(client);
+      const sweetsPage = await seedSweetsPage(client);
+      const foodProcessingSectionCopyCount = await seedFoodProcessingSectionCopy(client);
+      const foodProcessingPage = await seedFoodProcessingPage(client);
+      const nonFoodFmcgSectionCopyCount = await seedNonFoodFmcgSectionCopy(client);
+      const nonFoodFmcgPage = await seedNonFoodFmcgPage(client);
+      const dairySectionCopyCount = await seedDairySectionCopy(client);
+      const dairyPage = await seedDairyPage(client);
       const rootAdmin = await seedRootAdmin(client);
       return {
         permissionCount,
@@ -2395,6 +2820,18 @@ async function main(): Promise<void> {
         blogTopicsCount,
         blogCategoryCount,
         blogPostCount,
+        bakerySectionCopyCount,
+        bakeryPage,
+        fmcgSectionCopyCount,
+        fmcgPage,
+        sweetsSectionCopyCount,
+        sweetsPage,
+        foodProcessingSectionCopyCount,
+        foodProcessingPage,
+        nonFoodFmcgSectionCopyCount,
+        nonFoodFmcgPage,
+        dairySectionCopyCount,
+        dairyPage,
         rootAdmin,
       };
     });
@@ -2538,6 +2975,61 @@ async function main(): Promise<void> {
       blogTopicsSection: summary.blogTopicsCount,
       blogCategories: summary.blogCategoryCount,
       blogPosts: summary.blogPostCount,
+      bakerySectionCopy: summary.bakerySectionCopyCount,
+      bakeryHeroSlides: summary.bakeryPage.heroSlides,
+      bakeryTrustLogos: summary.bakeryPage.trustLogos,
+      bakeryTrustStats: summary.bakeryPage.trustStats,
+      bakeryPlatformTiles: summary.bakeryPage.platformTiles,
+      bakeryHelpVisuals: summary.bakeryPage.helpVisuals,
+      bakeryFaqEntries: summary.bakeryPage.faqEntries,
+      bakeryCtaSection: summary.bakeryPage.ctaSection,
+      bakeryCtaFeatures: summary.bakeryPage.ctaFeatures,
+      fmcgSectionCopy: summary.fmcgSectionCopyCount,
+      fmcgHeroSlides: summary.fmcgPage.heroSlides,
+      fmcgTrustLogos: summary.fmcgPage.trustLogos,
+      fmcgTrustStats: summary.fmcgPage.trustStats,
+      fmcgPlatformTiles: summary.fmcgPage.platformTiles,
+      fmcgFaqEntries: summary.fmcgPage.faqEntries,
+      fmcgCtaSection: summary.fmcgPage.ctaSection,
+      sweetsSectionCopy: summary.sweetsSectionCopyCount,
+      sweetsHeroSlides: summary.sweetsPage.heroSlides,
+      sweetsTrustLogos: summary.sweetsPage.trustLogos,
+      sweetsTrustStats: summary.sweetsPage.trustStats,
+      sweetsPlatformTiles: summary.sweetsPage.platformTiles,
+      sweetsFaqEntries: summary.sweetsPage.faqEntries,
+      sweetsCtaSection: summary.sweetsPage.ctaSection,
+      foodProcessingSectionCopy: summary.foodProcessingSectionCopyCount,
+      foodProcessingHeroSlides: summary.foodProcessingPage.heroSlides,
+      foodProcessingTrustLogos: summary.foodProcessingPage.trustLogos,
+      foodProcessingTrustStats: summary.foodProcessingPage.trustStats,
+      foodProcessingCoverageItems: summary.foodProcessingPage.coverageItems,
+      foodProcessingPlatformTiles: summary.foodProcessingPage.platformTiles,
+      foodProcessingFaqEntries: summary.foodProcessingPage.faqEntries,
+      foodProcessingTrustPanel: summary.foodProcessingPage.trustPanel,
+      foodProcessingCtaSection: summary.foodProcessingPage.ctaSection,
+      nonFoodFmcgSectionCopy: summary.nonFoodFmcgSectionCopyCount,
+      nonFoodFmcgHeroSlides: summary.nonFoodFmcgPage.heroSlides,
+      nonFoodFmcgTrustLogos: summary.nonFoodFmcgPage.trustLogos,
+      nonFoodFmcgTrustStats: summary.nonFoodFmcgPage.trustStats,
+      nonFoodFmcgCapabilityCards: summary.nonFoodFmcgPage.capabilityCards,
+      nonFoodFmcgBenefitItems: summary.nonFoodFmcgPage.benefitItems,
+      nonFoodFmcgCoverageItems: summary.nonFoodFmcgPage.coverageItems,
+      nonFoodFmcgPlatformTiles: summary.nonFoodFmcgPage.platformTiles,
+      nonFoodFmcgFaqEntries: summary.nonFoodFmcgPage.faqEntries,
+      nonFoodFmcgCoveragePanel: summary.nonFoodFmcgPage.coveragePanel,
+      nonFoodFmcgCtaSection: summary.nonFoodFmcgPage.ctaSection,
+      dairySectionCopy: summary.dairySectionCopyCount,
+      dairyHeroSlides: summary.dairyPage.heroSlides,
+      dairyTrustLogos: summary.dairyPage.trustLogos,
+      dairyTrustStats: summary.dairyPage.trustStats,
+      dairyCapabilityCards: summary.dairyPage.capabilityCards,
+      dairyBenefitItems: summary.dairyPage.benefitItems,
+      dairyCoverageItems: summary.dairyPage.coverageItems,
+      dairyPlatformTiles: summary.dairyPage.platformTiles,
+      dairyFaqEntries: summary.dairyPage.faqEntries,
+      dairyCapabilitiesPanel: summary.dairyPage.capabilitiesPanel,
+      dairyBenefitsPanel: summary.dairyPage.benefitsPanel,
+      dairyCtaSection: summary.dairyPage.ctaSection,
       rootAdminEmail: summary.rootAdmin.email,
       rootAdminCreated: summary.rootAdmin.created,
     });

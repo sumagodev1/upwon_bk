@@ -40,6 +40,20 @@ import socialMediaLinksRoutes, {
   publicSocialMediaLinksRouter,
 } from '../modules/social-media-links/routes';
 import blogRoutes, { publicBlogRouter } from '../modules/blog/routes';
+import bakeryPageRoutes, {
+  publicBakeryPageRouter,
+} from '../modules/industry-pages/bakery-page/routes';
+import fmcgPageRoutes, { publicFmcgPageRouter } from '../modules/industry-pages/fmcg-page/routes';
+import sweetsPageRoutes, {
+  publicSweetsPageRouter,
+} from '../modules/industry-pages/sweets-page/routes';
+import foodProcessingPageRoutes, {
+  publicFoodProcessingPageRouter,
+} from '../modules/industry-pages/food-processing-page/routes';
+import nonFoodFmcgPageRoutes, {
+  publicNonFoodFmcgPageRouter,
+} from '../modules/industry-pages/non-food-fmcg-page/routes';
+import dairyPageRoutes, { publicDairyPageRouter } from '../modules/industry-pages/dairy-page/routes';
 
 const router = Router();
 
@@ -69,6 +83,12 @@ router.use('/public/social-media-links', publicSocialMediaLinksRouter);
 // The /blog page: its hero, its topics intro, and the chips and posts - plus
 // one article per slug. See modules/blog/routes/index.ts.
 router.use('/public/blog', publicBlogRouter);
+router.use('/public/bakery-page', publicBakeryPageRouter);
+router.use('/public/fmcg-page', publicFmcgPageRouter);
+router.use('/public/sweets-page', publicSweetsPageRouter);
+router.use('/public/food-processing-page', publicFoodProcessingPageRouter);
+router.use('/public/non-food-fmcg-page', publicNonFoodFmcgPageRouter);
+router.use('/public/dairy-page', publicDairyPageRouter);
 
 // Public: the images those sections reference. Serves only uploads that opted
 // in by entity type - see PUBLIC_FILE_ENTITY_TYPES and fileService.getPublicImage.
@@ -106,5 +126,11 @@ router.use('/partner-program', partnerProgramRoutes);
 router.use('/about-page', aboutPageRoutes);
 router.use('/social-media-links', socialMediaLinksRoutes);
 router.use('/blog', blogRoutes);
+router.use('/bakery-page', bakeryPageRoutes);
+router.use('/fmcg-page', fmcgPageRoutes);
+router.use('/sweets-page', sweetsPageRoutes);
+router.use('/food-processing-page', foodProcessingPageRoutes);
+router.use('/non-food-fmcg-page', nonFoodFmcgPageRoutes);
+router.use('/dairy-page', dairyPageRoutes);
 
 export default router;
