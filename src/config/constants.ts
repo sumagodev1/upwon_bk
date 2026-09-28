@@ -317,6 +317,60 @@ export const PERMISSIONS = {
   // home page.
   BLOG_READ: 'blog.read',
   BLOG_UPDATE: 'blog.update',
+
+  // The Free Operational Audit page, the second item under the admin panel's
+  // "Resource Page" sidebar parent. Two keys, like blog.*: its one authored
+  // section is the hero carousel, and whoever may reword a slide is the person
+  // who adds, publishes or removes the next - the Blog hero's reasoning.
+  //
+  // Its own module rather than a section of blog.*: /free-audit is its own
+  // page with its own sidebar item, and granting it must not also grant the
+  // blog.
+  FREE_AUDIT_READ: 'free_audit.read',
+  FREE_AUDIT_UPDATE: 'free_audit.update',
+
+  // The audit requests that page's form produces. Split from free_audit.* for
+  // the same reason discovery_calls.* is split from about_page.*: those two
+  // keys govern a headline, these govern named strangers' mobile numbers and
+  // work addresses. Someone trusted to reword the hero is not automatically
+  // someone who should read everyone who asked for an audit.
+  //
+  // No create key - the only writer is an anonymous visitor - and no update
+  // key, because a request is a record of what was sent, not a draft. A delete
+  // key, because this is an inbox and spam arrives in inboxes: the Contact,
+  // Partner Program and discovery call inboxes were given exactly the same way
+  // out.
+  FREE_AUDIT_APPLICATIONS_READ: 'free_audit_applications.read',
+  FREE_AUDIT_APPLICATIONS_DELETE: 'free_audit_applications.delete',
+
+  // The Knowledgebase, the third item under the admin panel's "Resource Page"
+  // sidebar parent: the /knowledgebase hub's hero and category cards, and the
+  // articles each category page lists. Two keys, like blog.*, for the blog's
+  // reason: a knowledgebase is one editorial desk, where whoever may rewrite a
+  // guide is the person who decides it goes out, and the destructive edges are
+  // guarded by the data instead - a category that still holds articles cannot
+  // be deleted (KB_CATEGORY_IN_USE), and unpublishing is always available as
+  // the reversible alternative to deleting.
+  //
+  // Its own module rather than a section of blog.*: /knowledgebase is its own
+  // set of pages with its own sidebar item, and granting it must not also grant
+  // the blog.
+  KNOWLEDGEBASE_READ: 'knowledgebase.read',
+  KNOWLEDGEBASE_UPDATE: 'knowledgebase.update',
+
+  // The UpWon vs SAP comparison page, the fourth item under the admin panel's
+  // "Resource Page" sidebar parent: the /compare/upwon-vs-sap hero, its "The
+  // straight answer" cards and its capability comparison table. Two keys, like
+  // free_audit.*, even though the hero slides and the table's rows are created
+  // and deleted: the page is one argument, and whoever may reword a card is the
+  // person who re-rates a capability or adds the next row. Unpublishing is
+  // always available as the reversible alternative to deleting.
+  //
+  // Its own module rather than a section of any other page's keys:
+  // /compare/upwon-vs-sap is its own page with its own sidebar item, and
+  // granting it must not also grant the blog or the Free Operational Audit.
+  VS_SAP_PAGE_READ: 'vs_sap_page.read',
+  VS_SAP_PAGE_UPDATE: 'vs_sap_page.update',
 } as const;
 
 export type PermissionKey = (typeof PERMISSIONS)[keyof typeof PERMISSIONS];
@@ -422,6 +476,24 @@ export const PERMISSION_DESCRIPTIONS: Record<PermissionKey, string> = {
   'blog.read': 'View Blog page content: the hero, the topics intro, categories, and posts',
   'blog.update':
     'Create, update, reorder, publish and delete Blog page content, including its categories and posts',
+
+  'free_audit.read': 'View Free Operational Audit page content: the hero slides',
+  'free_audit.update':
+    'Create, update, reorder, publish and delete the Free Operational Audit hero slides',
+
+  'free_audit_applications.read':
+    'View audit requests submitted through the Free Operational Audit page form',
+  'free_audit_applications.delete': 'Delete submitted Free Operational Audit requests',
+
+  'knowledgebase.read':
+    'View Knowledgebase content: the hero slides, the categories, and the articles',
+  'knowledgebase.update':
+    'Create, update, reorder, publish and delete Knowledgebase content, including its categories and articles',
+
+  'vs_sap_page.read':
+    'View UpWon vs SAP page content: the hero slides, the straight answer cards, and the capability comparison',
+  'vs_sap_page.update':
+    'Create, update, reorder, publish and delete UpWon vs SAP page content, including its capability rows',
 };
 
 /**
@@ -1273,9 +1345,10 @@ export const AUDIT_ACTIONS = {
   SOCIAL_LINK_DELETED: 'SOCIAL_LINK_DELETED',
 
   /*
-   * The Blog. The two copy blocks are singletons, each with one action, on the
-   * About page's pattern. Categories are an ordered list like every other one
-   * in this API; posts are not ordered at all - the page sorts them by their
+   * The Blog. The hero slides are the Insider hero's family, action for
+   * action. The topics intro is a singleton with one action, on the About
+   * page's pattern. Categories are an ordered list like every other one in
+   * this API; posts are not ordered at all - the page sorts them by their
    * publish date - so they have no REORDERED action.
    *
    * Category and post families are kept apart for the reason the footer's two
@@ -1283,7 +1356,12 @@ export const AUDIT_ACTIONS = {
    * having to read the entity type, and renaming a topic chip is a different
    * edit from rewriting an article.
    */
-  BLOG_HERO_UPDATED: 'BLOG_HERO_UPDATED',
+  BLOG_HERO_SLIDE_CREATED: 'BLOG_HERO_SLIDE_CREATED',
+  BLOG_HERO_SLIDE_UPDATED: 'BLOG_HERO_SLIDE_UPDATED',
+  BLOG_HERO_SLIDE_STATUS_CHANGED: 'BLOG_HERO_SLIDE_STATUS_CHANGED',
+  BLOG_HERO_SLIDES_REORDERED: 'BLOG_HERO_SLIDES_REORDERED',
+  BLOG_HERO_SLIDE_DELETED: 'BLOG_HERO_SLIDE_DELETED',
+
   BLOG_TOPICS_UPDATED: 'BLOG_TOPICS_UPDATED',
 
   BLOG_CATEGORY_CREATED: 'BLOG_CATEGORY_CREATED',
@@ -1506,6 +1584,67 @@ export const AUDIT_ACTIONS = {
   DAIRY_CTA_SECTION_UPDATED: 'DAIRY_CTA_SECTION_UPDATED',
   DAIRY_CAPABILITIES_PANEL_UPDATED: 'DAIRY_CAPABILITIES_PANEL_UPDATED',
   DAIRY_BENEFITS_PANEL_UPDATED: 'DAIRY_BENEFITS_PANEL_UPDATED',
+
+  /*
+   * The Free Operational Audit page. The hero slides are the Blog hero's
+   * family, action for action. The audit request inbox has one action, for the
+   * reason ABOUT_DISCOVERY_CALL_DELETED is the only one on that inbox:
+   * deleting is the only thing an administrator does to a request, a
+   * submission has no admin actor to attribute, and reading one is not an
+   * event worth burying the trail under.
+   */
+  FREE_AUDIT_HERO_SLIDE_CREATED: 'FREE_AUDIT_HERO_SLIDE_CREATED',
+  FREE_AUDIT_HERO_SLIDE_UPDATED: 'FREE_AUDIT_HERO_SLIDE_UPDATED',
+  FREE_AUDIT_HERO_SLIDE_STATUS_CHANGED: 'FREE_AUDIT_HERO_SLIDE_STATUS_CHANGED',
+  FREE_AUDIT_HERO_SLIDES_REORDERED: 'FREE_AUDIT_HERO_SLIDES_REORDERED',
+  FREE_AUDIT_HERO_SLIDE_DELETED: 'FREE_AUDIT_HERO_SLIDE_DELETED',
+
+  FREE_AUDIT_APPLICATION_DELETED: 'FREE_AUDIT_APPLICATION_DELETED',
+
+  /*
+   * The Knowledgebase. The hero slides are the Blog hero's family, action for
+   * action; categories are an ordered list like the blog's chips; articles are
+   * not ordered by hand - a category page sorts them by their "Updated" date -
+   * so, like blog posts, they have no REORDERED action.
+   */
+  KB_HERO_SLIDE_CREATED: 'KB_HERO_SLIDE_CREATED',
+  KB_HERO_SLIDE_UPDATED: 'KB_HERO_SLIDE_UPDATED',
+  KB_HERO_SLIDE_STATUS_CHANGED: 'KB_HERO_SLIDE_STATUS_CHANGED',
+  KB_HERO_SLIDES_REORDERED: 'KB_HERO_SLIDES_REORDERED',
+  KB_HERO_SLIDE_DELETED: 'KB_HERO_SLIDE_DELETED',
+
+  KB_CATEGORY_CREATED: 'KB_CATEGORY_CREATED',
+  KB_CATEGORY_UPDATED: 'KB_CATEGORY_UPDATED',
+  KB_CATEGORY_STATUS_CHANGED: 'KB_CATEGORY_STATUS_CHANGED',
+  KB_CATEGORIES_REORDERED: 'KB_CATEGORIES_REORDERED',
+  KB_CATEGORY_DELETED: 'KB_CATEGORY_DELETED',
+
+  KB_ARTICLE_CREATED: 'KB_ARTICLE_CREATED',
+  KB_ARTICLE_UPDATED: 'KB_ARTICLE_UPDATED',
+  KB_ARTICLE_STATUS_CHANGED: 'KB_ARTICLE_STATUS_CHANGED',
+  KB_ARTICLE_DELETED: 'KB_ARTICLE_DELETED',
+
+  /*
+   * The UpWon vs SAP page. The hero slides are the Free Audit hero's family,
+   * action for action. The straight answer and the comparison table's copy are
+   * singletons with one action each, on the About page's pattern; the table's
+   * capability rows are an ordered list like every other one in this API.
+   */
+  VS_SAP_HERO_SLIDE_CREATED: 'VS_SAP_HERO_SLIDE_CREATED',
+  VS_SAP_HERO_SLIDE_UPDATED: 'VS_SAP_HERO_SLIDE_UPDATED',
+  VS_SAP_HERO_SLIDE_STATUS_CHANGED: 'VS_SAP_HERO_SLIDE_STATUS_CHANGED',
+  VS_SAP_HERO_SLIDES_REORDERED: 'VS_SAP_HERO_SLIDES_REORDERED',
+  VS_SAP_HERO_SLIDE_DELETED: 'VS_SAP_HERO_SLIDE_DELETED',
+
+  VS_SAP_ANSWER_SECTION_UPDATED: 'VS_SAP_ANSWER_SECTION_UPDATED',
+
+  VS_SAP_COMPARISON_SECTION_UPDATED: 'VS_SAP_COMPARISON_SECTION_UPDATED',
+
+  VS_SAP_CAPABILITY_CREATED: 'VS_SAP_CAPABILITY_CREATED',
+  VS_SAP_CAPABILITY_UPDATED: 'VS_SAP_CAPABILITY_UPDATED',
+  VS_SAP_CAPABILITY_STATUS_CHANGED: 'VS_SAP_CAPABILITY_STATUS_CHANGED',
+  VS_SAP_CAPABILITIES_REORDERED: 'VS_SAP_CAPABILITIES_REORDERED',
+  VS_SAP_CAPABILITY_DELETED: 'VS_SAP_CAPABILITY_DELETED',
 
   UNAUTHORIZED_ACCESS_ATTEMPT: 'UNAUTHORIZED_ACCESS_ATTEMPT',
 } as const;
@@ -1975,6 +2114,9 @@ export const LIMITS = {
   // and past that the row stops being a set of icons and becomes a directory.
   MAX_SOCIAL_LINKS: 8,
 
+  // The blog hero is the same auto-rotating slider as the Insider hero, so the
+  // same reasoning and the same cap.
+  MAX_BLOG_HERO_SLIDES: 12,
   // The blog's topic chips sit in one centred, wrapping row above the post
   // grid, next to an "All" chip. The site ships six; twelve is two full rows
   // on a laptop, and past that the row stops being a filter a reader scans and
@@ -2060,6 +2202,36 @@ export const LIMITS = {
   // One horizontally scrolling row; two dozen is already a long scroll.
   MAX_DAIRY_COVERAGE_ITEMS: 24,
   MAX_DAIRY_FAQ_ENTRIES: 24,
+
+  // The Free Operational Audit hero is the same auto-rotating slider as the
+  // Blog and Insider heroes, so the same reasoning and the same cap.
+  MAX_FREE_AUDIT_HERO_SLIDES: 12,
+
+  // The Knowledgebase hero is the same auto-rotating slider again, so the same
+  // reasoning and the same cap.
+  MAX_KB_HERO_SLIDES: 12,
+  // The hub's category cards sit in a three-column grid, each opening a page
+  // of its own. The site ships three; twenty-four is eight rows on a laptop,
+  // past which the hub stops being an index a reader scans and the reorder
+  // list stops being usable.
+  MAX_KB_CATEGORIES: 24,
+  // Articles are not paged, for MAX_BLOG_POSTS' reasons: the admin list, the
+  // category pages and the hub's counts all read whole sets, which is only
+  // sound while the set is bounded. If the knowledgebase ever gets near this,
+  // the answer is paging those reads, not raising the number.
+  MAX_KB_ARTICLES: 500,
+
+  // The UpWon vs SAP hero is the same auto-rotating slider again, so the same
+  // reasoning and the same cap.
+  MAX_VS_SAP_HERO_SLIDES: 12,
+  // Per card, for each of the straight answer's two lists. The site ships six
+  // and four; past ten a card stops being a verdict a reader takes in at a
+  // glance and outgrows the card beside it.
+  MAX_VS_SAP_ANSWER_POINTS: 10,
+  // The comparison table's rows. The site ships eleven; thirty is about as far
+  // as a visitor will scroll a star grid before it stops being a comparison and
+  // becomes a feature list - and the reorder list stops being usable.
+  MAX_VS_SAP_CAPABILITIES: 30,
 } as const;
 
 // ── Publicly served uploads ──────────────────────────────────────────────
@@ -2080,8 +2252,10 @@ export const LIMITS = {
  * cards and long-form feature, the Contact page's hero, the Partner Program
  * page's hero backdrop, and the About page's four - its rotating hero
  * backdrops, the founder's portrait, the team headshots and the closing CTA
- * banner - and the Blog's post images, which are the card, the featured card
- * and the article's full-bleed header all at once.
+ * banner - and the Blog's two: its hero slides' backgrounds, and its post
+ * images, which are the card, the featured card and the article's full-bleed
+ * header all at once - and the Free Operational Audit page's, the
+ * Knowledgebase hub's and the UpWon vs SAP page's hero slides' backgrounds.
  *
  * One entry per section rather than per viewport: a section's desktop and
  * mobile crops are the same slot authored twice, and splitting them would only
@@ -2258,7 +2432,11 @@ export const PUBLIC_FILE_ENTITY_TYPES = [
   'about_founder',
   'about_team_member',
   'about_cta',
+  'blog_hero_slide',
   'blog_post_image',
+  'free_audit_hero_slide',
+  'kb_hero_slide',
+  'vs_sap_hero_slide',
 ] as const;
 
 export type PublicFileEntityType = (typeof PUBLIC_FILE_ENTITY_TYPES)[number];

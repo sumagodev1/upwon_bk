@@ -22,8 +22,8 @@ import {
   UpdateBlogPostInput,
 } from '../types/posts.types';
 import { BLOG_IMAGE_SPECS } from '../utils/blog-image-spec';
-import { assertSlugAvailable, SlugConflictSpec, withSlugConflict } from '../utils/slug-conflict';
-import { isPlausibleSlug } from '../utils/slug';
+import { SlugConflictSpec, withSlugConflict } from '../utils/slug-conflict';
+import { deriveBlogSlug, firstFreeSlug, isPlausibleSlug } from '../utils/slug';
 
 const MODULE = 'blog';
 const ENTITY = 'blog_post';
@@ -34,8 +34,14 @@ const SLUG_CONFLICT: SlugConflictSpec = {
   noun: 'A blog post',
 };
 
-/** The posts.validator cap, so a public :slug longer than any real one 404s unread. */
+/**
+ * blog_posts.slug's column size: what a derived slug is trimmed to, and why a
+ * public :slug longer than any real one 404s unread.
+ */
 const SLUG_MAX = 120;
+
+/** The slug of a post whose title holds no letter or digit ('???'). */
+const FALLBACK_SLUG = 'post';
 
 /** "Keep reading" cards under an article - what getRelatedPosts has always shown. */
 const RELATED_LIMIT = 3;
@@ -192,7 +198,7 @@ export const getById = async (id: string): Promise<ResolvedBlogPost> => {
  *
  * Categories: ACTIVE ones in display order, each counting its ACTIVE posts.
  * Posts: ACTIVE ones under an ACTIVE category, newest first - the first is the
- * featured card. Always a 200: unlike the two copy blocks there is no single
+ * featured card. Always a 200: unlike the topics intro there is no single
  * row whose absence means "never authored", so that answer is carried by the
  * two has* flags instead. They count rows regardless of status, so the site
  * can tell "nothing here at all" (keep the built-in list) from "everything is
@@ -243,6 +249,15 @@ export const getPublishedPost = async (slug: string): Promise<PublicBlogPost> =>
 
 // ── writes ────────────────────────────────────────────────────────────────
 
+/**
+ * A new post's slug - its /blog/<slug> address - is not an input: it is
+ * derived from the title - 'Why ERP Projects Fail' -> 'why-erp-projects-fail'
+ * - and a title whose slug is already held is numbered ('-2', '-3'...) rather
+ * than refused. It never changes afterwards; update() has no slug to write, so
+ * a link to the article survives edits to its title. Only a race between two
+ * creates of the same title can still meet the unique constraint, which
+ * withSlugConflict answers with the usual 409 - saving again then numbers it.
+ */
 export const create = async (
   input: CreateBlogPostInput,
   context: RequestContext,
@@ -264,10 +279,15 @@ export const create = async (
     }
 
     await assertCategoryExists(input.categoryId, client);
-    await assertSlugAvailable(SLUG_CONFLICT, input.slug, null, postsRepository.findIdBySlug, client);
 
-    const created = await withSlugConflict(SLUG_CONFLICT, input.slug, () =>
-      postsRepository.create(input, context.adminId, client),
+    const slug = firstFreeSlug(
+      deriveBlogSlug(input.title, SLUG_MAX) || FALLBACK_SLUG,
+      new Set(await postsRepository.findAllSlugs(client)),
+      SLUG_MAX,
+    );
+
+    const created = await withSlugConflict(SLUG_CONFLICT, slug, () =>
+      postsRepository.create({ ...input, slug }, context.adminId, client),
     );
 
     await auditLogService.record(
@@ -317,13 +337,8 @@ export const update = async (
     if (patch.categoryId !== undefined && patch.categoryId !== existing.categoryId) {
       await assertCategoryExists(patch.categoryId, client);
     }
-    if (patch.slug !== undefined && patch.slug !== existing.slug) {
-      await assertSlugAvailable(SLUG_CONFLICT, patch.slug, id, postsRepository.findIdBySlug, client);
-    }
 
-    const saved = await withSlugConflict(SLUG_CONFLICT, patch.slug, () =>
-      postsRepository.update(id, patch, context.adminId, client),
-    );
+    const saved = await postsRepository.update(id, patch, context.adminId, client);
     if (!saved) throw new NotFoundError('Blog post');
 
     await auditLogService.record(

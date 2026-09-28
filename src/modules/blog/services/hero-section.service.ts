@@ -1,73 +1,303 @@
 // src/modules/blog/services/hero-section.service.ts
 
-import { AUDIT_ACTIONS } from '../../../config/constants';
 import { withTransaction } from '../../../config/database';
+import { AUDIT_ACTIONS, ContentStatus, LIMITS } from '../../../config/constants';
+import { ConflictError } from '../../../core/errors/ConflictError';
 import { NotFoundError } from '../../../core/errors/NotFoundError';
-import { RequestContext } from '../../../core/types/common.types';
+import { ValidationError } from '../../../core/errors/ValidationError';
+import { PaginationParams, RequestContext } from '../../../core/types/common.types';
+import { buildPaginationMeta, PaginationMeta } from '../../../core/utils/pagination';
 import * as auditLogService from '../../audit-logs/services/audit-log.service';
+import { assertUsableImageFile, resolveImageSource } from '../../home-page/utils/image-asset';
 import * as heroRepository from '../repositories/hero-section.repository';
 import {
-  BlogHeroSection,
-  PublicBlogHeroSection,
-  ReplaceBlogHeroSectionInput,
-  ResolvedBlogHeroSection,
+  BlogHeroSlide,
+  BlogHeroSlideFilters,
+  CreateBlogHeroSlideInput,
+  PublicBlogHeroSlide,
+  ResolvedBlogHeroSlide,
+  UpdateBlogHeroSlideInput,
 } from '../types/hero-section.types';
+import { BLOG_IMAGE_SPECS } from '../utils/blog-image-spec';
 
 const MODULE = 'blog';
-const ENTITY = 'blog_hero_section';
+const ENTITY = 'blog_hero_slide';
 
-/** Every authored field, so a previous version is recoverable from the trail. */
-const auditSnapshot = (section: BlogHeroSection): Record<string, unknown> => ({
-  eyebrow: section.eyebrow,
-  heading: section.heading,
-  subtext: section.subtext,
-  primaryCtaLabel: section.primaryCtaLabel,
-  secondaryCtaLabel: section.secondaryCtaLabel,
+/*
+ * The same rules as the Insider hero service, applied to the blog hero's
+ * table: the image checks and URL resolution are the shared ones from
+ * home-page/utils/image-asset, so an image behaves identically on every page.
+ */
+
+const toResolved = async (slide: BlogHeroSlide): Promise<ResolvedBlogHeroSlide> => {
+  const [image, mobileImage] = await Promise.all([
+    // The seeded slide's legacy site path comes back as stored, like the
+    // Insider and home heroes' seeded paths.
+    resolveImageSource(slide.imageUrl, slide.imageFileId),
+    // Null here means "no mobile-specific art" - the site falls back to `image`.
+    resolveImageSource(null, slide.mobileImageFileId),
+  ]);
+  return { ...slide, image, mobileImage };
+};
+
+const toResolvedMany = (slides: BlogHeroSlide[]): Promise<ResolvedBlogHeroSlide[]> =>
+  Promise.all(slides.map(toResolved));
+
+/** Drops the admin-only fields. */
+const toPublic = (slide: ResolvedBlogHeroSlide): PublicBlogHeroSlide => ({
+  eyebrow: slide.eyebrow,
+  heading: slide.heading,
+  subtext: slide.subtext,
+  image: slide.image,
+  mobileImage: slide.mobileImage,
 });
 
-/** The admin read. Null when the hero has never been saved. */
-export const get = async (): Promise<ResolvedBlogHeroSection | null> => heroRepository.find();
+/** The fields an audit entry records, so every write snapshots the same set. */
+const auditSnapshot = (slide: BlogHeroSlide): Record<string, unknown> => ({
+  eyebrow: slide.eyebrow,
+  heading: slide.heading,
+  subtext: slide.subtext,
+  imageUrl: slide.imageUrl,
+  imageFileId: slide.imageFileId,
+  mobileImageFileId: slide.mobileImageFileId,
+  displayOrder: slide.displayOrder,
+  status: slide.status,
+});
 
-/**
- * The website-facing read: the copy and the two button labels. The buttons'
- * targets are not part of it - the site fixes them in code (primary -> /demo,
- * secondary -> /knowledgebase) and takes only their wording from here.
- *
- * 404 while the hero has never been authored, so the site keeps its own
- * built-in slide - exactly what it does when the API is unreachable.
- */
-export const getPublished = async (): Promise<PublicBlogHeroSection> => {
-  const section = await heroRepository.find();
-  if (!section) throw new NotFoundError('Blog hero section');
+// ── reads ─────────────────────────────────────────────────────────────────
 
+export const list = async (
+  filters: BlogHeroSlideFilters,
+  pagination: PaginationParams,
+): Promise<{ rows: ResolvedBlogHeroSlide[]; meta: PaginationMeta }> => {
+  const { rows, total } = await heroRepository.findAll(filters, pagination);
   return {
-    eyebrow: section.eyebrow,
-    heading: section.heading,
-    subtext: section.subtext,
-    primaryCtaLabel: section.primaryCtaLabel,
-    secondaryCtaLabel: section.secondaryCtaLabel,
+    rows: await toResolvedMany(rows),
+    meta: buildPaginationMeta(total, pagination),
   };
 };
 
-export const replace = async (
-  input: ReplaceBlogHeroSectionInput,
+export const getById = async (id: string): Promise<ResolvedBlogHeroSlide> => {
+  const slide = await heroRepository.findById(id);
+  if (!slide) throw new NotFoundError('Blog hero slide');
+  return toResolved(slide);
+};
+
+/** The website-facing read. Returns only ACTIVE slides, already in order. */
+export const getPublished = async (): Promise<PublicBlogHeroSlide[]> => {
+  const slides = await heroRepository.findPublished();
+  const resolved = await toResolvedMany(slides);
+  return resolved.map(toPublic);
+};
+
+// ── writes ────────────────────────────────────────────────────────────────
+
+export const create = async (
+  input: CreateBlogHeroSlideInput,
   context: RequestContext,
-): Promise<ResolvedBlogHeroSection> =>
-  withTransaction(async (client) => {
-    const existing = await heroRepository.findForUpdate(client);
-    const saved = await heroRepository.upsert(input, context.adminId, client);
+): Promise<ResolvedBlogHeroSlide> => {
+  if (input.imageFileId) {
+    await assertUsableImageFile(input.imageFileId, BLOG_IMAGE_SPECS.heroDesktop, 'imageFileId');
+  }
+  if (input.mobileImageFileId) {
+    await assertUsableImageFile(
+      input.mobileImageFileId,
+      BLOG_IMAGE_SPECS.heroMobile,
+      'mobileImageFileId',
+    );
+  }
+
+  const slide = await withTransaction(async (client) => {
+    const existing = await heroRepository.countAll(client);
+    if (existing >= LIMITS.MAX_BLOG_HERO_SLIDES) {
+      throw new ConflictError(
+        `The Blog hero holds at most ${LIMITS.MAX_BLOG_HERO_SLIDES} slides. Delete or deactivate one first.`,
+        'HERO_SLIDE_LIMIT_REACHED',
+      );
+    }
+
+    const displayOrder =
+      input.displayOrder ?? (await heroRepository.nextDisplayOrder(client));
+
+    const created = await heroRepository.create(
+      { ...input, displayOrder },
+      context.adminId,
+      client,
+    );
 
     await auditLogService.record(
       {
-        action: AUDIT_ACTIONS.BLOG_HERO_UPDATED,
+        action: AUDIT_ACTIONS.BLOG_HERO_SLIDE_CREATED,
         module: MODULE,
         entityType: ENTITY,
-        oldValues: existing ? auditSnapshot(existing) : null,
-        newValues: auditSnapshot(saved),
+        entityId: created.id,
+        newValues: auditSnapshot(created),
       },
       context,
       client,
     );
 
-    return saved;
+    return created;
   });
+
+  return toResolved(slide);
+};
+
+export const update = async (
+  id: string,
+  patch: UpdateBlogHeroSlideInput,
+  context: RequestContext,
+): Promise<ResolvedBlogHeroSlide> => {
+  if (patch.imageFileId) {
+    await assertUsableImageFile(patch.imageFileId, BLOG_IMAGE_SPECS.heroDesktop, 'imageFileId');
+  }
+  if (patch.mobileImageFileId) {
+    await assertUsableImageFile(
+      patch.mobileImageFileId,
+      BLOG_IMAGE_SPECS.heroMobile,
+      'mobileImageFileId',
+    );
+  }
+
+  const slide = await withTransaction(async (client) => {
+    const existing = await heroRepository.findByIdForUpdate(id, client);
+    if (!existing) throw new NotFoundError('Blog hero slide');
+
+    const updated = await heroRepository.update(id, patch, context.adminId, client);
+    if (!updated) throw new NotFoundError('Blog hero slide');
+
+    await auditLogService.record(
+      {
+        action: AUDIT_ACTIONS.BLOG_HERO_SLIDE_UPDATED,
+        module: MODULE,
+        entityType: ENTITY,
+        entityId: id,
+        oldValues: auditSnapshot(existing),
+        newValues: auditSnapshot(updated),
+      },
+      context,
+      client,
+    );
+
+    return updated;
+  });
+
+  return toResolved(slide);
+};
+
+/**
+ * Publish / unpublish, separate from update() so the list's toggle cannot carry
+ * stale copy and the audit trail tells "went live" from "was edited".
+ */
+export const setStatus = async (
+  id: string,
+  status: ContentStatus,
+  context: RequestContext,
+): Promise<ResolvedBlogHeroSlide> => {
+  const slide = await withTransaction(async (client) => {
+    const existing = await heroRepository.findByIdForUpdate(id, client);
+    if (!existing) throw new NotFoundError('Blog hero slide');
+
+    // Already in the requested state: no no-op write, no misleading audit row.
+    if (existing.status === status) return existing;
+
+    const updated = await heroRepository.updateStatus(id, status, context.adminId, client);
+    if (!updated) throw new NotFoundError('Blog hero slide');
+
+    await auditLogService.record(
+      {
+        action: AUDIT_ACTIONS.BLOG_HERO_SLIDE_STATUS_CHANGED,
+        module: MODULE,
+        entityType: ENTITY,
+        entityId: id,
+        oldValues: { status: existing.status },
+        newValues: { status: updated.status },
+      },
+      context,
+      client,
+    );
+
+    return updated;
+  });
+
+  return toResolved(slide);
+};
+
+/**
+ * Takes the complete id list in its new order and rewrites display_order to the
+ * array index. Every slide is required, so the result is a total order.
+ */
+export const reorder = async (
+  orderedIds: string[],
+  context: RequestContext,
+): Promise<ResolvedBlogHeroSlide[]> => {
+  const slides = await withTransaction(async (client) => {
+    const total = await heroRepository.countAll(client);
+    const existingIds = await heroRepository.findExistingIds(orderedIds, client);
+
+    const unknown = orderedIds.filter((id) => !existingIds.includes(id));
+    if (unknown.length > 0) {
+      throw new ValidationError('One or more hero slides do not exist', [
+        {
+          field: 'ids',
+          message: `Unknown hero slide ids: ${unknown.join(', ')}`,
+          code: 'UNKNOWN_HERO_SLIDE',
+        },
+      ]);
+    }
+
+    if (orderedIds.length !== total) {
+      throw new ValidationError('Reorder must list every hero slide', [
+        {
+          field: 'ids',
+          message: `Expected all ${total} slide ids, received ${orderedIds.length}`,
+          code: 'INCOMPLETE_ORDER',
+        },
+      ]);
+    }
+
+    await heroRepository.applyOrder(orderedIds, context.adminId, client);
+
+    await auditLogService.record(
+      {
+        action: AUDIT_ACTIONS.BLOG_HERO_SLIDES_REORDERED,
+        module: MODULE,
+        entityType: ENTITY,
+        newValues: { order: orderedIds },
+      },
+      context,
+      client,
+    );
+
+    // Read on `client` so the list reflects the order just written.
+    return heroRepository.findAll(
+      {},
+      { page: 1, limit: LIMITS.MAX_BLOG_HERO_SLIDES, offset: 0 },
+      client,
+    );
+  });
+
+  return toResolvedMany(slides.rows);
+};
+
+export const remove = async (id: string, context: RequestContext): Promise<void> => {
+  await withTransaction(async (client) => {
+    const existing = await heroRepository.findByIdForUpdate(id, client);
+    if (!existing) throw new NotFoundError('Blog hero slide');
+
+    await heroRepository.remove(id, client);
+
+    await auditLogService.record(
+      {
+        action: AUDIT_ACTIONS.BLOG_HERO_SLIDE_DELETED,
+        module: MODULE,
+        entityType: ENTITY,
+        entityId: id,
+        // The full row, so deleted copy is recoverable from the audit trail.
+        oldValues: auditSnapshot(existing),
+      },
+      context,
+      client,
+    );
+  });
+};

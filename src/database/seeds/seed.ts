@@ -71,10 +71,18 @@ import { SOCIAL_CONTACT_LINES, SOCIAL_LINKS } from './social-media-links.data';
 import { socialLinkLabel } from '../../modules/social-media-links/utils/icons';
 import {
   BLOG_CATEGORIES,
-  BLOG_HERO_SECTION,
+  BLOG_HERO_SLIDES,
   BLOG_POSTS,
   BLOG_TOPICS_SECTION,
 } from './blog.data';
+import { FREE_AUDIT_HERO_SLIDES } from './free-audit.data';
+import { KB_ARTICLES, KB_CATEGORIES, KB_HERO_SLIDES } from './knowledgebase.data';
+import {
+  VS_SAP_ANSWER_SECTION,
+  VS_SAP_CAPABILITIES,
+  VS_SAP_COMPARISON_SECTION,
+  VS_SAP_HERO_SLIDES,
+} from './vs-sap-page.data';
 
 /**
  * Idempotent seed. Safe to run repeatedly - every statement is an upsert or a
@@ -1522,28 +1530,34 @@ async function seedSocialLinks(client: PoolClient): Promise<number> {
 // ── blog (Resource Page > Blog) ───────────────────────────────────────────
 /*
  * The /blog page's content the website previously held as static data - see
- * blog.data.ts for where each part came from. The two copy blocks are
- * singletons pinned to id = 1, so DO NOTHING is exactly "only when empty"; the
- * categories and the posts are each seeded only into an empty table, so a
- * re-run never re-adds a category or a post an administrator has since
- * deleted, and never reverts an edit.
+ * blog.data.ts for where each part came from. The topics intro is a singleton
+ * pinned to id = 1, so DO NOTHING is exactly "only when empty"; the hero
+ * slides, the categories and the posts are each seeded only into an empty
+ * table, so a re-run never re-adds a slide, a category or a post an
+ * administrator has since deleted, and never reverts an edit.
  */
 
-async function seedBlogHeroSection(client: PoolClient): Promise<number> {
-  const hero = BLOG_HERO_SECTION;
+async function seedBlogHeroSlides(client: PoolClient): Promise<number> {
+  const existing = await client.query<{ count: number }>(
+    'SELECT COUNT(*) AS count FROM blog_hero_slides',
+  );
+  if (Number(existing.rows[0].count) > 0) return 0;
+
   const result = await client.query(
     `
-    INSERT INTO blog_hero_section
-      (id, eyebrow, heading, subtext, primary_cta_label, secondary_cta_label)
-    VALUES (1, $1, $2, $3, $4, $5)
-    ON CONFLICT (id) DO NOTHING
+    INSERT INTO blog_hero_slides
+      (eyebrow, heading, subtext, image_url, display_order, status)
+    SELECT unnested.eyebrow, unnested.heading, unnested.subtext,
+           unnested.image_url, unnested.display_order, 'ACTIVE'
+      FROM unnest($1::text[], $2::text[], $3::text[], $4::text[], $5::int[])
+        AS unnested(eyebrow, heading, subtext, image_url, display_order)
     `,
     [
-      hero.eyebrow,
-      hero.heading,
-      hero.subtext,
-      hero.primaryCtaLabel,
-      hero.secondaryCtaLabel,
+      BLOG_HERO_SLIDES.map((slide) => slide.eyebrow),
+      BLOG_HERO_SLIDES.map((slide) => slide.heading),
+      BLOG_HERO_SLIDES.map((slide) => slide.subtext),
+      BLOG_HERO_SLIDES.map((slide) => slide.imageUrl),
+      BLOG_HERO_SLIDES.map((_slide, index) => index),
     ],
   );
 
@@ -1634,6 +1648,259 @@ async function seedBlogPosts(client: PoolClient): Promise<number> {
       BLOG_POSTS.map((post) => post.author),
       BLOG_POSTS.map((post) => post.lead),
       BLOG_POSTS.map((post) => JSON.stringify(post.body)),
+    ],
+  );
+
+  return result.rowCount ?? 0;
+}
+
+// ── free operational audit (Resource Page > Free Operational Audit) ───────
+/*
+ * The /free-audit hero the website previously held as static data - see
+ * free-audit.data.ts. Seeded only into an empty table, like the Blog hero, so a
+ * re-run never re-adds a slide an administrator has since deleted and never
+ * reverts an edit. The audit request inbox is never seeded.
+ */
+
+async function seedFreeAuditHeroSlides(client: PoolClient): Promise<number> {
+  const existing = await client.query<{ count: number }>(
+    'SELECT COUNT(*) AS count FROM free_audit_hero_slides',
+  );
+  if (Number(existing.rows[0].count) > 0) return 0;
+
+  const result = await client.query(
+    `
+    INSERT INTO free_audit_hero_slides
+      (eyebrow, heading, subtext, image_url, display_order, status)
+    SELECT unnested.eyebrow, unnested.heading, unnested.subtext,
+           unnested.image_url, unnested.display_order, 'ACTIVE'
+      FROM unnest($1::text[], $2::text[], $3::text[], $4::text[], $5::int[])
+        AS unnested(eyebrow, heading, subtext, image_url, display_order)
+    `,
+    [
+      FREE_AUDIT_HERO_SLIDES.map((slide) => slide.eyebrow),
+      FREE_AUDIT_HERO_SLIDES.map((slide) => slide.heading),
+      FREE_AUDIT_HERO_SLIDES.map((slide) => slide.subtext),
+      FREE_AUDIT_HERO_SLIDES.map((slide) => slide.imageUrl),
+      FREE_AUDIT_HERO_SLIDES.map((_slide, index) => index),
+    ],
+  );
+
+  return result.rowCount ?? 0;
+}
+
+// ── knowledgebase (Resource Page > Knowledgebase) ─────────────────────────
+/*
+ * The /knowledgebase content the website previously held as static data - see
+ * knowledgebase.data.ts for where each part came from. The hero slides, the
+ * categories and the articles are each seeded only into an empty table, like
+ * the Blog's, so a re-run never re-adds a slide, a category or an article an
+ * administrator has since deleted, and never reverts an edit.
+ */
+
+async function seedKbHeroSlides(client: PoolClient): Promise<number> {
+  const existing = await client.query<{ count: number }>(
+    'SELECT COUNT(*) AS count FROM kb_hero_slides',
+  );
+  if (Number(existing.rows[0].count) > 0) return 0;
+
+  const result = await client.query(
+    `
+    INSERT INTO kb_hero_slides
+      (eyebrow, heading, subtext, image_url, display_order, status)
+    SELECT unnested.eyebrow, unnested.heading, unnested.subtext,
+           unnested.image_url, unnested.display_order, 'ACTIVE'
+      FROM unnest($1::text[], $2::text[], $3::text[], $4::text[], $5::int[])
+        AS unnested(eyebrow, heading, subtext, image_url, display_order)
+    `,
+    [
+      KB_HERO_SLIDES.map((slide) => slide.eyebrow),
+      KB_HERO_SLIDES.map((slide) => slide.heading),
+      KB_HERO_SLIDES.map((slide) => slide.subtext),
+      KB_HERO_SLIDES.map((slide) => slide.imageUrl),
+      KB_HERO_SLIDES.map((_slide, index) => index),
+    ],
+  );
+
+  return result.rowCount ?? 0;
+}
+
+async function seedKbCategories(client: PoolClient): Promise<number> {
+  const existing = await client.query<{ count: number }>(
+    'SELECT COUNT(*) AS count FROM kb_categories',
+  );
+  if (Number(existing.rows[0].count) > 0) return 0;
+
+  const result = await client.query(
+    `
+    INSERT INTO kb_categories (slug, name, description, icon, display_order, status)
+    SELECT unnested.slug, unnested.name, unnested.description, unnested.icon,
+           unnested.display_order, 'ACTIVE'
+      FROM unnest($1::text[], $2::text[], $3::text[], $4::text[], $5::int[])
+        AS unnested(slug, name, description, icon, display_order)
+    `,
+    [
+      KB_CATEGORIES.map((category) => category.slug),
+      KB_CATEGORIES.map((category) => category.name),
+      KB_CATEGORIES.map((category) => category.description),
+      KB_CATEGORIES.map((category) => category.icon),
+      // The order the hub draws the cards in today.
+      KB_CATEGORIES.map((_category, index) => index),
+    ],
+  );
+
+  return result.rowCount ?? 0;
+}
+
+/**
+ * Every article, filed under its category by slug. Runs after seedKbCategories
+ * in the same transaction, so on a first run every slug resolves; an article
+ * whose category an administrator has since deleted is simply not re-created.
+ */
+async function seedKbArticles(client: PoolClient): Promise<number> {
+  const existing = await client.query<{ count: number }>(
+    'SELECT COUNT(*) AS count FROM kb_articles',
+  );
+  if (Number(existing.rows[0].count) > 0) return 0;
+
+  // Bodies and FAQs travel as JSON text and are cast per row: pg would encode
+  // a JS array of objects as a Postgres array literal, which is not jsonb.
+  // Dates travel as their YYYY-MM-DD text for the same reason in the other
+  // direction.
+  const result = await client.query(
+    `
+    INSERT INTO kb_articles
+      (slug, category_id, title, excerpt, read_time, updated_on, body, faqs, status)
+    SELECT unnested.slug, c.id, unnested.title, unnested.excerpt, unnested.read_time,
+           unnested.updated_on::date, unnested.body::jsonb, unnested.faqs::jsonb, 'ACTIVE'
+      FROM unnest($1::text[], $2::text[], $3::text[], $4::text[], $5::text[], $6::text[],
+                  $7::text[], $8::text[])
+        AS unnested(slug, category_slug, title, excerpt, read_time, updated_on, body, faqs)
+      JOIN kb_categories c ON c.slug = unnested.category_slug
+    `,
+    [
+      KB_ARTICLES.map((article) => article.slug),
+      KB_ARTICLES.map((article) => article.categorySlug),
+      KB_ARTICLES.map((article) => article.title),
+      KB_ARTICLES.map((article) => article.excerpt),
+      KB_ARTICLES.map((article) => article.readTime),
+      KB_ARTICLES.map((article) => article.updatedOn),
+      KB_ARTICLES.map((article) => JSON.stringify(article.body)),
+      KB_ARTICLES.map((article) => JSON.stringify(article.faqs)),
+    ],
+  );
+
+  return result.rowCount ?? 0;
+}
+
+// ── upwon vs sap (Resource Page > UpWon vs SAP) ───────────────────────────
+/*
+ * The /compare/upwon-vs-sap content the website previously held as static data
+ * - see vs-sap-page.data.ts for where each part came from. The straight answer
+ * and the comparison table's copy are singletons pinned to id = 1, so DO
+ * NOTHING is exactly "only when empty"; the hero slides and the capability rows
+ * are each seeded only into an empty table, like the Free Audit hero, so a
+ * re-run never re-adds a slide or a row an administrator has since deleted, and
+ * never reverts an edit.
+ */
+
+async function seedVsSapHeroSlides(client: PoolClient): Promise<number> {
+  const existing = await client.query<{ count: number }>(
+    'SELECT COUNT(*) AS count FROM vs_sap_hero_slides',
+  );
+  if (Number(existing.rows[0].count) > 0) return 0;
+
+  const result = await client.query(
+    `
+    INSERT INTO vs_sap_hero_slides
+      (eyebrow, heading, subtext, image_url, display_order, status)
+    SELECT unnested.eyebrow, unnested.heading, unnested.subtext,
+           unnested.image_url, unnested.display_order, 'ACTIVE'
+      FROM unnest($1::text[], $2::text[], $3::text[], $4::text[], $5::int[])
+        AS unnested(eyebrow, heading, subtext, image_url, display_order)
+    `,
+    [
+      VS_SAP_HERO_SLIDES.map((slide) => slide.eyebrow),
+      VS_SAP_HERO_SLIDES.map((slide) => slide.heading),
+      VS_SAP_HERO_SLIDES.map((slide) => slide.subtext),
+      VS_SAP_HERO_SLIDES.map((slide) => slide.imageUrl),
+      VS_SAP_HERO_SLIDES.map((_slide, index) => index),
+    ],
+  );
+
+  return result.rowCount ?? 0;
+}
+
+async function seedVsSapAnswerSection(client: PoolClient): Promise<number> {
+  const section = VS_SAP_ANSWER_SECTION;
+  // The two lists are serialised explicitly: handed a JS array, pg would
+  // encode it as a Postgres array literal, which is not valid jsonb.
+  const result = await client.query(
+    `
+    INSERT INTO vs_sap_answer_section
+      (id, eyebrow, heading, upwon_title, upwon_points, sap_title, sap_points,
+       closing_line)
+    VALUES (1, $1, $2, $3, $4::jsonb, $5, $6::jsonb, $7)
+    ON CONFLICT (id) DO NOTHING
+    `,
+    [
+      section.eyebrow,
+      section.heading,
+      section.upwonTitle,
+      JSON.stringify(section.upwonPoints),
+      section.sapTitle,
+      JSON.stringify(section.sapPoints),
+      section.closingLine,
+    ],
+  );
+
+  return result.rowCount ?? 0;
+}
+
+async function seedVsSapComparisonSection(client: PoolClient): Promise<number> {
+  const section = VS_SAP_COMPARISON_SECTION;
+  const result = await client.query(
+    `
+    INSERT INTO vs_sap_comparison_section
+      (id, eyebrow, heading, subtext, tco_upwon, tco_sap, tco_netsuite)
+    VALUES (1, $1, $2, $3, $4, $5, $6)
+    ON CONFLICT (id) DO NOTHING
+    `,
+    [
+      section.eyebrow,
+      section.heading,
+      section.subtext,
+      section.tcoUpwon,
+      section.tcoSap,
+      section.tcoNetsuite,
+    ],
+  );
+
+  return result.rowCount ?? 0;
+}
+
+async function seedVsSapCapabilities(client: PoolClient): Promise<number> {
+  const existing = await client.query<{ count: number }>(
+    'SELECT COUNT(*) AS count FROM vs_sap_capabilities',
+  );
+  if (Number(existing.rows[0].count) > 0) return 0;
+
+  const result = await client.query(
+    `
+    INSERT INTO vs_sap_capabilities
+      (capability, upwon, sap, netsuite, display_order, status)
+    SELECT unnested.capability, unnested.upwon, unnested.sap, unnested.netsuite,
+           unnested.display_order, 'ACTIVE'
+      FROM unnest($1::text[], $2::int[], $3::int[], $4::int[], $5::int[])
+        AS unnested(capability, upwon, sap, netsuite, display_order)
+    `,
+    [
+      VS_SAP_CAPABILITIES.map((row) => row.capability),
+      VS_SAP_CAPABILITIES.map((row) => row.upwon),
+      VS_SAP_CAPABILITIES.map((row) => row.sap),
+      VS_SAP_CAPABILITIES.map((row) => row.netsuite),
+      // The order the table draws the rows in today.
+      VS_SAP_CAPABILITIES.map((_row, index) => index),
     ],
   );
 
@@ -3017,7 +3284,7 @@ async function main(): Promise<void> {
       const aboutCtaCount = await seedAboutCtaSection(client);
       const socialContactLineCount = await seedSocialContactLines(client);
       const socialLinkCount = await seedSocialLinks(client);
-      const blogHeroCount = await seedBlogHeroSection(client);
+      const blogHeroSlideCount = await seedBlogHeroSlides(client);
       const blogTopicsCount = await seedBlogTopicsSection(client);
       // Categories first: the posts are filed under them by slug.
       const blogCategoryCount = await seedBlogCategories(client);
@@ -3034,6 +3301,15 @@ async function main(): Promise<void> {
       const nonFoodFmcgPage = await seedNonFoodFmcgPage(client);
       const dairySectionCopyCount = await seedDairySectionCopy(client);
       const dairyPage = await seedDairyPage(client);
+      const freeAuditHeroSlideCount = await seedFreeAuditHeroSlides(client);
+      const kbHeroSlideCount = await seedKbHeroSlides(client);
+      // Categories first: the articles are filed under them by slug.
+      const kbCategoryCount = await seedKbCategories(client);
+      const kbArticleCount = await seedKbArticles(client);
+      const vsSapHeroSlideCount = await seedVsSapHeroSlides(client);
+      const vsSapAnswerSectionCount = await seedVsSapAnswerSection(client);
+      const vsSapComparisonSectionCount = await seedVsSapComparisonSection(client);
+      const vsSapCapabilityCount = await seedVsSapCapabilities(client);
       const rootAdmin = await seedRootAdmin(client);
       return {
         permissionCount,
@@ -3097,7 +3373,7 @@ async function main(): Promise<void> {
         aboutCtaCount,
         socialContactLineCount,
         socialLinkCount,
-        blogHeroCount,
+        blogHeroSlideCount,
         blogTopicsCount,
         blogCategoryCount,
         blogPostCount,
@@ -3113,6 +3389,14 @@ async function main(): Promise<void> {
         nonFoodFmcgPage,
         dairySectionCopyCount,
         dairyPage,
+        freeAuditHeroSlideCount,
+        kbHeroSlideCount,
+        kbCategoryCount,
+        kbArticleCount,
+        vsSapHeroSlideCount,
+        vsSapAnswerSectionCount,
+        vsSapComparisonSectionCount,
+        vsSapCapabilityCount,
         rootAdmin,
       };
     });
@@ -3340,7 +3624,7 @@ async function main(): Promise<void> {
       aboutCtaSection: summary.aboutCtaCount,
       socialContactLines: summary.socialContactLineCount,
       socialLinks: summary.socialLinkCount,
-      blogHeroSection: summary.blogHeroCount,
+      blogHeroSlides: summary.blogHeroSlideCount,
       blogTopicsSection: summary.blogTopicsCount,
       blogCategories: summary.blogCategoryCount,
       blogPosts: summary.blogPostCount,
@@ -3399,6 +3683,14 @@ async function main(): Promise<void> {
       dairyCapabilitiesPanel: summary.dairyPage.capabilitiesPanel,
       dairyBenefitsPanel: summary.dairyPage.benefitsPanel,
       dairyCtaSection: summary.dairyPage.ctaSection,
+      freeAuditHeroSlides: summary.freeAuditHeroSlideCount,
+      kbHeroSlides: summary.kbHeroSlideCount,
+      kbCategories: summary.kbCategoryCount,
+      kbArticles: summary.kbArticleCount,
+      vsSapHeroSlides: summary.vsSapHeroSlideCount,
+      vsSapAnswerSection: summary.vsSapAnswerSectionCount,
+      vsSapComparisonSection: summary.vsSapComparisonSectionCount,
+      vsSapCapabilities: summary.vsSapCapabilityCount,
       rootAdminEmail: summary.rootAdmin.email,
       rootAdminCreated: summary.rootAdmin.created,
     });

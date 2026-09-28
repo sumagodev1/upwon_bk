@@ -7,7 +7,6 @@ import {
   CreateBlogPostInput,
   UpdateBlogPostInput,
 } from '../types/posts.types';
-import { readBlogSlug, readRequiredBlogSlug } from '../utils/slug';
 import { rawField, readBodyBlocks } from './shared';
 
 /**
@@ -16,8 +15,12 @@ import { rawField, readBodyBlocks } from './shared';
  * its columns to. Changing one means changing all three.
  *
  * The body's own limits live in shared.ts, beside the readers that apply them.
+ *
+ * There is no slug here, on create or on update: the service derives it from
+ * the title when the post is created and never changes it afterwards (see
+ * postsService.create). A slug a client still sends is ignored like any other
+ * unknown key.
  */
-const SLUG_MAX = 120;
 const TITLE_MIN = 3;
 const TITLE_MAX = 200;
 const EXCERPT_MIN = 3;
@@ -88,8 +91,6 @@ export function validateCreateBlogPost(body: unknown): CreateBlogPostInput {
   const blocks = readBodyBlocks(v, rawField(body, 'body'));
 
   const dto: CreateBlogPostInput = {
-    // Derived from the title when blank, the way the admin editor pre-fills it.
-    slug: readBlogSlug(v, title, SLUG_MAX),
     categoryId: v.requiredUuid('categoryId'),
     title,
     excerpt: v.requiredString('excerpt', { min: EXCERPT_MIN, max: EXCERPT_MAX }),
@@ -118,7 +119,6 @@ export function validateUpdateBlogPost(body: unknown): UpdateBlogPostInput {
   const v = validator(body);
 
   v.requireAtLeastOne([
-    'slug',
     'categoryId',
     'title',
     'excerpt',
@@ -140,7 +140,6 @@ export function validateUpdateBlogPost(body: unknown): UpdateBlogPostInput {
   const blocks = v.has('body') ? readBodyBlocks(v, rawField(body, 'body')) : undefined;
 
   const dto: UpdateBlogPostInput = {
-    slug: v.has('slug') ? readRequiredBlogSlug(v, SLUG_MAX) : undefined,
     categoryId: v.has('categoryId') ? v.requiredUuid('categoryId') : undefined,
     title: v.has('title')
       ? v.requiredString('title', { min: TITLE_MIN, max: TITLE_MAX })

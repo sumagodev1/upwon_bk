@@ -68,8 +68,8 @@ export default router;
  * here to end.
  *
  * scripts/route-audit.js holds an explicit allowlist naming this exact route, so
- * the "no writes under /public" check keeps its teeth: a fifth public write,
- * added by accident or by a merge, still fails the audit. If this route ever
+ * the "no writes under /public" check keeps its teeth: any further public
+ * write, added by accident or by a merge, still fails the audit. If this route ever
  * moves or is renamed, update PUBLIC_WRITE_ALLOWLIST in that script - the audit
  * fails loudly either way.
  *

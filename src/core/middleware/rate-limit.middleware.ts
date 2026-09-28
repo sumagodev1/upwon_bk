@@ -183,9 +183,10 @@ export const refreshRateLimit = rateLimit({ name: 'refresh', windowMs: 15 * 60_0
 export const uploadRateLimit = rateLimit({ name: 'upload', windowMs: 15 * 60_000, max: 30 });
 
 /**
- * The public Contact enquiry form - one of the four unauthenticated writes in
+ * The public Contact enquiry form - one of the five unauthenticated writes in
  * the API; the others are careerApplicationRateLimit,
- * partnerApplicationRateLimit and discoveryCallRateLimit below.
+ * partnerApplicationRateLimit, discoveryCallRateLimit and
+ * freeAuditApplicationRateLimit below.
  *
  * Much tighter than standardRateLimit (120/min), because the traffic profile
  * is nothing like a page read: a real visitor submits once, and perhaps fixes
@@ -269,7 +270,7 @@ export const careerApplicationGlobalRateLimit = rateLimit({
 
 /**
  * The public Partner Program application form - the third unauthenticated
- * write, and the last one this API has.
+ * write.
  *
  * Shaped like contactEnquiryRateLimit rather than like the Careers one: five in
  * fifteen minutes per address. The traffic profile is the enquiry form's, not
@@ -322,7 +323,7 @@ export const partnerApplicationGlobalRateLimit = rateLimit({
 
 /**
  * The public discovery call form at the foot of /about - the fourth
- * unauthenticated write, and the last one this API has.
+ * unauthenticated write.
  *
  * Shaped like contactEnquiryRateLimit and partnerApplicationRateLimit rather
  * than like the Careers one: five in fifteen minutes per address. The traffic
@@ -395,4 +396,44 @@ export const discoveryCallGlobalRateLimit = rateLimit({
   max: 100,
   keyGenerator: (req) => req.socket.remoteAddress ?? 'unknown',
   message: 'Call requests are temporarily unavailable. Please try again shortly.',
+});
+
+/**
+ * The public audit request form on /free-audit - the fifth unauthenticated
+ * write, and the last one this API has.
+ *
+ * The discovery call limiter's twin, number for number: the traffic profile is
+ * the same - one JSON body of a few short fields, no file, nothing written to
+ * disk - so five in fifteen minutes per address covers a visitor who submits
+ * once and resubmits after fixing a mistyped address, and a scripted flood gets
+ * 429s after the fifth row rather than a list nobody can triage.
+ *
+ * Its own budget under its own FIXED name, not the discovery call's: sharing
+ * one would let a visitor who just booked a call on /about be refused an audit
+ * on /free-audit, and the key must contain nothing the caller writes, or
+ * '/public/Free-Audit/applications' becomes a second budget.
+ */
+export const freeAuditApplicationRateLimit = rateLimit({
+  name: 'free-audit-application',
+  windowMs: 15 * 60_000,
+  max: 5,
+  message: 'Too many requests from this network. Please try again in a few minutes.',
+});
+
+/**
+ * The ceiling on the same route that does NOT depend on the X-Forwarded-For
+ * key - discoveryCallGlobalRateLimit's twin, keyed on the TCP peer address over
+ * a ten-minute window for every reason given there: a spoofed header buys
+ * nothing because it is not in the key, and a burst from one peer closes the
+ * form to that peer for minutes rather than to every visitor for an hour.
+ *
+ * A backstop, not a business rule - and the message says so rather than blaming
+ * the visitor's network.
+ */
+export const freeAuditApplicationGlobalRateLimit = rateLimit({
+  name: 'free-audit-application-global',
+  windowMs: 10 * 60_000,
+  max: 100,
+  keyGenerator: (req) => req.socket.remoteAddress ?? 'unknown',
+  message: 'Audit requests are temporarily unavailable. Please try again shortly.',
 });

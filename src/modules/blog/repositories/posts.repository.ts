@@ -17,9 +17,9 @@ import {
  * because setting it also clears the legacy image_url (the phone crop's has no
  * such partner, so it is listed), body because it needs a jsonb cast and
  * published_on a date cast - all three are handled explicitly in update().
+ * slug is absent because nothing changes it once the post is created.
  */
 const UPDATABLE_COLUMNS: Readonly<Record<string, string>> = {
-  slug: 'slug',
   categoryId: 'category_id',
   title: 'title',
   excerpt: 'excerpt',
@@ -241,14 +241,13 @@ export const findByIdForUpdate = async (
   return result.rows[0] ? toPost(result.rows[0]) : null;
 };
 
-/** The id holding a slug, if any - the duplicate check before a write. */
-export const findIdBySlug = async (slug: string, executor?: Executor): Promise<string | null> => {
-  const result = await runQuery<{ id: string }>(
-    executor,
-    'SELECT id FROM blog_posts WHERE slug = $1',
-    [slug],
-  );
-  return result.rows[0]?.id ?? null;
+/**
+ * Every slug in use - what a new post's derived slug is numbered around. The
+ * set holds at most LIMITS.MAX_BLOG_POSTS.
+ */
+export const findAllSlugs = async (executor?: Executor): Promise<string[]> => {
+  const result = await runQuery<{ slug: string }>(executor, 'SELECT slug FROM blog_posts');
+  return result.rows.map((row) => row.slug);
 };
 
 export const count = async (executor?: Executor): Promise<number> => {
@@ -327,7 +326,7 @@ export const findPublishedRelatedCards = async (
  */
 
 export const create = async (
-  input: CreateBlogPostInput,
+  input: CreateBlogPostInput & { slug: string },
   createdBy: string | null,
   executor?: Executor,
 ): Promise<BlogPost> => {

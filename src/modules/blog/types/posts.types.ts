@@ -60,7 +60,11 @@ export interface BlogPostCategoryRef {
  */
 export interface BlogPost {
   id: string;
-  /** The URL segment: /blog/<slug>. Unique across the blog. */
+  /**
+   * The URL segment: /blog/<slug>. Unique across the blog. Derived from the
+   * title when the post is created and never changed afterwards, so a post's
+   * address outlives edits to its title.
+   */
   slug: string;
   categoryId: string;
   category: BlogPostCategoryRef;
@@ -124,12 +128,12 @@ export interface ResolvedBlogPost extends Omit<BlogPost, 'legacyImageUrl'> {
 }
 
 /**
- * POST body. Both crops are uploads only - imageFileId and mobileImageFileId,
- * never a URL. An imageUrl or mobileImageUrl a client still sends is not a
- * field of this API and is ignored, like any other unknown key.
+ * POST body. No slug: the service derives it from the title. Both crops are
+ * uploads only - imageFileId and mobileImageFileId, never a URL. A slug,
+ * imageUrl or mobileImageUrl a client still sends is not a field of this API
+ * and is ignored, like any other unknown key.
  */
 export interface CreateBlogPostInput {
-  slug: string;
   categoryId: string;
   title: string;
   excerpt: string;
@@ -146,10 +150,10 @@ export interface CreateBlogPostInput {
 /**
  * Absent leaves a field untouched; `null` clears the nullable ones. Setting
  * imageFileId - to an upload or to null - also clears a seeded post's legacy
- * image URL (see BlogPost.legacyImageUrl).
+ * image URL (see BlogPost.legacyImageUrl). No slug: it is fixed when the post
+ * is created.
  */
 export interface UpdateBlogPostInput {
-  slug?: string;
   categoryId?: string;
   title?: string;
   excerpt?: string;

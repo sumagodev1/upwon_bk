@@ -1,19 +1,19 @@
 // src/modules/blog/utils/slug-conflict.ts
 
 import { ConflictError } from '../../../core/errors/ConflictError';
-import { Executor } from '../../../config/database';
 
 /**
- * "This slug is taken", answered the same way whichever of the two paths finds
- * it first.
+ * "This slug was just taken" - the one way a blog slug can still collide.
  *
- * The services check before they write, so the ordinary case is a clean 409
- * naming the field. The unique constraint is what makes the rule true under
- * concurrency - two saves of the same new slug can both pass the check - and
- * its violation would otherwise surface through DatabaseError's generic
+ * No slug is typed: the services derive a new category's or post's slug and
+ * number it past every one already held (see firstFreeSlug), so the ordinary
+ * case never collides. Only two creates racing for the same free slug can -
+ * both read the same set before either writes - and the unique constraint's
+ * violation would otherwise surface through DatabaseError's generic
  * DUPLICATE_ENTRY, which names no field and uses a different code from the
  * one the admin panel keys its message on. So a violation of the one
- * constraint the service is guarding is translated back into the same error.
+ * constraint the service is guarding is translated into a named 409; saving
+ * again then numbers the slug.
  *
  * Kept in this module rather than added to DatabaseError's constraint map
  * because the error carries a field for the panel to highlight, which the
@@ -39,27 +39,12 @@ export const slugTakenError = (spec: SlugConflictSpec, slug: string): ConflictEr
   new ConflictError(`${spec.noun} with this slug already exists`, spec.code, [
     {
       field: 'slug',
-      message: `The slug '${slug}' is already in use; choose another`,
+      message: `The slug '${slug}' was taken by another save at the same moment; save again`,
       code: spec.code,
     },
   ]);
 
-/**
- * Refuses a slug another row already holds. `selfId` is the row being edited,
- * which may of course keep its own slug.
- */
-export const assertSlugAvailable = async (
-  spec: SlugConflictSpec,
-  slug: string,
-  selfId: string | null,
-  findIdBySlug: (slug: string, executor?: Executor) => Promise<string | null>,
-  executor: Executor,
-): Promise<void> => {
-  const holder = await findIdBySlug(slug, executor);
-  if (holder && holder !== selfId) throw slugTakenError(spec, slug);
-};
-
-/** Runs a write, turning a race-lost slug collision into the same 409. */
+/** Runs a write, turning a race-lost slug collision into that 409. */
 export const withSlugConflict = async <T>(
   spec: SlugConflictSpec,
   slug: string | undefined,

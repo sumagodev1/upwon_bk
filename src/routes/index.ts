@@ -68,6 +68,9 @@ import nonFoodFmcgPageRoutes, {
 } from '../modules/industry-pages/non-food-fmcg-page/routes';
 import dairyPageRoutes, { publicDairyPageRouter } from '../modules/industry-pages/dairy-page/routes';
 import clientsPageRoutes, { publicClientsPageRouter } from '../modules/clients-page/routes';
+import freeAuditRoutes, { publicFreeAuditRouter } from '../modules/free-audit/routes';
+import knowledgebaseRoutes, { publicKnowledgebaseRouter } from '../modules/knowledgebase/routes';
+import vsSapPageRoutes, { publicVsSapPageRouter } from '../modules/vs-sap-page/routes';
 
 const router = Router();
 
@@ -109,6 +112,15 @@ router.use('/public/food-processing-page', publicFoodProcessingPageRouter);
 router.use('/public/non-food-fmcg-page', publicNonFoodFmcgPageRouter);
 router.use('/public/dairy-page', publicDairyPageRouter);
 router.use('/public/clients-page', publicClientsPageRouter);
+// The /free-audit page: its hero, and the audit request form's submit. See
+// modules/free-audit/routes/index.ts.
+router.use('/public/free-audit', publicFreeAuditRouter);
+// The /knowledgebase pages: the hub's hero and category cards, each category's
+// page and each article. See modules/knowledgebase/routes/index.ts.
+router.use('/public/knowledgebase', publicKnowledgebaseRouter);
+// The /compare/upwon-vs-sap page: its hero, the straight answer cards, and the
+// capability comparison table. See modules/vs-sap-page/routes/index.ts.
+router.use('/public/vs-sap-page', publicVsSapPageRouter);
 
 // Public: the images those sections reference. Serves only uploads that opted
 // in by entity type - see PUBLIC_FILE_ENTITY_TYPES and fileService.getPublicImage.
@@ -158,5 +170,8 @@ router.use('/food-processing-page', foodProcessingPageRoutes);
 router.use('/non-food-fmcg-page', nonFoodFmcgPageRoutes);
 router.use('/dairy-page', dairyPageRoutes);
 router.use('/clients-page', clientsPageRoutes);
+router.use('/free-audit', freeAuditRoutes);
+router.use('/knowledgebase', knowledgebaseRoutes);
+router.use('/vs-sap-page', vsSapPageRoutes);
 
 export default router;
