@@ -17,7 +17,12 @@ ALTER TABLE page_section_copy
 ALTER TABLE page_section_copy
   ADD CONSTRAINT page_section_copy_page_key_check
     CHECK (page_key IN (
-      'home', 'erp', 'sfa-dms', 'fms', 'pos', 'engineering-manufacturing', 'beverage'
+    -- Merge union: three branches each re-declared this list with only their
+    -- own pages, so the last to run erased the rest. Every key the codebase
+    -- declares is listed here - see PAGE_SECTION_KEYS in src/config/constants.ts.
+      'home', 'erp', 'sfa-dms', 'fms', 'pos', 'hreasy', 'wms', 'vms', 'bakery', 'fmcg',
+      'sweets', 'food-processing', 'non-food-fmcg', 'dairy', 'engineering-manufacturing',
+      'beverage', 'spices-agro', 'qsr-franchise', 'why-upwon', 'clients'
     ));
 
 -- ── the logo marquee ──────────────────────────────────────────────────────

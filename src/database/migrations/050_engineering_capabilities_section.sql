@@ -22,14 +22,13 @@ ALTER TABLE page_section_copy
 ALTER TABLE page_section_copy
   ADD CONSTRAINT page_section_copy_section_key_check
     CHECK (section_key IN (
-      -- home page
-      'trust', 'industries', 'values', 'integrations', 'testimonials', 'faq', 'cta',
-      -- ERP product page
-      'hero', 'recognition', 'benefits', 'alternatives', 'outcomes', 'establishers',
-      -- SFA-DMS product page
-      'proof', 'video', 'packages',
-      -- Engineering & Manufacturing industry page
-      'capabilities'
+    -- Merge union: three branches each re-declared this list with only their
+    -- own pages, so the last to run erased the rest. Every key the codebase
+    -- declares is listed here - see PAGE_SECTION_KEYS in src/config/constants.ts.
+      'hero', 'trust', 'industries', 'values', 'integrations', 'testimonials', 'faq', 'cta',
+      'recognition', 'benefits', 'alternatives', 'outcomes', 'establishers', 'proof',
+      'video', 'packages', 'platform', 'helps', 'coverage', 'capabilities', 'network',
+      'lifecycle'
     ));
 
 CREATE TABLE engineering_capabilities (
