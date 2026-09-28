@@ -29,6 +29,19 @@ import wmsPageRoutes, { publicWmsPageRouter } from '../modules/product-pages/wms
 import vendorPortalPageRoutes, {
   publicVendorPortalPageRouter,
 } from '../modules/product-pages/vendor-portal-page/routes';
+import engineeringManufacturingPageRoutes, {
+  publicEngineeringManufacturingPageRouter,
+} from '../modules/industry-pages/engineering-manufacturing-page/routes';
+import beveragePageRoutes, {
+  publicBeveragePageRouter,
+} from '../modules/industry-pages/beverage-page/routes';
+import spicesAgroPageRoutes, {
+  publicSpicesAgroPageRouter,
+} from '../modules/industry-pages/spices-agro-page/routes';
+import qsrFranchisePageRoutes, {
+  publicQsrFranchisePageRouter,
+} from '../modules/industry-pages/qsr-franchise-page/routes';
+import whyUpwonPageRoutes, { publicWhyUpwonPageRouter } from '../modules/why-upwon-page/routes';
 import insiderPageRoutes, { publicInsiderPageRouter } from '../modules/insider-page/routes';
 import contactPageRoutes, { publicContactPageRouter } from '../modules/contact-page/routes';
 import careersRoutes, { publicCareersRouter } from '../modules/careers/routes';
@@ -72,6 +85,11 @@ router.use('/public/pos-page', publicPosPageRouter);
 router.use('/public/hreasy-page', publicHreasyPageRouter);
 router.use('/public/wms-page', publicWmsPageRouter);
 router.use('/public/vendor-portal-page', publicVendorPortalPageRouter);
+router.use('/public/engineering-manufacturing-page', publicEngineeringManufacturingPageRouter);
+router.use('/public/beverage-page', publicBeveragePageRouter);
+router.use('/public/spices-agro-page', publicSpicesAgroPageRouter);
+router.use('/public/qsr-franchise-page', publicQsrFranchisePageRouter);
+router.use('/public/why-upwon-page', publicWhyUpwonPageRouter);
 router.use('/public/insider-page', publicInsiderPageRouter);
 router.use('/public/contact-page', publicContactPageRouter);
 router.use('/public/careers', publicCareersRouter);
@@ -119,6 +137,11 @@ router.use('/pos-page', posPageRoutes);
 router.use('/hreasy-page', hreasyPageRoutes);
 router.use('/wms-page', wmsPageRoutes);
 router.use('/vendor-portal-page', vendorPortalPageRoutes);
+router.use('/engineering-manufacturing-page', engineeringManufacturingPageRoutes);
+router.use('/beverage-page', beveragePageRoutes);
+router.use('/spices-agro-page', spicesAgroPageRoutes);
+router.use('/qsr-franchise-page', qsrFranchisePageRoutes);
+router.use('/why-upwon-page', whyUpwonPageRoutes);
 router.use('/insider-page', insiderPageRoutes);
 router.use('/contact-page', contactPageRoutes);
 router.use('/careers', careersRoutes);

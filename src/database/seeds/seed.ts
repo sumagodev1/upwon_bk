@@ -28,6 +28,11 @@ import { seedSweetsPage } from './sweets.seed';
 import { seedFoodProcessingPage } from './food-processing.seed';
 import { seedNonFoodFmcgPage } from './non-food-fmcg.seed';
 import { seedDairyPage } from './dairy.seed';
+import { seedEngineeringManufacturingPage } from './engineering-manufacturing.seed';
+import { seedBeveragePage } from './beverage.seed';
+import { seedSpicesAgroPage } from './spices-agro.seed';
+import { seedQsrFranchisePage } from './qsr-franchise.seed';
+import { seedWhyUpwonPage } from './why-upwon.seed';
 import { logger } from '../../core/utils/logger';
 import {
   INSIDER_FEATURE_SECTION,
@@ -2731,6 +2736,11 @@ async function main(): Promise<void> {
       const wmsPage = await seedWmsPage(client);
       const vmsSectionCopyCount = await seedVmsSectionCopy(client);
       const vendorPortalPage = await seedVendorPortalPage(client);
+      const engineeringManufacturingPage = await seedEngineeringManufacturingPage(client);
+      const beveragePage = await seedBeveragePage(client);
+      const spicesAgroPage = await seedSpicesAgroPage(client);
+      const qsrFranchisePage = await seedQsrFranchisePage(client);
+      const whyUpwonPage = await seedWhyUpwonPage(client);
       const insiderHeroSlideCount = await seedInsiderHeroSlides(client);
       const insiderIssueCounts = await seedInsiderIssues(client);
       const insiderFeatureCount = await seedInsiderFeatureSection(client);
@@ -2799,6 +2809,11 @@ async function main(): Promise<void> {
         vmsSectionCopyCount,
         vendorPortalPage,
         hreasyPage,
+        engineeringManufacturingPage,
+        beveragePage,
+        spicesAgroPage,
+        qsrFranchisePage,
+        whyUpwonPage,
         insiderHeroSlideCount,
         insiderIssueCounts,
         insiderFeatureCount,
@@ -2953,6 +2968,87 @@ async function main(): Promise<void> {
       hreasyCtaTrustItems: summary.hreasyPage.ctaTrustItems,
       hreasyProofTiles: summary.hreasyPage.proofTiles,
       hreasyProofCells: summary.hreasyPage.proofCells,
+      engineeringHeroSlides: summary.engineeringManufacturingPage.heroSlides,
+      engineeringTrustCopy: summary.engineeringManufacturingPage.trustCopy,
+      engineeringTrustCards: summary.engineeringManufacturingPage.trustCards,
+      engineeringTrustLogos: summary.engineeringManufacturingPage.trustLogos,
+      engineeringCapabilitiesCopy: summary.engineeringManufacturingPage.capabilitiesCopy,
+      engineeringCapabilities: summary.engineeringManufacturingPage.capabilities,
+      engineeringPlatformCopy: summary.engineeringManufacturingPage.platformCopy,
+      engineeringPlatformPanel: summary.engineeringManufacturingPage.platformPanel,
+      engineeringPlatformWorkflows: summary.engineeringManufacturingPage.platformWorkflows,
+      engineeringCoverageCopy: summary.engineeringManufacturingPage.coverageCopy,
+      engineeringCoveragePanel: summary.engineeringManufacturingPage.coveragePanel,
+      engineeringCoverageCategories: summary.engineeringManufacturingPage.coverageCategories,
+      engineeringFaqCopy: summary.engineeringManufacturingPage.faqCopy,
+      engineeringFaqEntries: summary.engineeringManufacturingPage.faqEntries,
+      engineeringCtaCopy: summary.engineeringManufacturingPage.ctaCopy,
+      engineeringCtaSection: summary.engineeringManufacturingPage.ctaSection,
+      beverageHeroSlides: summary.beveragePage.heroSlides,
+      beverageTrustCopy: summary.beveragePage.trustCopy,
+      beverageTrustStats: summary.beveragePage.trustStats,
+      beverageTrustLogos: summary.beveragePage.trustLogos,
+      beverageCapabilitiesCopy: summary.beveragePage.capabilitiesCopy,
+      beverageCapabilitiesPanel: summary.beveragePage.capabilitiesPanel,
+      beverageCapabilities: summary.beveragePage.capabilities,
+      beveragePlatformCopy: summary.beveragePage.platformCopy,
+      beveragePlatformPanel: summary.beveragePage.platformPanel,
+      beveragePlatformWorkflows: summary.beveragePage.platformWorkflows,
+      beverageCoverageCopy: summary.beveragePage.coverageCopy,
+      beverageCoverageCategories: summary.beveragePage.coverageCategories,
+      beverageFaqCopy: summary.beveragePage.faqCopy,
+      beverageFaqEntries: summary.beveragePage.faqEntries,
+      beverageCtaCopy: summary.beveragePage.ctaCopy,
+      beverageCtaSection: summary.beveragePage.ctaSection,
+      spicesAgroHeroSlides: summary.spicesAgroPage.heroSlides,
+      spicesAgroTrustCopy: summary.spicesAgroPage.trustCopy,
+      spicesAgroTrustLogos: summary.spicesAgroPage.trustLogos,
+      spicesAgroTrustPanel: summary.spicesAgroPage.trustPanel,
+      spicesAgroCapabilitiesCopy: summary.spicesAgroPage.capabilitiesCopy,
+      spicesAgroCapabilitiesPanel: summary.spicesAgroPage.capabilitiesPanel,
+      spicesAgroCapabilities: summary.spicesAgroPage.capabilities,
+      spicesAgroPlatformCopy: summary.spicesAgroPage.platformCopy,
+      spicesAgroPlatformPanel: summary.spicesAgroPage.platformPanel,
+      spicesAgroPlatformGroups: summary.spicesAgroPage.platformGroups,
+      spicesAgroCoverageCopy: summary.spicesAgroPage.coverageCopy,
+      spicesAgroCoverageCategories: summary.spicesAgroPage.coverageCategories,
+      spicesAgroFaqCopy: summary.spicesAgroPage.faqCopy,
+      spicesAgroFaqEntries: summary.spicesAgroPage.faqEntries,
+      spicesAgroCtaCopy: summary.spicesAgroPage.ctaCopy,
+      spicesAgroCtaSection: summary.spicesAgroPage.ctaSection,
+      qsrFranchiseHeroSlides: summary.qsrFranchisePage.heroSlides,
+      qsrFranchiseTrustCopy: summary.qsrFranchisePage.trustCopy,
+      qsrFranchiseTrustLogos: summary.qsrFranchisePage.trustLogos,
+      qsrFranchiseTrustStats: summary.qsrFranchisePage.trustStats,
+      qsrFranchiseTrustPanel: summary.qsrFranchisePage.trustPanel,
+      qsrFranchiseCapabilitiesCopy: summary.qsrFranchisePage.capabilitiesCopy,
+      qsrFranchiseCapabilitiesPanel: summary.qsrFranchisePage.capabilitiesPanel,
+      qsrFranchiseCapabilities: summary.qsrFranchisePage.capabilities,
+      qsrFranchisePlatformCopy: summary.qsrFranchisePage.platformCopy,
+      qsrFranchisePlatformPanel: summary.qsrFranchisePage.platformPanel,
+      qsrFranchisePlatformWorkflows: summary.qsrFranchisePage.platformWorkflows,
+      qsrFranchiseCoverageCopy: summary.qsrFranchisePage.coverageCopy,
+      qsrFranchiseCoverageCategories: summary.qsrFranchisePage.coverageCategories,
+      qsrFranchiseFaqCopy: summary.qsrFranchisePage.faqCopy,
+      qsrFranchiseFaqEntries: summary.qsrFranchisePage.faqEntries,
+      qsrFranchiseCtaCopy: summary.qsrFranchisePage.ctaCopy,
+      qsrFranchiseCtaSection: summary.qsrFranchisePage.ctaSection,
+      whyUpwonHeroCopy: summary.whyUpwonPage.heroCopy,
+      whyUpwonHeroSection: summary.whyUpwonPage.heroSection,
+      whyUpwonIndustriesCopy: summary.whyUpwonPage.industriesCopy,
+      whyUpwonIndustries: summary.whyUpwonPage.industries,
+      whyUpwonTestimonialsCopy: summary.whyUpwonPage.testimonialsCopy,
+      whyUpwonTestimonialsPanel: summary.whyUpwonPage.testimonialsPanel,
+      whyUpwonTestimonials: summary.whyUpwonPage.testimonials,
+      whyUpwonClientLogos: summary.whyUpwonPage.clientLogos,
+      whyUpwonProofCopy: summary.whyUpwonPage.proofCopy,
+      whyUpwonProofPanel: summary.whyUpwonPage.proofPanel,
+      whyUpwonProofCallouts: summary.whyUpwonPage.proofCallouts,
+      whyUpwonResultsCopy: summary.whyUpwonPage.resultsCopy,
+      whyUpwonResultsPanel: summary.whyUpwonPage.resultsPanel,
+      whyUpwonResults: summary.whyUpwonPage.results,
+      whyUpwonCtaCopy: summary.whyUpwonPage.ctaCopy,
+      whyUpwonCtaSection: summary.whyUpwonPage.ctaSection,
       insiderHeroSlides: summary.insiderHeroSlideCount,
       insiderIssues: summary.insiderIssueCounts.issues,
       insiderStories: summary.insiderIssueCounts.stories,

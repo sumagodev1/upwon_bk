@@ -74,6 +74,43 @@ export type ImageSlot =
   | 'posHeroMobile'
   | 'posCtaDesktop'
   | 'posCtaMobile'
+  | 'engineeringHero'
+  | 'engineeringHeroMobile'
+  | 'engineeringPlatform'
+  | 'engineeringCoverage'
+  | 'engineeringCtaDesktop'
+  | 'engineeringCtaMobile'
+  | 'beverageHero'
+  | 'beverageHeroMobile'
+  | 'beverageTrustPhoto'
+  | 'beverageCapabilitiesBackground'
+  | 'beverageCapabilityScreenshot'
+  | 'beveragePlatformBackground'
+  | 'beverageCtaDesktop'
+  | 'beverageCtaMobile'
+  | 'spicesAgroHero'
+  | 'spicesAgroHeroMobile'
+  | 'spicesAgroTrustPanel'
+  | 'spicesAgroCapabilitiesBackground'
+  | 'spicesAgroPlatformBackground'
+  | 'spicesAgroCoverageTile'
+  | 'spicesAgroCtaDesktop'
+  | 'spicesAgroCtaMobile'
+  | 'qsrFranchiseHero'
+  | 'qsrFranchiseHeroMobile'
+  | 'qsrFranchiseTrustPhoto'
+  | 'qsrFranchiseCapabilitiesArtwork'
+  | 'qsrFranchisePlatformArtwork'
+  | 'qsrFranchiseCoveragePhoto'
+  | 'qsrFranchiseCtaDesktop'
+  | 'qsrFranchiseCtaMobile'
+  | 'whyUpwonHeroDesktop'
+  | 'whyUpwonHeroMobile'
+  | 'whyUpwonIndustryPhoto'
+  | 'whyUpwonProofArtwork'
+  | 'whyUpwonResultsHub'
+  | 'whyUpwonCtaDesktop'
+  | 'whyUpwonCtaMobile'
   | 'erpCtaDesktop'
   | 'erpCtaMobile'
   | 'erpIndustry'
@@ -514,6 +551,227 @@ export const IMAGE_SPECS: Readonly<Record<ImageSlot, ImageSpec>> = {
    */
   posCtaDesktop: { label: 'Desktop artwork', width: 1600, height: 566, ratioTolerance: 0.2 },
   posCtaMobile: { label: 'Mobile artwork', width: 828, height: 1899, ratioTolerance: 0.2 },
+
+  /*
+   * The Engineering & Manufacturing slider banners - public/images/eng_hero_*
+   * are all 1600x566 (one is 1600x565), the same wide band the product-page
+   * heroes use. Covered, so a differently shaped upload is cropped; hence the
+   * ratio rule.
+   */
+  engineeringHero: { label: 'Desktop image', width: 1600, height: 566, ratioTolerance: 0.2 },
+  engineeringHeroMobile: { label: 'Mobile image', width: 800, height: 1200, ratioTolerance: 0.2 },
+  /*
+   * The connected platform section's centre illustration -
+   * public/images/eng_how_upwon.webp is 1536x1024. Drawn at its own ratio
+   * between the copy and the workflow list, so a differently shaped upload
+   * would push the list out of line; hence the ratio rule.
+   */
+  engineeringPlatform: { label: 'Illustration', width: 1536, height: 1024, ratioTolerance: 0.2 },
+  /*
+   * The industry coverage section's background - public/images/
+   * eng_indust_cover.webp is 1536x1024, drawn at its own ratio behind the copy
+   * on the right, so a differently shaped upload would reach further into the
+   * grid; hence the ratio rule.
+   */
+  engineeringCoverage: { label: 'Background illustration', width: 1536, height: 1024, ratioTolerance: 0.2 },
+  /*
+   * The closing band's artwork - public/images/eng_desktop_cta.webp is
+   * 1600x599 and drawn at its own ratio with the copy laid over its empty left
+   * panel, so a differently shaped upload would move the panel out from under
+   * the copy; hence the ratio rule. The phone crop, eng_mobile_cta.webp, is
+   * 440x956, covered into a banner above the copy.
+   */
+  engineeringCtaDesktop: { label: 'Desktop artwork', width: 1600, height: 599, ratioTolerance: 0.2 },
+  engineeringCtaMobile: { label: 'Mobile artwork', width: 440, height: 956, ratioTolerance: 0.2 },
+
+  /*
+   * The Beverages & Juices slider banners - public/images/bev_* hero slides
+   * are all 1600x566, the same band as the Engineering page's. Covered, so a
+   * differently shaped upload is cropped; hence the ratio rule.
+   */
+  beverageHero: { label: 'Desktop image', width: 1600, height: 566, ratioTolerance: 0.2 },
+  beverageHeroMobile: { label: 'Mobile image', width: 800, height: 1200, ratioTolerance: 0.2 },
+  /*
+   * The photo behind a figure on the trust section's stat card. The card is a
+   * short box on phones and a tall one beside the marquee on desktop, both
+   * object-cover, so no one ratio fits - only a floor that stays sharp at the
+   * desktop size.
+   */
+  beverageTrustPhoto: { label: 'Photo', width: 600, height: 400, ratioTolerance: null },
+  /*
+   * The core capabilities section. Its background - bev_core_capability_bg.webp,
+   * 1600x566 - covers the whole section, whose height follows the content, so
+   * no one ratio fits; only a floor. The screenshots - bev_* at about 1580x1000
+   * - sit in a fixed 1580:1000 frame with object-cover, so a differently shaped
+   * one is cropped; hence the ratio rule there.
+   */
+  beverageCapabilitiesBackground: {
+    label: 'Background',
+    width: 1200,
+    height: 400,
+    ratioTolerance: null,
+  },
+  beverageCapabilityScreenshot: {
+    label: 'Screenshot',
+    width: 1200,
+    height: 760,
+    ratioTolerance: 0.2,
+  },
+  /*
+   * The connected platform section's background - bev_how_upwon_help_bg.webp,
+   * 1600x566. It covers the whole section anchored on its right, where the
+   * artwork carries its subject, and the section's height follows its content;
+   * so only a floor, no ratio rule.
+   */
+  beveragePlatformBackground: {
+    label: 'Background',
+    width: 1200,
+    height: 400,
+    ratioTolerance: null,
+  },
+  /*
+   * The closing band's artwork. bev_desktop_cta.webp is 2111x745 - the same
+   * wide band as the Engineering page's, at a higher resolution - drawn at its
+   * own ratio with the copy over its empty left panel; hence the ratio rule.
+   * The phone crop, bev_mobile_cta.webp, is 848x1854, covered into a banner
+   * above the copy. The floors are the shipped shapes at a sensible minimum.
+   */
+  beverageCtaDesktop: { label: 'Desktop artwork', width: 1600, height: 565, ratioTolerance: 0.2 },
+  beverageCtaMobile: { label: 'Mobile artwork', width: 424, height: 927, ratioTolerance: 0.2 },
+
+  /*
+   * The Spices & Agro Processing slider banners - public/images/agro_* hero
+   * slides are all about 1600x566, the same band as the other industry pages'.
+   * Covered, so a differently shaped upload is cropped; hence the ratio rule.
+   */
+  spicesAgroHero: { label: 'Desktop image', width: 1600, height: 566, ratioTolerance: 0.2 },
+  spicesAgroHeroMobile: { label: 'Mobile image', width: 800, height: 1200, ratioTolerance: 0.2 },
+  /*
+   * The trust section's product screenshot - agro_proof_strip.webp is
+   * 1536x1024, drawn at its own ratio up to 1100px wide under the marquee, so
+   * a differently shaped upload would change the section's height; hence the
+   * ratio rule, with a floor at that drawn width.
+   */
+  spicesAgroTrustPanel: { label: 'Screenshot', width: 1100, height: 733, ratioTolerance: 0.2 },
+  /*
+   * The core capabilities section's background - agro_core_capability_back.webp,
+   * 1600x571 - covers the whole section around the dark panel, and the
+   * section's height follows its content; so only a floor, no ratio rule.
+   */
+  spicesAgroCapabilitiesBackground: {
+    label: 'Background',
+    width: 1200,
+    height: 400,
+    ratioTolerance: null,
+  },
+  /*
+   * The connected platform section's background - agro_how_upwon_bg.webp -
+   * covers the whole section behind the heading and the cards; the section's
+   * height follows its content, so only a floor, no ratio rule.
+   */
+  spicesAgroPlatformBackground: {
+    label: 'Background',
+    width: 1200,
+    height: 400,
+    ratioTolerance: null,
+  },
+  /*
+   * An industry coverage tile - the agro_indust_* photos run about 356-404 by
+   * 318-373 and are cropped into a circle up to 132px across. So a roughly
+   * square floor sharp at twice that size, with a loose ratio rule: the circle
+   * takes the middle, and a long thin photo would lose its subject.
+   */
+  spicesAgroCoverageTile: { label: 'Photo', width: 264, height: 264, ratioTolerance: 0.3 },
+  /*
+   * The closing band's artwork - agro_desktop_cta.webp is 1600x570, drawn at
+   * its own ratio with the copy over its empty left panel; hence the ratio
+   * rule. The phone crop, agro_mobile_cta.webp, is 440x956, covered into a
+   * banner above the copy - the same sizes as the Engineering page's band.
+   */
+  spicesAgroCtaDesktop: { label: 'Desktop artwork', width: 1600, height: 570, ratioTolerance: 0.2 },
+  spicesAgroCtaMobile: { label: 'Mobile artwork', width: 440, height: 956, ratioTolerance: 0.2 },
+
+  /*
+   * The QSR & Franchise F&B slider banners - public/images/qsr_hero_* are all
+   * 3200x1132, the same 1600x566 band as the other industry pages' at 2x.
+   * Covered, so a differently shaped upload is cropped; hence the ratio rule.
+   */
+  qsrFranchiseHero: { label: 'Desktop image', width: 1600, height: 566, ratioTolerance: 0.2 },
+  qsrFranchiseHeroMobile: { label: 'Mobile image', width: 800, height: 1200, ratioTolerance: 0.2 },
+  /*
+   * The trust mosaic's two photographs - qsr_proof_strip1.webp is 1537x1023 and
+   * qsr_proof_strip2.webp 1624x968. Both are covered into tiles whose shape
+   * changes with the viewport, so there is no ratio to hold; only a floor.
+   */
+  qsrFranchiseTrustPhoto: { label: 'Photo', width: 800, height: 600, ratioTolerance: null },
+  /*
+   * The core capabilities artwork - qsr_core_capabilities.webp is 1041x1511,
+   * drawn at its own shape beside the cards; hence the ratio rule.
+   */
+  qsrFranchiseCapabilitiesArtwork: {
+    label: 'Artwork',
+    width: 700,
+    height: 1016,
+    ratioTolerance: 0.2,
+  },
+  /*
+   * The connected platform's app artwork - qsr_how_upwon_help.webp is
+   * 632x1024, drawn at its own shape beside the copy; hence the ratio rule.
+   */
+  qsrFranchisePlatformArtwork: {
+    label: 'Artwork',
+    width: 600,
+    height: 972,
+    ratioTolerance: 0.2,
+  },
+  /*
+   * The industry coverage cards' photos - the shipped ones run from 336x304 to
+   * 412x246, covered into a 206x150 frame, so there is no ratio to hold; only
+   * a floor.
+   */
+  qsrFranchiseCoveragePhoto: { label: 'Photo', width: 300, height: 220, ratioTolerance: null },
+  /*
+   * The closing band's artwork - qsr_cta_sec_desktop.webp is 2151x731, drawn at
+   * its own ratio with the copy over its empty left panel; hence the ratio
+   * rule. The phone crop, qsr_cta_sec_mobile.webp, is 440x956, covered into a
+   * banner above the copy.
+   */
+  qsrFranchiseCtaDesktop: { label: 'Desktop artwork', width: 1600, height: 544, ratioTolerance: 0.2 },
+  qsrFranchiseCtaMobile: { label: 'Mobile artwork', width: 440, height: 956, ratioTolerance: 0.2 },
+
+  /*
+   * The Why UpWon hero's artwork - why_hero_desktop.webp is 1983x793 (2.5:1),
+   * and the section takes the artwork's own ratio from 1024px up with the copy
+   * over its empty left half; why_hero_mobile.webp is 944x1665, covered from the
+   * top with the copy under the laptop. Hence the ratio rules.
+   */
+  whyUpwonHeroDesktop: { label: 'Desktop artwork', width: 1600, height: 640, ratioTolerance: 0.2 },
+  whyUpwonHeroMobile: { label: 'Mobile artwork', width: 600, height: 1058, ratioTolerance: 0.2 },
+  /*
+   * The industry trust cards' photos - the shipped ones are about 300x441,
+   * covered into a frame 150px tall whose width follows the grid, so there is
+   * no ratio to hold; only a floor.
+   */
+  whyUpwonIndustryPhoto: { label: 'Photo', width: 280, height: 220, ratioTolerance: null },
+  /*
+   * The product proof artwork - why_product_proof.webp is 1536x1024 (3:2). The
+   * callouts are pinned to the connectors drawn into it by percentage, so a
+   * different shape would move them off their dots; hence the ratio rule.
+   */
+  whyUpwonProofArtwork: { label: 'Artwork', width: 1200, height: 800, ratioTolerance: 0.1 },
+  /*
+   * The results section's hub artwork - why_conn_workflow.webp is 1263x1246,
+   * near-square, drawn up to 300px wide in the third card; hence the ratio rule.
+   */
+  whyUpwonResultsHub: { label: 'Hub artwork', width: 600, height: 600, ratioTolerance: 0.15 },
+  /*
+   * The closing band's artwork - why_cta_desktop.webp is 2109x746, drawn at its
+   * own ratio with the copy over the dark panel left of the laptop; the phone
+   * crop, why_cta_mobile.webp, is 851x1848 with the copy in the dark space under
+   * the laptop. Hence the ratio rules.
+   */
+  whyUpwonCtaDesktop: { label: 'Desktop artwork', width: 1600, height: 566, ratioTolerance: 0.2 },
+  whyUpwonCtaMobile: { label: 'Mobile artwork', width: 600, height: 1303, ratioTolerance: 0.2 },
 
   /*
    * The portrait on an outcome card.
