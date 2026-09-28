@@ -146,6 +146,32 @@ export const update = async (
     const updated = await heroRepository.update(id, patch, context.adminId, client);
     if (!updated) throw new NotFoundError('Food Processing hero slide');
 
+    // Both images are required. Checked on the row as saved, so clearing one
+    // source of a pair is caught whichever field the patch named; throwing
+    // here rolls the update back.
+    const touchesImages = [
+      patch.imageUrl,
+      patch.imageFileId,
+      patch.mobileImageUrl,
+      patch.mobileImageFileId,
+    ].some((value) => value !== undefined);
+    if (touchesImages) {
+      const details = [];
+      if (!updated.imageUrl && !updated.imageFileId) {
+        details.push({ field: 'imageUrl', message: 'A desktop image is required', code: 'REQUIRED' });
+      }
+      if (!updated.mobileImageUrl && !updated.mobileImageFileId) {
+        details.push({
+          field: 'mobileImageUrl',
+          message: 'A mobile image is required',
+          code: 'REQUIRED',
+        });
+      }
+      if (details.length > 0) {
+        throw new ValidationError('A slide needs both a desktop and a mobile image', details);
+      }
+    }
+
     await auditLogService.record(
       {
         action: AUDIT_ACTIONS.FOOD_PROCESSING_HERO_SLIDE_UPDATED,

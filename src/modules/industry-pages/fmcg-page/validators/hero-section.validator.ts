@@ -82,10 +82,7 @@ export function validateCreateFmcgHeroSlide(body: unknown): CreateFmcgHeroSlideI
     'CONFLICTING_IMAGE_SOURCE',
   );
 
-  /*
-   * The phone crop, on the same rule and optional throughout: a slide without
-   * one falls back to the desktop image, which is what every slide does today.
-   */
+  // The phone crop, on the same rule.
   const mobileImageUrl = v.optionalString('mobileImageUrl', { max: IMAGE_URL_MAX }) ?? null;
   if (mobileImageUrl) validateMediaUrl(v, 'mobileImageUrl', mobileImageUrl);
   const mobileImageFileId = v.optionalUuid('mobileImageFileId') ?? null;
@@ -95,6 +92,20 @@ export function validateCreateFmcgHeroSlide(body: unknown): CreateFmcgHeroSlideI
     'mobileImageUrl',
     'Provide either mobileImageUrl or mobileImageFileId, not both',
     'CONFLICTING_IMAGE_SOURCE',
+  );
+
+  // Both images are required: the desktop band and the phone crop.
+  v.custom(
+    imageUrl !== null || imageFileId !== null,
+    'imageUrl',
+    'A desktop image is required (imageUrl or imageFileId)',
+    'REQUIRED',
+  );
+  v.custom(
+    mobileImageUrl !== null || mobileImageFileId !== null,
+    'mobileImageUrl',
+    'A mobile image is required (mobileImageUrl or mobileImageFileId)',
+    'REQUIRED',
   );
 
   const dto: CreateFmcgHeroSlideInput = {
@@ -157,8 +168,8 @@ export function validateUpdateFmcgHeroSlide(body: unknown): UpdateFmcgHeroSlideI
     'CONFLICTING_IMAGE_SOURCE',
   );
 
-  // `null` clears the mobile crop, which is a legitimate state - the slide
-  // then falls back to its desktop image on phones.
+  // Both images are required, so the service refuses a patch that would leave
+  // the slide without either one.
   const mobileImageUrl = v.has('mobileImageUrl')
     ? (v.optionalString('mobileImageUrl', { max: IMAGE_URL_MAX }) ?? null)
     : undefined;
