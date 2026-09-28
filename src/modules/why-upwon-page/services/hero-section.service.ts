@@ -1,168 +1,254 @@
 // src/modules/why-upwon-page/services/hero-section.service.ts
 
 import { withTransaction } from '../../../config/database';
-import { AUDIT_ACTIONS } from '../../../config/constants';
-import { env } from '../../../config/env';
+import { AUDIT_ACTIONS, ContentStatus, LIMITS } from '../../../config/constants';
+import { ConflictError } from '../../../core/errors/ConflictError';
+import { NotFoundError } from '../../../core/errors/NotFoundError';
 import { ValidationError } from '../../../core/errors/ValidationError';
-import { RequestContext } from '../../../core/types/common.types';
-import { getStorageProvider } from '../../../storage/storage.factory';
+import { PaginationParams, RequestContext } from '../../../core/types/common.types';
+import { buildPaginationMeta, PaginationMeta } from '../../../core/utils/pagination';
 import * as auditLogService from '../../audit-logs/services/audit-log.service';
-import * as fileRepository from '../../files/repositories/file.repository';
-import * as sectionCopyService from '../../home-page/services/section-copy.service';
-import { checkImageDimensions, ImageSlot } from '../../home-page/utils/image-spec';
-import { readImageDimensions } from '../../home-page/utils/image-dimensions';
+import { parseHeading } from '../../home-page/utils/heading-markup';
+import { assertUsableImageFile, resolveImageSource } from '../../home-page/utils/image-asset';
 import * as repo from '../repositories/hero-section.repository';
 import {
-  WhyUpwonHeroSection,
-  PublicWhyUpwonHeroSection,
-  ResolvedWhyUpwonHeroSection,
-  UpsertWhyUpwonHeroSectionInput,
+  CreateWhyUpwonHeroSlideInput,
+  PublicWhyUpwonHeroSlide,
+  ResolvedWhyUpwonHeroSlide,
+  UpdateWhyUpwonHeroSlideInput,
+  WhyUpwonHeroSlide,
+  WhyUpwonHeroSlideFilters,
 } from '../types/hero-section.types';
 
 const MODULE = 'why_upwon_page';
-const ENTITY = 'why_upwon_hero_section';
+const ENTITY = 'why_upwon_hero_slide';
 
-/** Only images belong in the hero; a PDF there renders nothing. */
-const IMAGE_MIME_PREFIX = 'image/';
+/** The two crops of one artwork, each with its own shape. */
+const DESKTOP_SLOT = 'whyUpwonHeroDesktop' as const;
+const MOBILE_SLOT = 'whyUpwonHeroMobile' as const;
 
-const resolveSource = async (
-  url: string | null,
-  fileId: string | null,
-): Promise<string | null> => {
-  if (url) return url;
-  if (!fileId) return null;
-
-  const file = await fileRepository.findById(fileId);
-  // Soft-deleted or purged asset: the site keeps its own artwork rather than
-  // the whole request failing for one missing file.
-  if (!file) return null;
-  return `${env.publicApiBaseUrl}/public/files/${file.id}`;
-};
-
-/** Rejects a file id that is not a live image of the right shape for a slot. */
-const assertUsableImageFile = async (
-  fileId: string,
-  slot: ImageSlot,
-  field: string,
-  label: string,
-): Promise<void> => {
-  const file = await fileRepository.findById(fileId);
-  if (!file) {
-    throw new ValidationError('Image file not found', [
-      { field, message: 'No such uploaded file, or it has been deleted', code: 'UNKNOWN_FILE' },
-    ]);
-  }
-  if (!file.mimeType.startsWith(IMAGE_MIME_PREFIX)) {
-    throw new ValidationError(`${label} must be an image`, [
-      { field, message: `Expected an image, got ${file.mimeType}`, code: 'INVALID_FILE_TYPE' },
-    ]);
-  }
-
-  const buffer = await getStorageProvider().getFile(file.storageKey);
-  const dimensions = readImageDimensions(buffer);
-  if (!dimensions) {
-    throw new ValidationError('Image could not be read', [
-      {
-        field,
-        message: `${file.originalName} is not a readable PNG, JPEG, GIF or WebP image`,
-        code: 'UNREADABLE_IMAGE',
-      },
-    ]);
-  }
-
-  const problem = checkImageDimensions(slot, dimensions);
-  if (problem) {
-    throw new ValidationError(`${label} is the wrong size`, [
-      { field, message: problem, code: 'INVALID_IMAGE_DIMENSIONS' },
-    ]);
-  }
-};
-
-const toResolved = async (section: WhyUpwonHeroSection): Promise<ResolvedWhyUpwonHeroSection> => ({
-  ...section,
-  desktopImage: await resolveSource(section.desktopImageUrl, section.desktopImageFileId),
-  mobileImage: await resolveSource(section.mobileImageUrl, section.mobileImageFileId),
+const toResolved = async (slide: WhyUpwonHeroSlide): Promise<ResolvedWhyUpwonHeroSlide> => ({
+  ...slide,
+  desktopImage: await resolveImageSource(slide.desktopImageUrl, slide.desktopImageFileId),
+  mobileImage: await resolveImageSource(slide.mobileImageUrl, slide.mobileImageFileId),
 });
 
-/** Null when the hero has never been authored - a normal first-run state. */
-export const get = async (): Promise<ResolvedWhyUpwonHeroSection | null> => {
-  const section = await repo.find();
-  return section ? toResolved(section) : null;
-};
+const toResolvedMany = (slides: WhyUpwonHeroSlide[]): Promise<ResolvedWhyUpwonHeroSlide[]> =>
+  Promise.all(slides.map(toResolved));
 
-export const upsert = async (
-  input: UpsertWhyUpwonHeroSectionInput,
-  context: RequestContext,
-): Promise<ResolvedWhyUpwonHeroSection> => {
+/**
+ * Both artwork checks, run before any transaction opens.
+ *
+ * Each reads the stored bytes back out of storage to measure them, and a
+ * round trip to storage does not belong inside an open transaction.
+ */
+const assertUsableArtwork = async (input: {
+  desktopImageFileId?: string | null;
+  mobileImageFileId?: string | null;
+}): Promise<void> => {
   if (input.desktopImageFileId) {
-    await assertUsableImageFile(
-      input.desktopImageFileId,
-      'whyUpwonHeroDesktop',
-      'desktopImageFileId',
-      'Desktop artwork',
-    );
+    await assertUsableImageFile(input.desktopImageFileId, DESKTOP_SLOT, 'desktopImageFileId');
   }
   if (input.mobileImageFileId) {
-    await assertUsableImageFile(
-      input.mobileImageFileId,
-      'whyUpwonHeroMobile',
-      'mobileImageFileId',
-      'Mobile artwork',
-    );
+    await assertUsableImageFile(input.mobileImageFileId, MOBILE_SLOT, 'mobileImageFileId');
   }
+};
 
-  return withTransaction(async (client) => {
-    const existing = await repo.find(client);
-    const saved = await repo.upsert(input, context.adminId, client);
+// ── reads ─────────────────────────────────────────────────────────────────
+
+export const list = async (
+  filters: WhyUpwonHeroSlideFilters,
+  pagination: PaginationParams,
+): Promise<{ rows: ResolvedWhyUpwonHeroSlide[]; meta: PaginationMeta }> => {
+  const { rows, total } = await repo.findAll(filters, pagination);
+  return { rows: await toResolvedMany(rows), meta: buildPaginationMeta(total, pagination) };
+};
+
+export const getById = async (id: string): Promise<ResolvedWhyUpwonHeroSlide> => {
+  const slide = await repo.findById(id);
+  if (!slide) throw new NotFoundError('Hero slide');
+  return toResolved(slide);
+};
+
+// ── writes ────────────────────────────────────────────────────────────────
+
+export const create = async (
+  input: CreateWhyUpwonHeroSlideInput,
+  context: RequestContext,
+): Promise<ResolvedWhyUpwonHeroSlide> => {
+  await assertUsableArtwork(input);
+
+  const slide = await withTransaction(async (client) => {
+    const existing = await repo.count(client);
+    if (existing >= LIMITS.MAX_WHY_UPWON_HERO_SLIDES) {
+      throw new ConflictError(
+        `The hero holds at most ${LIMITS.MAX_WHY_UPWON_HERO_SLIDES} slides. Delete or deactivate one first.`,
+      );
+    }
+
+    const displayOrder = input.displayOrder ?? (await repo.nextOrder(client));
+    const created = await repo.create({ ...input, displayOrder }, context.adminId, client);
 
     await auditLogService.record(
       {
-        action: AUDIT_ACTIONS.WHY_UPWON_HERO_SECTION_UPDATED,
+        action: AUDIT_ACTIONS.WHY_UPWON_HERO_SLIDE_CREATED,
         module: MODULE,
         entityType: ENTITY,
-        entityId: saved.id,
-        oldValues: existing
-          ? { imageAlt: existing.imageAlt, primaryLabel: existing.primaryLabel }
-          : undefined,
-        newValues: { imageAlt: saved.imageAlt, primaryLabel: saved.primaryLabel },
+        entityId: created.id,
+        newValues: { eyebrow: created.eyebrow, status: created.status },
       },
       context,
       client,
     );
 
-    return toResolved(saved);
+    return created;
+  });
+
+  return toResolved(slide);
+};
+
+export const update = async (
+  id: string,
+  patch: UpdateWhyUpwonHeroSlideInput,
+  context: RequestContext,
+): Promise<ResolvedWhyUpwonHeroSlide> => {
+  await assertUsableArtwork(patch);
+
+  const slide = await withTransaction(async (client) => {
+    const existing = await repo.findByIdForUpdate(id, client);
+    if (!existing) throw new NotFoundError('Hero slide');
+
+    const updated = await repo.update(id, patch, context.adminId, client);
+    if (!updated) throw new NotFoundError('Hero slide');
+
+    await auditLogService.record(
+      {
+        action: AUDIT_ACTIONS.WHY_UPWON_HERO_SLIDE_UPDATED,
+        module: MODULE,
+        entityType: ENTITY,
+        entityId: id,
+        oldValues: { eyebrow: existing.eyebrow, status: existing.status },
+        newValues: { eyebrow: updated.eyebrow, status: updated.status },
+      },
+      context,
+      client,
+    );
+
+    return updated;
+  });
+
+  return toResolved(slide);
+};
+
+export const setStatus = async (
+  id: string,
+  status: ContentStatus,
+  context: RequestContext,
+): Promise<ResolvedWhyUpwonHeroSlide> => update(id, { status }, context);
+
+export const reorder = async (
+  ids: string[],
+  context: RequestContext,
+): Promise<ResolvedWhyUpwonHeroSlide[]> => {
+  const slides = await withTransaction(async (client) => {
+    const total = await repo.count(client);
+
+    const existing = await repo.findExistingIds(ids, client);
+    const unknown = ids.filter((id) => !existing.includes(id));
+    if (unknown.length > 0) {
+      throw new ValidationError('The order names a slide that does not exist', [
+        {
+          field: 'ids',
+          message: `Unknown slide ids: ${unknown.join(', ')}`,
+          code: 'UNKNOWN_WHY_UPWON_HERO_SLIDE',
+        },
+      ]);
+    }
+
+    if (ids.length !== total) {
+      throw new ValidationError('The order must list every slide', [
+        {
+          field: 'ids',
+          message: `Expected all ${total} slide ids, received ${ids.length}`,
+          code: 'INCOMPLETE_ORDER',
+        },
+      ]);
+    }
+
+    await repo.applyOrder(ids, context.adminId, client);
+
+    await auditLogService.record(
+      {
+        action: AUDIT_ACTIONS.WHY_UPWON_HERO_SLIDES_REORDERED,
+        module: MODULE,
+        entityType: ENTITY,
+        newValues: { order: ids },
+      },
+      context,
+      client,
+    );
+
+    // Read on `client`, inside the transaction, so the returned list reflects
+    // the order just written rather than the committed state it replaced.
+    const reordered = await repo.findAll(
+      {},
+      { page: 1, limit: LIMITS.MAX_WHY_UPWON_HERO_SLIDES, offset: 0 },
+      client,
+    );
+    return reordered.rows;
+  });
+
+  return toResolvedMany(slides);
+};
+
+export const remove = async (id: string, context: RequestContext): Promise<void> => {
+  await withTransaction(async (client) => {
+    const existing = await repo.findByIdForUpdate(id, client);
+    if (!existing) throw new NotFoundError('Hero slide');
+
+    await repo.remove(id, client);
+
+    await auditLogService.record(
+      {
+        action: AUDIT_ACTIONS.WHY_UPWON_HERO_SLIDE_DELETED,
+        module: MODULE,
+        entityType: ENTITY,
+        entityId: id,
+        oldValues: { eyebrow: existing.eyebrow },
+      },
+      context,
+      client,
+    );
   });
 };
 
+// ── the website-facing read ───────────────────────────────────────────────
+
 /**
- * The website-facing read: the copy and the hero in one response.
+ * The published slides, or an empty array to mean "keep the hero you ship".
  *
- * Null when the copy or the record is missing - the page then keeps the hero it
- * ships, which is a complete working one.
+ * No section-copy lookup, unlike this page's other sections: since 082 a
+ * slide carries its own eyebrow, headline and subhead, which is what let the
+ * hero become a list in the first place.
  */
-export const getPublished = async (): Promise<PublicWhyUpwonHeroSection | null> => {
-  const [copy, section] = await Promise.all([
-    sectionCopyService.get('why-upwon', 'hero'),
-    repo.find(),
-  ]);
-  if (!copy || !section) return null;
+export const getPublished = async (): Promise<PublicWhyUpwonHeroSlide[]> => {
+  const slides = await repo.findPublished();
+  if (slides.length === 0) return [];
 
-  const resolved = await toResolved(section);
+  const resolved = await toResolvedMany(slides);
 
-  return {
-    eyebrow: copy.eyebrow,
-    heading: copy.heading,
-    headingLines: copy.headingLines,
-    subtext: copy.subtext ?? '',
-    desktopImage: resolved.desktopImage,
-    mobileImage: resolved.mobileImage,
-    imageAlt: resolved.imageAlt,
-    primary: { label: resolved.primaryLabel, href: resolved.primaryHref },
-    // Both halves or neither, which the table also enforces - so one check here
-    // is enough to know the pair is usable.
+  return resolved.map((slide) => ({
+    eyebrow: slide.eyebrow,
+    heading: slide.headline,
+    headingLines: parseHeading(slide.headline),
+    subtext: slide.subhead,
+    desktopImage: slide.desktopImage,
+    mobileImage: slide.mobileImage,
+    imageAlt: slide.imageAlt,
+    primary: { label: slide.primaryLabel, href: slide.primaryHref },
     secondary:
-      resolved.secondaryLabel && resolved.secondaryHref
-        ? { label: resolved.secondaryLabel, href: resolved.secondaryHref }
+      slide.secondaryLabel && slide.secondaryHref
+        ? { label: slide.secondaryLabel, href: slide.secondaryHref }
         : null,
-  };
+  }));
 };

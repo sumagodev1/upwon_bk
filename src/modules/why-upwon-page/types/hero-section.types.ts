@@ -1,23 +1,29 @@
 // src/modules/why-upwon-page/types/hero-section.types.ts
 
+import { ContentStatus } from '../../../config/constants';
 import { HeadingLine } from '../../home-page/utils/heading-markup';
 
 /**
- * The Why UpWon page's hero: one record, not a slider - the page opens on a
- * single split hero, the artwork on one side and the copy in the space it
- * leaves.
+ * The Why UpWon page's hero slider.
  *
- * Two crops of the same artwork - a wide one for desktop, a tall one for
- * phones - a description of what it shows, and two buttons. The same shape as
- * the industry pages' closing bands, plus the description, because here the
- * picture is the page's first content rather than decoration.
+ * A list of slides, the same as every other hero in the CMS. It was a single
+ * record until 082, which is why this page's section-copy keys no longer
+ * include 'hero': a slide carries its own eyebrow, headline and subhead, so a
+ * shared copy row would be a second, unread copy of the first slide's words.
  *
- * The eyebrow, heading and subtext live once in page_section_copy under
- * ('why-upwon', 'hero').
+ * Each slide is two crops of one artwork - a wide one for desktop, a tall one
+ * for phones - a description of what it shows, and two buttons. The
+ * description is required here where the product pages' backgrounds carry
+ * none: on this page the artwork is the first content a visitor meets rather
+ * than decoration behind it.
  */
 
-export interface WhyUpwonHeroSection {
+export interface WhyUpwonHeroSlide {
   id: string;
+  eyebrow: string;
+  /** Authored text with the `**accent**` markers intact, for round-tripping. */
+  headline: string;
+  subhead: string;
   /** The wide artwork, shown from 1024px up. Exclusive with desktopImageFileId. */
   desktopImageUrl: string | null;
   desktopImageFileId: string | null;
@@ -31,26 +37,24 @@ export interface WhyUpwonHeroSection {
   /** The outlined button beside it. Both halves or neither. */
   secondaryLabel: string | null;
   secondaryHref: string | null;
+  displayOrder: number;
+  status: ContentStatus;
   createdBy: string | null;
   updatedBy: string | null;
   createdAt: Date;
   updatedAt: Date;
 }
 
-/** The hero with both artwork pairs resolved to the URLs to actually render. */
-export interface ResolvedWhyUpwonHeroSection extends WhyUpwonHeroSection {
+/** A slide with both artwork pairs resolved to the URLs to actually render. */
+export interface ResolvedWhyUpwonHeroSlide extends WhyUpwonHeroSlide {
   desktopImage: string | null;
   mobileImage: string | null;
 }
 
-/**
- * A full replacement, not a patch.
- *
- * The hero is one small form, so a partial update would only add a way for the
- * buttons to drift out of step with the artwork while an administrator thinks
- * they saved both.
- */
-export interface UpsertWhyUpwonHeroSectionInput {
+export interface CreateWhyUpwonHeroSlideInput {
+  eyebrow: string;
+  headline: string;
+  subhead: string;
   desktopImageUrl: string | null;
   desktopImageFileId: string | null;
   mobileImageUrl: string | null;
@@ -60,17 +64,55 @@ export interface UpsertWhyUpwonHeroSectionInput {
   primaryHref: string;
   secondaryLabel: string | null;
   secondaryHref: string | null;
+  /** Omitted means "append to the end" - resolved by the service. */
+  displayOrder?: number;
+  status: ContentStatus;
 }
 
 /**
- * The website-facing shape.
+ * Updating one.
  *
- * Null when the copy or the record is missing - the page then keeps the hero
- * it ships, which is a complete working one. The artwork is optional either
- * way: without it the site keeps the artwork it ships.
+ * Every artwork half stays nullable: both crops are optional on this hero -
+ * without them the site keeps the artwork it ships - so clearing one is a
+ * real edit rather than a half-finished save.
  */
-export interface PublicWhyUpwonHeroSection {
-  eyebrow: string | null;
+export interface UpdateWhyUpwonHeroSlideInput {
+  eyebrow?: string;
+  headline?: string;
+  subhead?: string;
+  desktopImageUrl?: string | null;
+  desktopImageFileId?: string | null;
+  mobileImageUrl?: string | null;
+  mobileImageFileId?: string | null;
+  imageAlt?: string;
+  primaryLabel?: string;
+  primaryHref?: string;
+  secondaryLabel?: string | null;
+  secondaryHref?: string | null;
+  displayOrder?: number;
+  status?: ContentStatus;
+}
+
+export interface WhyUpwonHeroSlideFilters {
+  status?: ContentStatus;
+}
+
+/** Reorder takes the complete id list, so it is idempotent. */
+export interface ReorderInput {
+  ids: string[];
+}
+
+/**
+ * The website-facing shape: one entry per published slide.
+ *
+ * An empty array means "keep the hero you ship", which is what the site does
+ * when nothing is published or the API is unreachable.
+ *
+ * `heading` keeps the authored markers and `headingLines` is the parsed form,
+ * so the site can render the accent without implementing the grammar.
+ */
+export interface PublicWhyUpwonHeroSlide {
+  eyebrow: string;
   heading: string;
   headingLines: HeadingLine[];
   subtext: string;

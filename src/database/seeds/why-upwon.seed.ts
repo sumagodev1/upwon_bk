@@ -11,25 +11,31 @@ import { PoolClient } from 'pg';
  * WhyUpwonResults, and the closing band from WhyUpwonCtaSection.
  */
 
-/** The copy in the hero. The second half of the heading is the orange accent. */
-const HERO_COPY = {
-  eyebrow: 'WHY UPWON',
-  heading: 'Why Growing Manufacturers **Choose UpWon.**',
-  subtext:
-    'Manufacturing businesses need more than disconnected software and manual processes. UpWon brings your critical workflows, teams, and business data together in one connected platform.',
-};
-
-/** The hero's two crops, what they show, and its two buttons. */
-const HERO = {
-  desktopImageUrl: '/images/why_hero_desktop.webp',
-  mobileImageUrl: '/images/why_hero_mobile.webp',
-  imageAlt:
-    'The UpWon dashboard on a laptop, surrounded by floating tiles for real-time data, connected teams, automated workflows and complete visibility',
-  primaryLabel: 'Explore UpWon',
-  primaryHref: '/what-is-upwon',
-  secondaryLabel: 'See How It Works',
-  secondaryHref: '/demo',
-};
+/**
+ * The hero's slides.
+ *
+ * One today, which is what the page shipped with. It became a list in 082 -
+ * before that the copy lived in page_section_copy under ('why-upwon', 'hero')
+ * and the artwork in a singleton table, which made this the one hero an
+ * editor could not add a second slide to. The second half of the headline is
+ * the orange accent.
+ */
+const HERO_SLIDES = [
+  {
+    eyebrow: 'WHY UPWON',
+    headline: 'Why Growing Manufacturers **Choose UpWon.**',
+    subhead:
+      'Manufacturing businesses need more than disconnected software and manual processes. UpWon brings your critical workflows, teams, and business data together in one connected platform.',
+    desktopImageUrl: '/images/why_hero_desktop.webp',
+    mobileImageUrl: '/images/why_hero_mobile.webp',
+    imageAlt:
+      'The UpWon dashboard on a laptop, surrounded by floating tiles for real-time data, connected teams, automated workflows and complete visibility',
+    primaryLabel: 'Explore UpWon',
+    primaryHref: '/what-is-upwon',
+    secondaryLabel: 'See How It Works',
+    secondaryHref: '/demo',
+  },
+];
 
 /** The copy over the industry trust row. */
 const INDUSTRIES_COPY = {
@@ -267,35 +273,52 @@ export async function seedWhyUpwonPage(client: PoolClient): Promise<{
   ctaCopy: number;
   ctaSection: number;
 }> {
-  const heroCopyResult = await client.query(
-    `
-    INSERT INTO page_section_copy (page_key, section_key, eyebrow, heading, subtext)
-    VALUES ('why-upwon', 'hero', $1, $2, $3)
-    ON CONFLICT (page_key, section_key) DO NOTHING
-    `,
-    [HERO_COPY.eyebrow, HERO_COPY.heading, HERO_COPY.subtext],
-  );
-  const heroCopy = heroCopyResult.rowCount ?? 0;
+  /*
+   * The hero has no section-copy row any more: since 082 each slide carries
+   * its own eyebrow, headline and subhead, so `heroCopy` is always 0 and is
+   * kept only so the summary's shape does not change.
+   */
+  const heroCopy = 0;
 
-  const heroSectionResult = await client.query(
-    `
-    INSERT INTO why_upwon_hero_section
-      (singleton, desktop_image_url, mobile_image_url, image_alt,
-       primary_label, primary_href, secondary_label, secondary_href)
-    VALUES (TRUE, $1, $2, $3, $4, $5, $6, $7)
-    ON CONFLICT (singleton) DO NOTHING
-    `,
-    [
-      HERO.desktopImageUrl,
-      HERO.mobileImageUrl,
-      HERO.imageAlt,
-      HERO.primaryLabel,
-      HERO.primaryHref,
-      HERO.secondaryLabel,
-      HERO.secondaryHref,
-    ],
+  const existingSlides = await client.query<{ count: string }>(
+    'SELECT COUNT(*) AS count FROM why_upwon_hero_slides',
   );
-  const heroSection = heroSectionResult.rowCount ?? 0;
+  let heroSection = 0;
+  if (Number(existingSlides.rows[0].count) === 0) {
+    const heroSlidesResult = await client.query(
+      `
+      INSERT INTO why_upwon_hero_slides
+        (eyebrow, headline, subhead,
+         desktop_image_url, mobile_image_url, image_alt,
+         primary_label, primary_href, secondary_label, secondary_href,
+         display_order, status)
+      SELECT u.eyebrow, u.headline, u.subhead,
+             u.desktop_image_url, u.mobile_image_url, u.image_alt,
+             u.primary_label, u.primary_href, u.secondary_label, u.secondary_href,
+             u.position, 'ACTIVE'
+        FROM unnest($1::text[], $2::text[], $3::text[], $4::text[], $5::text[],
+                    $6::text[], $7::text[], $8::text[], $9::text[], $10::text[],
+                    $11::int[])
+          AS u(eyebrow, headline, subhead, desktop_image_url, mobile_image_url,
+               image_alt, primary_label, primary_href, secondary_label,
+               secondary_href, position)
+      `,
+      [
+        HERO_SLIDES.map((s) => s.eyebrow),
+        HERO_SLIDES.map((s) => s.headline),
+        HERO_SLIDES.map((s) => s.subhead),
+        HERO_SLIDES.map((s) => s.desktopImageUrl),
+        HERO_SLIDES.map((s) => s.mobileImageUrl),
+        HERO_SLIDES.map((s) => s.imageAlt),
+        HERO_SLIDES.map((s) => s.primaryLabel),
+        HERO_SLIDES.map((s) => s.primaryHref),
+        HERO_SLIDES.map((s) => s.secondaryLabel),
+        HERO_SLIDES.map((s) => s.secondaryHref),
+        HERO_SLIDES.map((_, index) => index),
+      ],
+    );
+    heroSection = heroSlidesResult.rowCount ?? 0;
+  }
 
   const industriesCopyResult = await client.query(
     `

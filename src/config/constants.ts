@@ -1162,7 +1162,16 @@ export const AUDIT_ACTIONS = {
   QSR_FRANCHISE_FAQ_ENTRIES_REORDERED: 'QSR_FRANCHISE_FAQ_ENTRIES_REORDERED',
   QSR_FRANCHISE_CTA_SECTION_UPDATED: 'QSR_FRANCHISE_CTA_SECTION_UPDATED',
 
+  /*
+   * The hero became a slider in 082, so it audits like every other hero: one
+   * action per slide, plus a reorder. WHY_UPWON_HERO_SECTION_UPDATED stays
+   * for the entries already written against the singleton it replaced.
+   */
   WHY_UPWON_HERO_SECTION_UPDATED: 'WHY_UPWON_HERO_SECTION_UPDATED',
+  WHY_UPWON_HERO_SLIDE_CREATED: 'WHY_UPWON_HERO_SLIDE_CREATED',
+  WHY_UPWON_HERO_SLIDE_UPDATED: 'WHY_UPWON_HERO_SLIDE_UPDATED',
+  WHY_UPWON_HERO_SLIDE_DELETED: 'WHY_UPWON_HERO_SLIDE_DELETED',
+  WHY_UPWON_HERO_SLIDES_REORDERED: 'WHY_UPWON_HERO_SLIDES_REORDERED',
   WHY_UPWON_INDUSTRY_CREATED: 'WHY_UPWON_INDUSTRY_CREATED',
   WHY_UPWON_INDUSTRY_UPDATED: 'WHY_UPWON_INDUSTRY_UPDATED',
   WHY_UPWON_INDUSTRY_DELETED: 'WHY_UPWON_INDUSTRY_DELETED',
@@ -2037,6 +2046,8 @@ export const LIMITS = {
   MAX_QSR_FRANCHISE_PLATFORM_WORKFLOWS: 20,
   MAX_QSR_FRANCHISE_COVERAGE_CATEGORIES: 24,
   MAX_QSR_FRANCHISE_FAQ_ENTRIES: 24,
+  /** The Why UpWon hero, on the same cap as every other hero slider. */
+  MAX_WHY_UPWON_HERO_SLIDES: 12,
   /** The Why UpWon page's industry trust row. */
   MAX_WHY_UPWON_INDUSTRIES: 21,
   MAX_WHY_UPWON_TESTIMONIALS: 12,
@@ -2604,7 +2615,12 @@ export const PAGE_SECTION_KEYS = {
    * The Why UpWon page, built section by section. Unlike the industry pages its
    * hero is one record rather than a slider, so its copy lives here too.
    */
-  'why-upwon': ['hero', 'industries', 'testimonials', 'proof', 'outcomes', 'cta'],
+  /*
+   * 'hero' left in 082, when the hero became a slider: a slide carries its
+   * own eyebrow, headline and subhead, so a shared copy row would be a
+   * second, unread copy of the first slide's words.
+   */
+  'why-upwon': ['industries', 'testimonials', 'proof', 'outcomes', 'cta'],
   /*
    * The Clients page. Its hero slides each carry their own copy; 'outcomes'
    * heads the featured case study cards, 'trust' the roster's logo marquee,
