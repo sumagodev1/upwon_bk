@@ -55,11 +55,32 @@ export interface ContentCounter {
   published: number | null;
 }
 
+/**
+ * One day on the dashboard's charts.
+ *
+ * Both measures share a row because they share an axis - but they are drawn as
+ * two charts rather than two lines on one: edits run to hundreds a day and
+ * submissions to single figures, and one pair of axes would either flatten the
+ * submissions to nothing or need a second y-scale.
+ */
+export interface DailyPoint {
+  /** ISO date, `YYYY-MM-DD`, in the database's timezone. */
+  day: string;
+  /** Audit-log entries written that day - every change anyone made. */
+  edits: number;
+  /** Submissions across all five of the site's forms. */
+  submissions: number;
+}
+
 export interface CmsDashboard {
   /** Submissions from the public site's forms - the actionable half. */
   inboxes: InboxCounter[];
   /** The content areas, for a sense of what is filled in and what is not. */
   content: ContentCounter[];
+  /** How many days `series` covers, so the client can title the charts. */
+  periodDays: number;
+  /** One row per day, oldest first, with no gaps. */
+  series: DailyPoint[];
   /** The last few changes anyone made, straight from audit_logs. */
   recentActivity: RecentActivityItem[];
   /**

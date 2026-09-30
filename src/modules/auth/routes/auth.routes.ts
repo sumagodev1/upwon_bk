@@ -15,6 +15,7 @@ import {
 } from '../controllers/auth.controller';
 import { authenticate } from '../../../core/middleware/auth.middleware';
 import { requireCsrfHeader } from '../../../core/middleware/csrf.middleware';
+import { requireRecaptcha } from '../../../core/middleware/recaptcha.middleware';
 import {
   forgotPasswordRateLimit,
   loginRateLimit,
@@ -27,7 +28,15 @@ import { asyncHandler } from '../../../core/utils/async-handler';
 const router = Router();
 
 // ── public ───────────────────────────────────────────────────────────────
-router.post('/login', loginRateLimit, asyncHandler(loginController));
+// requireRecaptcha runs after the rate limiter and before the controller: a
+// flood is turned away without ever costing a round trip to Google, and the
+// token is stripped from the body so validateLogin never sees it.
+router.post(
+  '/login',
+  loginRateLimit,
+  asyncHandler(requireRecaptcha),
+  asyncHandler(loginController),
+);
 
 // requireCsrfHeader: the refresh cookie is sent automatically by the browser,
 // so this endpoint is CSRF-reachable. A custom header cannot be set by a

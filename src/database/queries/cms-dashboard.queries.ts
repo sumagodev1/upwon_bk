@@ -80,6 +80,62 @@ export const CMS_DASHBOARD_CONTENT_SQL = `
 `;
 
 /**
+ * The daily series behind the dashboard's two charts.
+ *
+ * `generate_series` builds the whole date axis first and the counts are joined
+ * onto it, so a day with nothing on it comes back as 0 rather than being
+ * absent - the client never has to fill gaps, and a quiet week reads as a flat
+ * line rather than a shorter one.
+ *
+ * Both measures ride one row per day because they share an axis. They are
+ * drawn as two charts, not two lines on one: edits run to hundreds a day and
+ * submissions to single figures, and putting them on one pair of axes would
+ * either flatten the submissions to nothing or need a second y-scale.
+ *
+ * The axis is built in the database's own timezone, which is what every
+ * created_at is stored against - doing it in the client would slice the days
+ * against the reader's clock and disagree with the counts.
+ */
+export const CMS_DASHBOARD_SERIES_SQL = `
+  WITH axis AS (
+    SELECT generate_series(
+      date_trunc('day', now()) - (($1::int - 1) * INTERVAL '1 day'),
+      date_trunc('day', now()),
+      INTERVAL '1 day'
+    )::date AS day
+  ),
+  edits AS (
+    SELECT date_trunc('day', created_at)::date AS day, count(*) AS n
+      FROM audit_logs
+     WHERE created_at >= date_trunc('day', now()) - (($1::int - 1) * INTERVAL '1 day')
+     GROUP BY 1
+  ),
+  submissions AS (
+    SELECT day, count(*) AS n FROM (
+      SELECT date_trunc('day', created_at)::date AS day FROM contact_enquiries
+      UNION ALL
+      SELECT date_trunc('day', created_at)::date FROM career_applications
+      UNION ALL
+      SELECT date_trunc('day', created_at)::date FROM partner_program_applications
+      UNION ALL
+      SELECT date_trunc('day', created_at)::date FROM about_discovery_calls
+      UNION ALL
+      SELECT date_trunc('day', created_at)::date FROM free_audit_applications
+    ) all_forms
+     WHERE day >= (date_trunc('day', now()) - (($1::int - 1) * INTERVAL '1 day'))::date
+     GROUP BY 1
+  )
+  SELECT
+    axis.day::text                  AS day,
+    COALESCE(edits.n, 0)::int       AS edits,
+    COALESCE(submissions.n, 0)::int AS submissions
+  FROM axis
+  LEFT JOIN edits       ON edits.day = axis.day
+  LEFT JOIN submissions ON submissions.day = axis.day
+  ORDER BY axis.day
+`;
+
+/**
  * The signed-in admin's own last few changes.
  *
  * The same shape as DASHBOARD_RECENT_ACTIVITY_SQL so both feed one mapper -

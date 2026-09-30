@@ -11,6 +11,7 @@ import { PERMISSIONS } from '../../../config/constants';
 import { requirePermission } from '../../../core/middleware/authorization.middleware';
 import { contactEnquiryRateLimit } from '../../../core/middleware/rate-limit.middleware';
 import { asyncHandler } from '../../../core/utils/async-handler';
+import { requireRecaptcha } from '../../../core/middleware/recaptcha.middleware';
 
 /**
  * Admin router, mounted at /contact-page/enquiries behind authentication.
@@ -71,6 +72,9 @@ export default router;
  *                            checked against the options the form is actually
  *                            publishing, so a script cannot invent categories.
  *   the response             a receipt only: { received: true, id }.
+ *   requireRecaptcha         a token from the visitor's browser, checked
+ *                            with Google. The one control here that a
+ *                            script cannot simply comply with.
  *
  * There is deliberately no public GET here. An inbox of other people's contact
  * details behind a guessable URL is the failure mode this whole file is
@@ -81,5 +85,6 @@ export const publicContactEnquiriesRouter = Router();
 publicContactEnquiriesRouter.post(
   '/',
   contactEnquiryRateLimit,
+  asyncHandler(requireRecaptcha),
   asyncHandler(createPublicContactEnquiryController),
 );

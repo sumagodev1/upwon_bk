@@ -36,6 +36,19 @@ class EnvValidator {
     return parsed;
   }
 
+  /** Same contract as int(), for the one setting that is a fraction. */
+  float(key: string, fallback: number, min?: number, max?: number): number {
+    const raw = process.env[key];
+    if (raw === undefined || raw.trim() === '') return fallback;
+    const parsed = Number(raw);
+    if (!Number.isFinite(parsed)) {
+      this.errors.push(key + ' must be a number, received "' + raw + '"');
+      return fallback;
+    }
+    if (min !== undefined && parsed < min) this.errors.push(key + ' must be >= ' + min);
+    if (max !== undefined && parsed > max) this.errors.push(key + ' must be <= ' + max);
+    return parsed;
+  }
   bool(key: string, fallback: boolean): boolean {
     const raw = process.env[key];
     if (raw === undefined || raw.trim() === '') return fallback;
@@ -124,6 +137,30 @@ export const env = {
    */
   publicApiBaseUrl: v.optional('PUBLIC_API_BASE_URL', 'http://localhost:4000/api'),
 
+  /**
+   * Google reCAPTCHA, the server half.
+   *
+   * Only the SECRET key lives here, and it lives ONLY here. Its pair, the
+   * site key, is public by design and is compiled into both front ends -
+   * that is what a site key is for. The secret is the thing that proves a
+   * token was checked with Google rather than invented, so a copy of it in a
+   * Vite .env would be a copy inside the shipped JavaScript bundle, readable
+   * by anyone who opens devtools, and every verification the server performs
+   * would become forgeable. It does not belong in a front end.
+   *
+   * Optional rather than required: an unset secret leaves the check switched
+   * off (see core/utils/recaptcha.ts) so a fresh clone, CI and the seed
+   * scripts still boot. The server logs plainly at startup when it is off.
+   */
+  recaptchaSecretKey: v.optional('RECAPTCHA_SECRET_KEY', '').trim(),
+
+  /**
+   * Only consulted for a v3 (score-based) key, which answers with a 0..1
+   * score rather than a yes or no. The keys this project is configured with
+   * are v2 checkbox and carry no score, so this sits unused unless they are
+   * swapped; 0.5 is Google's own suggested starting point.
+   */
+  recaptchaMinScore: v.float('RECAPTCHA_MIN_SCORE', 0.5, 0, 1),
   shutdownGraceMs: v.int('SHUTDOWN_GRACE_MS', 15_000, 1_000),
   trustProxy: v.bool('TRUST_PROXY', isProduction),
 } as const;

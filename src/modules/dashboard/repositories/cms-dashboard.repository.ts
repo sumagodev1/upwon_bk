@@ -5,8 +5,9 @@ import {
   CMS_DASHBOARD_CONTENT_SQL,
   CMS_DASHBOARD_INBOXES_SQL,
   CMS_DASHBOARD_MY_ACTIVITY_SQL,
+  CMS_DASHBOARD_SERIES_SQL,
 } from '../../../database/queries/cms-dashboard.queries';
-import { ContentCounter, InboxCounter } from '../types/cms-dashboard.types';
+import { ContentCounter, DailyPoint, InboxCounter } from '../types/cms-dashboard.types';
 import { RecentActivityItem } from '../types/dashboard.types';
 
 /**
@@ -153,6 +154,26 @@ export const getContent = async (): Promise<ContentCounter[]> => {
       published: toInt(row.issues_published),
     },
   ];
+};
+
+/**
+ * The daily series behind the two charts.
+ *
+ * The date axis is complete - the query fills quiet days with 0 - so the
+ * client can plot straight from this without checking for gaps.
+ */
+export const getSeries = async (days: number): Promise<DailyPoint[]> => {
+  const result = await runQuery<{ day: string; edits: number; submissions: number }>(
+    undefined,
+    CMS_DASHBOARD_SERIES_SQL,
+    [days],
+  );
+
+  return result.rows.map((row) => ({
+    day: row.day,
+    edits: toInt(row.edits),
+    submissions: toInt(row.submissions),
+  }));
 };
 
 /** The signed-in admin's own last few changes. */

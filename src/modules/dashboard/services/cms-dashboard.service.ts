@@ -9,6 +9,15 @@ const RECENT_ACTIVITY_LIMIT = 8;
 const MY_ACTIVITY_LIMIT = 5;
 
 /**
+ * How far the charts look back.
+ *
+ * Thirty days is long enough for a weekly rhythm to show and short enough that
+ * every day still gets a readable slice of the width - at ninety the marks are
+ * narrower than the gaps between them.
+ */
+const SERIES_DAYS = 30;
+
+/**
  * Everything the CMS dashboard draws, in one call.
  *
  * Four independent reads, so they go out together - the panel renders them as
@@ -20,9 +29,10 @@ const MY_ACTIVITY_LIMIT = 5;
  * asks it, so there is one query for it rather than two that could drift.
  */
 export const getCmsDashboard = async (adminId: string): Promise<CmsDashboard> => {
-  const [inboxes, content, recentActivity, myRecentActivity] = await Promise.all([
+  const [inboxes, content, series, recentActivity, myRecentActivity] = await Promise.all([
     cmsRepository.getInboxes(),
     cmsRepository.getContent(),
+    cmsRepository.getSeries(SERIES_DAYS),
     dashboardRepository.getRecentActivity(RECENT_ACTIVITY_LIMIT),
     cmsRepository.getMyRecentActivity(adminId, MY_ACTIVITY_LIMIT),
   ]);
@@ -30,6 +40,8 @@ export const getCmsDashboard = async (adminId: string): Promise<CmsDashboard> =>
   return {
     inboxes,
     content,
+    periodDays: SERIES_DAYS,
+    series,
     recentActivity,
     myRecentActivity,
     generatedAt: new Date().toISOString(),

@@ -3,6 +3,7 @@ import { app } from './app';
 import { checkDatabaseHealth, closePool } from './config/database';
 import { env } from './config/env';
 import { logger } from './core/utils/logger';
+import { recaptchaEnabled } from './core/utils/recaptcha';
 
 let isShuttingDown = false;
 
@@ -14,6 +15,18 @@ async function bootstrap(): Promise<void> {
     process.exit(1);
   }
   logger.info('Database connection verified', { latencyMs: health.latencyMs });
+
+  /*
+   * Said out loud rather than left to be discovered. An unset secret leaves
+   * the admin sign-in and the public contact form accepting submissions
+   * nobody checked - fine on a laptop, not fine in production, and invisible
+   * from the outside either way because both forms still work.
+   */
+  if (recaptchaEnabled()) {
+    logger.info('reCAPTCHA verification is ON for admin login and public contact enquiries');
+  } else {
+    logger.warn('reCAPTCHA verification is OFF - RECAPTCHA_SECRET_KEY is not set');
+  }
 
   const server = http.createServer(app);
   // Must exceed a typical ALB idle timeout, and headersTimeout must exceed
