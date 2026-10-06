@@ -97,6 +97,8 @@ export const create = async (
   return toResolved(card);
 };
 
+
+
 export const update = async (
   id: string,
   patch: UpdateVmsCapabilityCardInput,
